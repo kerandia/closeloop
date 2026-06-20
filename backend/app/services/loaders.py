@@ -30,12 +30,12 @@ async def load_knowledge_base(db: AsyncSession) -> dict:
             )
             for b in buyer_types
         ],
+        # ANALYZE only needs to recognise + reference objections by key; the full
+        # playbook (phrasings, exact_lines, do/don't) is for RESPOND. Keeping this
+        # lean avoids a large structured-output prompt that pushes the model into
+        # repetition / length-limit failures.
         "objections": [
-            _row_to_dict(
-                o,
-                ["key", "customer_phrasings", "read", "reframe_strategy",
-                 "do_list", "dont_list", "exact_lines", "applies_to"],
-            )
+            _row_to_dict(o, ["key", "read", "applies_to"])
             for o in objections
         ],
         "plays": [

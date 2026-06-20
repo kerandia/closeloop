@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models, schemas
 from app.services import loaders, prompts
 from app.services.llm import DEMO_MODE, structured
+
+logger = logging.getLogger("closeloop.compose")
 
 
 async def run_compose(
@@ -38,12 +41,16 @@ async def run_compose(
         "language": customer.language,
         "customer_name": customer.name,
     }
-    return await structured(
-        system=prompts.COMPOSE_SYSTEM,
-        user=json.dumps(payload, ensure_ascii=False, default=str),
-        schema=schemas.ComposeOutput,
-        temperature=0.6,
-    )
+    try:
+        return await structured(
+            system=prompts.COMPOSE_SYSTEM,
+            user=json.dumps(payload, ensure_ascii=False, default=str),
+            schema=schemas.ComposeOutput,
+            temperature=0.6,
+        )
+    except Exception as err:  # noqa: BLE001 — fall back to a clean templated draft
+        logger.warning("COMPOSE LLM failed (%s); using DEMO fallback", err)
+        return _demo_compose(customer, profile, quote, recommendation, buyer_kb)
 
 
 async def _buyer_type_kb(db: AsyncSession, key: str | None) -> dict | None:

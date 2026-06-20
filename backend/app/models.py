@@ -179,10 +179,15 @@ class ExtractedAction(Base):
     interaction_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("interactions.id")
     )
-    type: Mapped[str] = mapped_column(Text, nullable=False)  # callback|send_info|schedule_visit|other
+    type: Mapped[str] = mapped_column(Text, nullable=False)  # callback|send_info|schedule_visit|hook|other
     detail: Mapped[str] = mapped_column(Text, nullable=False)
     due_at: Mapped[dt.datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     status: Mapped[str] = mapped_column(Text, server_default="open")  # open|done|dismissed
+    # Cadence provenance (Part 3 of the objection playbook): a co-pilot "advance
+    # hook" becomes a to-do here, carrying its channel + why so it feeds Cadence.
+    source: Mapped[str] = mapped_column(Text, server_default="analyze")  # analyze|copilot
+    channel: Mapped[str | None] = mapped_column(Text)  # the hook's channel
+    why: Mapped[str | None] = mapped_column(Text)  # why this next step
     created_at: Mapped[dt.datetime] = _now()
 
 
@@ -302,6 +307,13 @@ class KBObjection(Base):
     dont_list: Mapped[list | None] = mapped_column(JSONB)
     exact_lines: Mapped[list | None] = mapped_column(JSONB)
     applies_to: Mapped[list | None] = mapped_column(JSONB)
+    # Objection playbook (Layer 1 — the fixed sales skeleton RESPOND reasons against)
+    category: Mapped[str | None] = mapped_column(Text)  # human label, e.g. "Price / value gap"
+    root_read: Mapped[str | None] = mapped_column(Text)  # the deeper read behind the words
+    advance_hook: Mapped[str | None] = mapped_column(Text)  # the next-step offer template
+    red_lines: Mapped[list | None] = mapped_column(JSONB)  # trust-breaking moves to avoid
+    why_line: Mapped[str | None] = mapped_column(Text)  # canonical why-line (fixed template)
+    demo_core: Mapped[bool] = mapped_column(server_default="false")  # build-for-the-demo flag
 
 
 class KBPlay(Base):

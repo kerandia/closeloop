@@ -1,4 +1,4 @@
-"""End-to-end smoke test of the golden path (DEMO mode, no OpenAI needed).
+"""End-to-end smoke test of the golden path (runs in DEMO or live-LLM mode).
 
 Run against a live DB that has been seeded:
     python -m app.seed
@@ -56,14 +56,37 @@ def main() -> int:
         r.raise_for_status()
         print(f"[5] sent ✓ provider={r.json()['provider']['provider_id']}")
 
-        # 6. co-pilot respond
+        # 6. co-pilot respond — turn 1 (price): handle + offer an advance hook
         r = client.post("/api/copilot/respond", json={
             "customer_id": muller["id"],
-            "utterance": "it's a lot of money and we want to check other companies",
+            "utterance": "honestly it's a lot of money",
+            "channel": "phone",
         })
         r.raise_for_status()
-        resp = r.json()
-        print(f"[6] copilot read: {resp['read']!r} ({len(resp['exact_lines'])} lines)")
+        t1 = r.json()
+        assert t1["advance_hook"], "no advance hook produced"
+        print(f"[6a] respond: cat={t1['category']} loop={t1['loop_action']} "
+              f"hook→{(t1.get('todo') or {}).get('channel')} ({len(t1['exact_lines'])} lines)")
+
+        # 6b. turn 2 — a NEW concern lands while the hook is open → drop & handle, re-offer
+        r = client.post("/api/copilot/respond", json={
+            "customer_id": muller["id"],
+            "utterance": "but does it even work in winter?",
+            "channel": "phone",
+        })
+        r.raise_for_status()
+        t2 = r.json()
+        print(f"[6b] respond: cat={t2['category']} loop={t2['loop_action']} "
+              f"why={t2['why'][:64]!r}")
+
+        # 6c. the advance hook reached Cadence as a co-pilot to-do (Part 3)
+        detail = client.get(f"/api/customers/{muller['id']}").json()
+        copilot_todos = [a for a in detail["extracted_actions"] if a.get("source") == "copilot"]
+        open_todos = [a for a in copilot_todos if a["status"] == "open"]
+        assert open_todos, "no open co-pilot to-do reached Cadence"
+        td = open_todos[0]
+        print(f"[6c] cadence: {len(copilot_todos)} co-pilot to-do(s), {len(open_todos)} open; "
+              f"current = {td['channel']} · {td['detail'][:44]!r}")
 
         # 7. log a human interaction → score updates
         before = muller["sign_likelihood"]

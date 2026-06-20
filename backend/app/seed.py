@@ -69,79 +69,204 @@ BUYER_TYPES = [
     ),
 ]
 
+# The objection playbook (objection-playbook.md) — Layer 1, the fixed sales
+# skeleton RESPOND reasons against. 4 [demo-core] (the Müller path) + 4 extended.
+# why_line uses the fixed template: "Read as <category> — <root read>. So
+# <tactical direction>, not <the common mistake>."
 OBJECTIONS = [
-    dict(
+    dict(  # A · demo-core
         key="price_too_high",
-        customer_phrasings=["it's a lot of money", "that's expensive", "das ist teuer"],
+        category="Price / value gap",
+        customer_phrasings=["it's a lot of money", "that's expensive", "das ist teuer",
+                            "a lot of money", "can you come down", "didn't expect it to cost"],
         read="value gap, not price",
+        root_read="Usually not about price but an unseen value gap — they haven't connected "
+                  "the spend to what they get. (If they keep pushing a hard budget ceiling, "
+                  "it may be a real budget issue — then be honest about financing.)",
         reframe_strategy="shift total price → monthly saving and payback",
-        do_list=["reframe to €/month", "compare to current bill"],
-        dont_list=["don't discount — signals padded price"],
+        do_list=["reframe to €/month", "compare to current bill", "tie to their motivation"],
+        dont_list=["don't discount — signals padded price", "don't bury them in specs"],
+        red_lines=["Don't discount (admits the price was padded; haggling + trust collapse)",
+                   "Don't drown them in technical specs — that's not where they're stuck"],
+        advance_hook="Let me put the monthly savings on one page and send it over — shall we walk through it together?",
+        why_line="Read as a price objection — 'too expensive' usually isn't about price, it's "
+                 "unseen value. So re-frame the total as monthly savings, not a discount "
+                 "(discounting makes them think you padded the price).",
         exact_lines=[
             "I understand — most people find it easier as about €{saving} a month, less than the bill it replaces.",
             "The price reflects the equipment and warranty; the payback is around {payback} years, then it's saving you money.",
         ],
         applies_to=["family", "skeptic", "investor"],
+        demo_core=True,
     ),
-    dict(
-        key="winter_yield",
-        customer_phrasings=["does it work in winter", "what about cloudy days", "im winter"],
-        read="performance doubt, easily addressed with data",
-        reframe_strategy="explain annual yield + grid offset, not daily winter output",
-        do_list=["talk annual production", "mention the grid covers gaps"],
-        dont_list=["don't overpromise winter output"],
-        exact_lines=[
-            "Great question — panels do produce less in winter, but the system is sized for the whole year, and the grid covers any gap automatically.",
-        ],
-        applies_to=["skeptic", "family", "environmentalist"],
-    ),
-    dict(
+    dict(  # B · demo-core
         key="need_other_quotes",
-        customer_phrasings=["we want to check other companies", "comparing options", "andere angebote"],
+        category="Shopping around / comparing quotes",
+        customer_phrasings=["we want to check other companies", "comparing options", "andere angebote",
+                            "talking to a few others", "want to compare", "other quotes"],
         read="multi-quote risk — protect the deal, don't pressure",
+        root_read="Normal behaviour, not a rejection — but it's a timer. Once a competing "
+                  "quote lands you lose the initiative; the real risk is losing on lowest "
+                  "price and the deal going cold.",
         reframe_strategy="arm them to compare on equipment + warranty, not headline price",
-        do_list=["name the multi-quote risk honestly", "tell them what to compare"],
-        dont_list=["don't badmouth competitors", "don't discount to win the race"],
+        do_list=["name the multi-quote risk honestly", "move comparison to warranty/service/value",
+                 "give a gentle real next step"],
+        dont_list=["don't badmouth competitors", "don't discount to win the race", "don't show anxiety"],
+        red_lines=["Don't trash competitors (reads as desperate, lifts them up)",
+                   "Don't slash price to win", "Don't show anxiety — rushing drops your position"],
+        advance_hook="Let me lay out the warranty and service comparison so you've got a clear basis — okay if I follow up Thursday?",
+        why_line="Read as comparison shopping — normal, not a rejection, but time-pressured. "
+                 "So move the comparison from price to warranty and long-term value, not a "
+                 "discount or knocking the competition.",
         exact_lines=[
             "Comparing is smart. The things to check across quotes are the panel/inverter brand and the warranty length — not just the headline price.",
         ],
         applies_to=["skeptic", "family", "investor"],
+        demo_core=True,
     ),
-    dict(
+    dict(  # C · demo-core
         key="spouse",
-        customer_phrasings=["check with my wife", "talk to my husband", "mit meiner frau"],
-        read="second decision-maker not yet aligned",
-        reframe_strategy="bring the absent partner into the conversation, reduce friction",
-        do_list=["offer a joint call/visit", "send a one-pager they can share"],
-        dont_list=["don't push for a decision now"],
+        category="Decision authority / let me think",
+        customer_phrasings=["check with my wife", "talk to my husband", "mit meiner frau",
+                            "let me think about it", "need to check with my family", "no rush to decide"],
+        read="second decision-maker not yet aligned, or an unspoken hesitation",
+        root_read="'Let me think' is rarely literal — usually an unspoken hesitation or the "
+                  "real decision-maker isn't in the room. (For Müller: the wife is part of "
+                  "the decision.)",
+        reframe_strategy="surface the real blocker; arm them to convince the absent partner",
+        do_list=["gently surface what's not settled", "offer a joint call/visit",
+                 "send a one-pager they can share"],
+        dont_list=["don't push for a decision now", "don't treat 'let me think' as the end"],
+        red_lines=["Don't use fake urgency to force it (families hate it most)",
+                   "Don't let go after 'let me think'", "Don't just throw an ROI sheet — the blocker is a person, not a number"],
+        advance_hook="I'll put together something simple your wife can glance through — shall we find a time you're both around for a quick 15-minute visit?",
+        why_line="Read as decision / stalling — behind 'let me think' there's usually an "
+                 "unspoken concern or an absent decision-maker. So surface the real blocker "
+                 "and help them convince the spouse, not pressure or chase.",
         exact_lines=[
             "Of course — it's a joint decision. Would it help if I sent a short summary you could go through together, or joined a quick call with you both?",
         ],
         applies_to=["family"],
+        demo_core=True,
     ),
-    dict(
-        key="install_disruption",
-        customer_phrasings=["how much mess", "how long does it take", "wie lange dauert"],
-        read="fear of disruption, not of the product",
-        reframe_strategy="set clear expectations on timeline and cleanup",
-        do_list=["give a concrete install duration", "explain the process"],
-        dont_list=["don't be vague about timing"],
+    dict(  # D · demo-core
+        key="winter_yield",
+        category="Technical doubt: output",
+        customer_phrasings=["does it work in winter", "what about cloudy days", "im winter",
+                            "enough sun here", "will it really save that much"],
+        read="performance doubt — seeking reassurance, not objecting",
+        root_read="They want confirmation the thing actually works, often with a bit of "
+                  "wariness about overblown claims. It's reassurance-seeking, not a real block.",
+        reframe_strategy="explain annual yield + grid offset, then route precise numbers to an estimate",
+        do_list=["talk annual production", "mention the grid covers gaps",
+                 "route exact numbers to a site estimate"],
+        dont_list=["don't overpromise winter output", "don't fob them off with 'it'll be fine'"],
+        red_lines=["Don't overclaim ('full output all year' — one puncture and trust is gone)",
+                   "Don't fob them off — empty reassurance reads as nervous"],
+        advance_hook="How about we set a time to look at your roof and give you an actual production-and-savings estimate for your sun exposure?",
+        why_line="Read as a technical doubt (output) — what they want is reassurance. So give "
+                 "an honest, brief plain-language explanation, then route the precise numbers "
+                 "to an estimate for their roof, not a vague promise or hype.",
         exact_lines=[
-            "Most installs are done in a day or two, and the team leaves the site clean — I can walk you through exactly what the days look like.",
+            "Great question — panels do produce less in winter, but the system is sized for the whole year, and the grid covers any gap automatically.",
+        ],
+        applies_to=["skeptic", "family", "environmentalist"],
+        demo_core=True,
+    ),
+    dict(  # E · extended
+        key="install_disruption",
+        category="Roof / house & install concerns",
+        customer_phrasings=["how much mess", "how long does it take", "wie lange dauert",
+                            "will it leak", "will it damage the roof", "will it look bad"],
+        read="fear of harming their own home, not of the product",
+        root_read="A protective instinct about 'my house' — emotion outweighs logic. The fear "
+                  "is that installing this will damage or disrupt their home.",
+        reframe_strategy="acknowledge first, then give certainty with install craft + warranty",
+        do_list=["acknowledge the concern is fair", "give a concrete install duration",
+                 "explain waterproofing/mounting standards", "offer a reference case"],
+        dont_list=["don't be vague about timing", "don't brush it off", "don't drown emotion in tech detail"],
+        red_lines=["Don't brush it off ('it'll be fine' — they'll feel unheard)",
+                   "Don't drown an emotional concern in technical detail"],
+        advance_hook="Good moment for a site visit — the install lead can show you exactly how the waterproofing and mounting are done. What day this week works?",
+        why_line="Read as a house concern — at root it's fear of harming their own home, "
+                 "emotion over logic. So acknowledge first, then give certainty with install "
+                 "craft and warranty, not a quick 'it'll be fine.'",
+        exact_lines=[
+            "That's a fair thing to care about — it's your home. Most installs are done in a day or two, the team waterproofs every mount and leaves the site clean. I can walk you through exactly what the days look like.",
         ],
         applies_to=["family", "skeptic"],
+        demo_core=False,
     ),
-    dict(
+    dict(  # F · extended
         key="trust_new_company",
-        customer_phrasings=["never heard of you", "are you reputable", "kenne ich nicht"],
-        read="trust gap with an unknown vendor",
-        reframe_strategy="lead with references, warranty, and local install track record",
-        do_list=["offer references", "highlight warranty and local installs"],
-        dont_list=["don't get defensive"],
+        category="Long-term trust / after-sales",
+        customer_phrasings=["never heard of you", "are you reputable", "kenne ich nicht",
+                            "will the company go under", "who fixes it if it breaks",
+                            "will you still be around"],
+        read="assessing whether the company is reliable and won't disappear",
+        root_read="A long-term commitment — they're judging whether you'll still be here in "
+                  "20 years. At root it's trust in the company, not the product.",
+        reframe_strategy="turn abstract trust into concrete warranty + after-sales + track record",
+        do_list=["offer references", "highlight warranty and local installs",
+                 "make 'who fixes it, how fast' concrete"],
+        dont_list=["don't get defensive", "don't make empty guarantees", "don't dodge warranty details"],
+        red_lines=["Don't make empty guarantees ('we'll never go under' — weaker the more you say it)",
+                   "Don't dodge warranty details — dodging looks like hiding"],
+        advance_hook="Let me send over the warranty and after-sales process — want me to add two customers near you we've installed for, as a reference?",
+        why_line="Read as long-term trust — they're assessing the company's reliability; at "
+                 "root it's trust, not the product. So give concrete evidence with warranty "
+                 "and after-sales, not empty promises.",
         exact_lines=[
-            "Totally fair. We're happy to share local references and the full warranty terms up front — I'd rather you feel sure than rushed.",
+            "Totally fair. We're happy to share local references and the full warranty and after-sales terms up front — I'd rather you feel sure than rushed.",
         ],
         applies_to=["skeptic"],
+        demo_core=False,
+    ),
+    dict(  # G · extended
+        key="policy_subsidy",
+        category="Policy / subsidy / process confusion",
+        customer_phrasings=["how do i apply for the subsidy", "is the paperwork a hassle",
+                            "grid connection complicated", "i don't get the policy", "förderung"],
+        read="friction, not an objection — they feel it's a hassle",
+        root_read="Not unwilling — put off by the complexity. The blocker is perceived hassle "
+                  "around paperwork, subsidy applications and grid connection.",
+        reframe_strategy="take the complexity off their shoulders — 'we handle all of this'",
+        do_list=["stress 'we handle the paperwork for you'", "simplify to a one-pager",
+                 "give certainty and peace of mind"],
+        dont_list=["don't dump policy detail on them", "don't bluff if unsure — defer to the specialist"],
+        red_lines=["Don't hand the friction back as a pile of policy detail",
+                   "Don't bluff on policy — getting it wrong is costly; defer if unsure"],
+        advance_hook="We take care of all the paperwork — let me send a simple one-pager, and what day works for me to get the first step done for you?",
+        why_line="Read as process / policy confusion — not an objection, a hassle. So stress "
+                 "'we handle this for you' and a sense of ease, not a pile of policy detail.",
+        exact_lines=[
+            "Good news — the subsidy and grid paperwork is the part we handle entirely for you. I'll send a simple one-pager so you can see exactly what's involved on your side (almost nothing).",
+        ],
+        applies_to=["family", "skeptic", "investor"],
+        demo_core=False,
+    ),
+    dict(  # H · extended
+        key="timing_no_rush",
+        category="Timing / no rush",
+        customer_phrasings=["no rush right now", "maybe next year", "wait for the tech to mature",
+                            "leave it for now", "kein eile"],
+        read="solar isn't a 'do it now' priority yet",
+        root_read="Either no urgent pain, or waiting for a 'better moment' (often a "
+                  "procrastination excuse). Not a no — just not yet on their radar.",
+        reframe_strategy="give a real reason to act now with facts, not fake urgency",
+        do_list=["cite electricity-price trend / subsidy window", "note earlier savings compound",
+                 "tie back to their motivation", "leave a specific light next step"],
+        dont_list=["don't invent fake deadlines", "don't accept 'next year' and hang up"],
+        red_lines=["Don't invent fake deadlines/offers (caught = trust gone)",
+                   "Don't accept 'next year' and drop it — leave a specific light next step"],
+        advance_hook="No rush is fine — how about I work up the estimate and subsidy picture first so you've got the numbers, and you reach out whenever you want to move?",
+        why_line="Read as timing / stalling — solar isn't their priority yet. So give a real "
+                 "reason to act now (prices, subsidy window, earlier-is-cheaper), not fake urgency.",
+        exact_lines=[
+            "No pressure at all. Worth knowing electricity prices keep climbing and the current subsidy window won't stay open forever — every month earlier is money saved. I can put the numbers together so it's ready whenever you are.",
+        ],
+        applies_to=["family", "investor", "skeptic"],
+        demo_core=False,
     ),
 ]
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import logging
 import uuid
 
 from sqlalchemy import select, update
@@ -18,6 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models, schemas
 from app.services import loaders, prompts
 from app.services.llm import DEMO_MODE, structured
+
+logger = logging.getLogger("closeloop.analyze")
 
 
 def _utcnow() -> dt.datetime:
@@ -49,11 +52,15 @@ async def run_analyze(
             "interactions": loaders.interaction_dicts(interactions),
             "knowledge_base": kb,
         }
-        out = await structured(
-            system=prompts.ANALYZE_SYSTEM,
-            user=json.dumps(payload, ensure_ascii=False, default=str),
-            schema=schemas.AnalyzeOutput,
-        )
+        try:
+            out = await structured(
+                system=prompts.ANALYZE_SYSTEM,
+                user=json.dumps(payload, ensure_ascii=False, default=str),
+                schema=schemas.AnalyzeOutput,
+            )
+        except Exception as err:  # noqa: BLE001 — never let a flaky call break the path
+            logger.warning("ANALYZE LLM failed (%s); using DEMO fallback", err)
+            out = _demo_analyze(customer, quote, interactions, kb)
 
     return await _persist(db, customer, out, interactions)
 
