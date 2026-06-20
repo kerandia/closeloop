@@ -11,10 +11,14 @@
 .dash-ctrl__radar {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--band-cold);
+  letter-spacing: 0.05em;
+  color: var(--risk-high);
+  background: rgba(228, 106, 106, 0.12);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(228, 106, 106, 0.2);
   text-transform: uppercase;
-  margin-right: 4px;
+  margin-right: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -25,23 +29,29 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--risk-high);
   flex-shrink: 0;
+  animation: radar-pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes radar-pulse-red {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(228, 106, 106, 0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(228, 106, 106, 0); }
 }
 
 .dash-ctrl__search {
   flex: 1;
   min-width: 180px;
   max-width: 280px;
-  background: var(--ink-800);
+  background: var(--white);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 14px;
-  padding: 7px 12px;
+  padding: 8px 16px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .dash-ctrl__search::placeholder {
@@ -49,26 +59,30 @@
 }
 
 .dash-ctrl__search:focus {
-  border-color: var(--flux);
+  border-color: var(--bg-sage-dark);
+  box-shadow: 0 0 0 3px rgba(99, 107, 94, 0.15);
 }
 
 .dash-ctrl__label {
-  color: var(--paper-40);
+  color: var(--paper-60);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .dash-ctrl__select {
-  background: var(--ink-800);
+  background: var(--white);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 13px;
-  padding: 7px 10px;
+  padding: 8px 16px;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .dash-ctrl__select:focus {
-  border-color: var(--flux);
+  border-color: var(--bg-sage-dark);
+  box-shadow: 0 0 0 3px rgba(99, 107, 94, 0.15);
 }

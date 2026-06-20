@@ -5,9 +5,11 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid var(--paper-25);
+  background: var(--white);
+  border: 1px solid var(--ink-700);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
 }
 
 .copilot-panel__heading {
@@ -28,24 +30,24 @@
 
 .copilot-respond__input {
   flex: 1;
-  background: var(--ink-700);
-  border: 1px solid var(--paper-25);
-  border-radius: var(--radius-sm);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: 9999px;
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 14px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 .copilot-respond__input::placeholder { color: var(--paper-40); }
-.copilot-respond__input:focus        { border-color: var(--flux); }
+.copilot-respond__input:focus        { border-color: var(--flux); background: var(--white); }
 .copilot-respond__input:disabled     { opacity: 0.5; cursor: not-allowed; }
 
 .copilot-respond__submit {
-  padding: 8px 16px;
+  padding: 8px 20px;
   border: 1px solid var(--flux);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   background: transparent;
   color: var(--flux);
   font-family: var(--font-mono);
@@ -57,11 +59,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 600;
   transition: background 0.15s, color 0.15s;
 }
 .copilot-respond__submit:hover:not(:disabled) {
   background: var(--flux);
-  color: var(--ink);
+  color: var(--white);
 }
 .copilot-respond__submit:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -187,32 +190,33 @@
   line-height: 1.55;
 }
 
-/* ── Collect sub-panel ────────────────────────────────────────────────────── */
 .copilot-collect {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 4px;
-  border-top: 1px solid var(--paper-25);
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-700);
 }
 
 .copilot-collect__btn {
   align-self: flex-start;
-  padding: 6px 14px;
-  border: 1px solid var(--paper-25);
-  border-radius: var(--radius-sm);
-  background: transparent;
+  padding: 6px 16px;
+  border: 1px solid var(--ink-700);
+  border-radius: 9999px;
+  background: var(--white);
   color: var(--paper-60);
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  font-weight: 600;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
 }
 .copilot-collect__btn:hover:not(:disabled) {
   border-color: var(--flux);
   color: var(--flux);
+  background: rgba(78, 161, 109, 0.05);
 }
 .copilot-collect__btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
