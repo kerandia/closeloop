@@ -16,6 +16,12 @@ vi.mock('../api/client', () => ({
   dismissRecommendation: vi.fn(),
   patchMessage: vi.fn(),
   sendMessage: vi.fn(),
+  // live co-pilot (CopilotPanel mounts inside the detail shell)
+  copilotRespond: vi.fn(),
+  copilotCollect: vi.fn(),
+  listCopilotSuggestions: vi.fn().mockResolvedValue([]),
+  subscribeCopilot: vi.fn().mockReturnValue(() => {}),
+  whatsappSend: vi.fn().mockResolvedValue({ ok: true, within_window: true, provider: {} }),
 }))
 
 import * as api from '../api/client'

@@ -16,6 +16,7 @@ from app.routers import (
     messages,
     recommendations,
     webhooks,
+    whatsapp,
 )
 from app.services.llm import DEMO_MODE
 
@@ -49,6 +50,7 @@ app.include_router(recommendations.router)
 app.include_router(messages.router)
 app.include_router(copilot.router)
 app.include_router(webhooks.router)
+app.include_router(whatsapp.router)
 
 
 @app.get("/health", tags=["meta"])

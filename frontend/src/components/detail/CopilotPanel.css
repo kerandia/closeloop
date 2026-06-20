@@ -244,3 +244,42 @@
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+/* ── Live WhatsApp suggestion ─────────────────────────────────────────────── */
+.copilot-live {
+  border: 1px solid var(--flux);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 14px;
+  background: rgba(20, 181, 166, 0.06);
+}
+.copilot-live--new {
+  animation: copilot-live-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes copilot-live-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.copilot-live__bar { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.copilot-live__dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--flux);
+  box-shadow: 0 0 0 0 rgba(20, 181, 166, 0.6);
+  animation: copilot-live-pulse 1.6s infinite;
+}
+@keyframes copilot-live-pulse {
+  70% { box-shadow: 0 0 0 7px rgba(20, 181, 166, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(20, 181, 166, 0); }
+}
+.copilot-live__label { font-size: 11px; letter-spacing: 0.04em; color: var(--flux); }
+.copilot-live__msg {
+  font-style: italic; color: var(--paper-90); margin: 0 0 10px;
+  padding-left: 10px; border-left: 2px solid var(--paper-25);
+}
+.copilot-line__send {
+  background: var(--flux); color: var(--ink-900); border: none;
+  border-radius: var(--radius-sm); padding: 4px 12px; font-size: 12px;
+  font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.copilot-line__send:disabled { opacity: 0.5; cursor: default; }
+.copilot-live__hook { font-size: 13px; color: var(--paper-60); margin: 8px 0 0; }
+.copilot-live__sent { font-size: 12px; color: var(--flux); margin: 8px 0 0; font-weight: 600; }

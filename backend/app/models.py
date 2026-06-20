@@ -347,3 +347,31 @@ class KBCadenceTemplate(Base):
     buyer_type: Mapped[str | None] = mapped_column(Text)
     name: Mapped[str | None] = mapped_column(Text)
     steps: Mapped[list | None] = mapped_column(JSONB)
+
+
+# --------------------------------------------------------------------------- #
+# C. REAL-TIME CO-PILOT (WhatsApp) — a persisted RESPOND suggestion for an
+#    inbound customer message, so the rep UI can show + replay it.
+# --------------------------------------------------------------------------- #
+
+
+class CopilotSuggestion(Base):
+    __tablename__ = "copilot_suggestions"
+
+    id: Mapped[uuid.UUID] = PK()
+    customer_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False
+    )
+    interaction_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("interactions.id")
+    )
+    utterance: Mapped[str | None] = mapped_column(Text)
+    read: Mapped[str | None] = mapped_column(Text)
+    category: Mapped[str | None] = mapped_column(Text)
+    exact_lines: Mapped[list | None] = mapped_column(JSONB)
+    why: Mapped[str | None] = mapped_column(Text)
+    advance_hook: Mapped[str | None] = mapped_column(Text)
+    todo: Mapped[dict | None] = mapped_column(JSONB)
+    channel: Mapped[str] = mapped_column(Text, server_default="whatsapp")
+    status: Mapped[str] = mapped_column(Text, server_default="new")  # new|sent|dismissed
+    created_at: Mapped[dt.datetime] = _now()

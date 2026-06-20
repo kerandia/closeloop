@@ -18,9 +18,15 @@
  * Collect sub-panel
  *   "Suggest next question" → copilotCollect(customerId) → shows question.
  */
-import { useState, useRef, useEffect } from 'react'
-import { copilotRespond, copilotCollect } from '../../api/client'
-import type { RespondOutput } from '../../api/types'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import {
+  copilotRespond,
+  copilotCollect,
+  listCopilotSuggestions,
+  subscribeCopilot,
+  whatsappSend,
+} from '../../api/client'
+import type { RespondOutput, CopilotSuggestion } from '../../api/types'
 import './CopilotPanel.css'
 
 export interface CopilotPanelProps {
@@ -40,6 +46,53 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
   const [collectQuestion, setCollectQuestion] = useState<string | null>(null)
   const [collectLoading, setCollectLoading] = useState(false)
   const [collectError, setCollectError] = useState<string | null>(null)
+
+  // ── Live WhatsApp co-pilot ────────────────────────────────────────────────
+  const [live, setLive] = useState<CopilotSuggestion | null>(null)
+  const [liveIsNew, setLiveIsNew] = useState(false)
+  const [sendingLine, setSendingLine] = useState<string | null>(null)
+  const [sentNote, setSentNote] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    listCopilotSuggestions(customerId)
+      .then((rows) => {
+        if (active && rows.length) setLive(rows[0])
+      })
+      .catch(() => {})
+    const unsub = subscribeCopilot(customerId, (e) => {
+      if (e.type === 'suggestion' && e.suggestion) {
+        setLive(e.suggestion)
+        setLiveIsNew(true)
+        setSentNote(null)
+      }
+    })
+    return () => {
+      active = false
+      unsub()
+    }
+  }, [customerId])
+
+  const handleSendWhatsApp = useCallback(
+    async (line: string) => {
+      if (!live || sendingLine) return
+      setSendingLine(line)
+      try {
+        const res = await whatsappSend({
+          customer_id: customerId,
+          body: line,
+          suggestion_id: live.id,
+        })
+        setLive({ ...live, status: 'sent' })
+        setSentNote(res.within_window ? 'Sent on WhatsApp ✓' : 'Sent (template) ✓')
+      } catch (err) {
+        setSentNote(err instanceof Error ? err.message : 'Send failed')
+      } finally {
+        setSendingLine(null)
+      }
+    },
+    [live, sendingLine, customerId],
+  )
 
   // Track pending reveal timers so we can cancel them on re-submit or unmount.
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -127,6 +180,46 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
   return (
     <section className="copilot-panel" data-slot="copilot-panel">
       <h2 className="copilot-panel__heading">Co-pilot</h2>
+
+      {/* ── Live WhatsApp suggestion (pushed in real time) ─────────────────── */}
+      {live && (
+        <div
+          className={`copilot-live${liveIsNew ? ' copilot-live--new' : ''}`}
+          data-testid="copilot-live"
+        >
+          <div className="copilot-live__bar">
+            <span className="copilot-live__dot" aria-hidden="true" />
+            <span className="copilot-live__label mono">Live · WhatsApp</span>
+          </div>
+          {live.utterance && (
+            <p className="copilot-live__msg">“{live.utterance}”</p>
+          )}
+          <div className="copilot-read">
+            <span className="copilot-read__label mono">Read</span>
+            <p className="copilot-read__text">{live.read}</p>
+          </div>
+          <div className="copilot-lines">
+            <span className="copilot-lines__label mono">Reply on WhatsApp</span>
+            {live.exact_lines.map((line, i) => (
+              <div key={i} className="copilot-line">
+                <span className="copilot-line__text">{line}</span>
+                <button
+                  type="button"
+                  className="copilot-line__send"
+                  disabled={live.status === 'sent' || sendingLine !== null}
+                  onClick={() => handleSendWhatsApp(line)}
+                >
+                  {sendingLine === line ? 'Sending…' : 'Send'}
+                </button>
+              </div>
+            ))}
+          </div>
+          {live.advance_hook && (
+            <p className="copilot-live__hook">↪ {live.advance_hook}</p>
+          )}
+          {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
+        </div>
+      )}
 
       {/* ── Respond input ──────────────────────────────────────────────────── */}
       <form className="copilot-respond" onSubmit={handleSubmit}>

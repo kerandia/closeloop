@@ -373,6 +373,12 @@ class CollectResponse(BaseModel):
     question: str
 
 
+class WhatsAppSendRequest(BaseModel):
+    customer_id: uuid.UUID
+    body: str
+    suggestion_id: uuid.UUID | None = None  # mark this suggestion as sent
+
+
 class OutcomeCreate(BaseModel):
     recommendation_id: uuid.UUID | None = None
     result: str  # replied_positive|replied_negative|no_response|meeting_booked|won|lost

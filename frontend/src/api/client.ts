@@ -1,11 +1,14 @@
 import type {
   CustomerListItem,
   CustomerDetail,
+  CopilotSuggestion,
+  CopilotStreamEvent,
   InteractionCreate,
   InteractionLogResponse,
   Message,
   RespondOutput,
   SendResponse,
+  WhatsAppSendResponse,
 } from './types'
 import {
   mockListCustomers,
@@ -94,4 +97,38 @@ export function copilotRespond(payload: {
 export function copilotCollect(customerId: string): Promise<{ question: string }> {
   if (isMockMode()) return Promise.resolve(mockCollect())
   return req(`/api/copilot/collect/${customerId}`, 'GET')
+}
+
+// ── Live WhatsApp co-pilot ──────────────────────────────────────────────────
+
+export function listCopilotSuggestions(customerId: string): Promise<CopilotSuggestion[]> {
+  if (isMockMode()) return Promise.resolve([])
+  return req(`/api/copilot/suggestions/${customerId}`, 'GET')
+}
+
+export function whatsappSend(payload: {
+  customer_id: string
+  body: string
+  suggestion_id?: string
+}): Promise<WhatsAppSendResponse> {
+  if (isMockMode())
+    return Promise.resolve({ ok: true, within_window: true, provider: { provider_id: 'mock' } })
+  return req('/api/whatsapp/send', 'POST', payload)
+}
+
+/** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */
+export function subscribeCopilot(
+  customerId: string,
+  onEvent: (e: CopilotStreamEvent) => void,
+): () => void {
+  if (isMockMode() || typeof EventSource === 'undefined') return () => {}
+  const es = new EventSource(`/api/copilot/stream/${customerId}`)
+  es.onmessage = (m) => {
+    try {
+      onEvent(JSON.parse(m.data) as CopilotStreamEvent)
+    } catch {
+      /* ignore malformed frame */
+    }
+  }
+  return () => es.close()
 }

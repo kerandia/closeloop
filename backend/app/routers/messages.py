@@ -46,7 +46,7 @@ async def send_message(message_id: uuid.UUID, db: AsyncSession = Depends(get_db)
         raise HTTPException(status_code=404, detail="message not found")
     customer = await db.get(models.Customer, msg.customer_id)
 
-    adapter = get_adapter()
+    adapter = get_adapter(msg.channel)
     to = None
     if customer:
         to = customer.email if msg.channel == "email" else customer.phone

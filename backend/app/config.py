@@ -16,10 +16,24 @@ class Settings(BaseSettings):
     # ElevenLabs
     elevenlabs_api_key: str = ""
 
+    # Twilio WhatsApp (real-time co-pilot channel)
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_whatsapp_from: str = ""  # e.g. "whatsapp:+14155238886" (sandbox number)
+    twilio_template_sid: str = ""  # optional Content template SID for outside-24h sends
+
     # Feature flags
     live_voice: bool = False
     real_send: bool = False
     ghost_radar: bool = False
+
+    @property
+    def whatsapp_configured(self) -> bool:
+        return bool(
+            self.twilio_account_sid
+            and self.twilio_auth_token
+            and self.twilio_whatsapp_from
+        )
 
     # App
     cors_origins: str = "http://localhost:5173,http://localhost:3000"

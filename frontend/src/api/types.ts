@@ -200,3 +200,30 @@ export interface SendResponse {
   provider: Record<string, unknown>
   interaction: Interaction
 }
+
+// Live co-pilot suggestion for an inbound WhatsApp message (real-time)
+export interface CopilotSuggestion {
+  id: string
+  customer_id: string
+  utterance: string | null
+  read: string | null
+  category: string | null
+  exact_lines: string[]
+  why: string | null
+  advance_hook: string | null
+  todo: Record<string, unknown> | null
+  channel: string
+  status: 'new' | 'sent' | 'dismissed'
+  created_at: string | null
+}
+
+export interface CopilotStreamEvent {
+  type: string // 'suggestion'
+  suggestion?: CopilotSuggestion
+}
+
+export interface WhatsAppSendResponse {
+  ok: boolean
+  within_window: boolean
+  provider: Record<string, unknown>
+}
