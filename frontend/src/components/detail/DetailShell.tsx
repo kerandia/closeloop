@@ -144,7 +144,7 @@ export function DetailShell({ data, customerId }: Props) {
           ← Pipeline
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>
-        <BuyerTypeChip type={customer.ghost_risk != null ? data.profile?.buyer_type : null} />
+        <BuyerTypeChip type={data.profile?.buyer_type ?? null} />
         <ScoreBar value={effectiveScore} compact />
         <StageBadge stage={customer.stage} />
         <GhostRiskPill risk={effectiveRisk} />
