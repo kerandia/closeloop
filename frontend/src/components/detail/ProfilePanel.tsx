@@ -46,7 +46,9 @@ function groupByLayer(signals: Signal[]): Record<SignalLayer, Signal[]> {
     buying_signal: [],
   }
   for (const s of signals) {
-    grouped[s.layer].push(s)
+    // Be defensive: the LLM can emit a layer outside the known set — bucket any
+    // unrecognised layer into 'negotiation' rather than crashing the page.
+    ;(grouped[s.layer] ?? grouped.negotiation).push(s)
   }
   return grouped
 }
