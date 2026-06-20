@@ -1,0 +1,18 @@
+.risk-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 9px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  border: 1px solid transparent;
+}
+.risk-pill[data-risk='low'] { color: var(--risk-low); border-color: rgba(20, 181, 166, 0.4); }
+.risk-pill[data-risk='medium'] { color: var(--risk-medium); border-color: rgba(245, 166, 35, 0.4); }
+.risk-pill[data-risk='high'] {
+  color: var(--risk-high);
+  border-color: rgba(232, 117, 106, 0.5);
+  background: rgba(232, 117, 106, 0.12);
+}

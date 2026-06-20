@@ -1,0 +1,33 @@
+.scorebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  --fill: var(--band-unknown);
+}
+.scorebar[data-band='low'] { --fill: var(--band-low); }
+.scorebar[data-band='mid'] { --fill: var(--band-mid); }
+.scorebar[data-band='high'] { --fill: var(--band-high); }
+
+.scorebar__track {
+  flex: 1;
+  min-width: 90px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ink-700);
+  overflow: hidden;
+}
+.scorebar__fill {
+  height: 100%;
+  background: var(--fill);
+  border-radius: 3px;
+  transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1), background-color 400ms ease;
+}
+.scorebar__num {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 15px;
+  min-width: 2ch;
+  text-align: right;
+  color: var(--paper-90);
+}
+.scorebar--compact .scorebar__track { min-width: 60px; }

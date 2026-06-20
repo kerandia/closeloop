@@ -1,0 +1,17 @@
+.buyer-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-900);
+  --c: var(--paper-40);
+}
+.buyer-chip[data-type='family'] { background: var(--bt-family); }
+.buyer-chip[data-type='investor'] { background: var(--bt-investor); }
+.buyer-chip[data-type='environmentalist'] { background: var(--bt-environmentalist); }
+.buyer-chip[data-type='skeptic'] { background: var(--bt-skeptic); }

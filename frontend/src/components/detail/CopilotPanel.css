@@ -1,0 +1,246 @@
+/* CopilotPanel — ink stage, flux = AI voice, solar = script to speak. */
+
+/* ── Section shell ────────────────────────────────────────────────────────── */
+.copilot-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.copilot-panel__heading {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--flux);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ── Input row ─────────────────────────────────────────────────────────────── */
+.copilot-respond__row {
+  display: flex;
+  gap: 8px;
+}
+
+.copilot-respond__input {
+  flex: 1;
+  background: var(--ink-700);
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.copilot-respond__input::placeholder { color: var(--paper-40); }
+.copilot-respond__input:focus        { border-color: var(--flux); }
+.copilot-respond__input:disabled     { opacity: 0.5; cursor: not-allowed; }
+
+.copilot-respond__submit {
+  padding: 8px 16px;
+  border: 1px solid var(--flux);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--flux);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-width: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.copilot-respond__submit:hover:not(:disabled) {
+  background: var(--flux);
+  color: var(--ink);
+}
+.copilot-respond__submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Flux loading dot inside the submit button */
+.copilot-flux-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--flux);
+  animation: flux-pulse 0.9s ease-in-out infinite;
+}
+@keyframes flux-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+/* ── Idle hint ────────────────────────────────────────────────────────────── */
+.copilot-idle-hint {
+  font-size: 13px;
+  color: var(--paper-40);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Inline error ─────────────────────────────────────────────────────────── */
+.copilot-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--band-low);
+}
+
+/* ── Result block ─────────────────────────────────────────────────────────── */
+.copilot-result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Phase 1: READ */
+.copilot-read {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: copilot-fade-in 0.5s ease both;
+}
+
+.copilot-read__label {
+  color: var(--flux);
+}
+
+.copilot-read__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--paper-90);
+  line-height: 1.55;
+}
+
+/* Phase 2: EXACT LINES — solar left-border "script to speak" */
+.copilot-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 10px;
+  border-left: 2px solid var(--solar);
+}
+
+.copilot-lines__label {
+  color: var(--solar);
+  margin-bottom: 2px;
+}
+
+.copilot-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  animation: copilot-slide-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.copilot-line__text {
+  flex: 1;
+  font-size: 14px;
+  color: var(--paper-90);
+  line-height: 1.5;
+}
+
+.copilot-line__copy {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--paper-40);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.copilot-line__copy:hover {
+  border-color: var(--solar);
+  color: var(--solar);
+}
+
+/* Phase 3: WHY */
+.copilot-why {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: copilot-fade-in 0.4s ease 0.05s both;
+}
+
+.copilot-why__label {
+  color: var(--paper-40);
+}
+
+.copilot-why__text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--paper-60);
+  line-height: 1.55;
+}
+
+/* ── Collect sub-panel ────────────────────────────────────────────────────── */
+.copilot-collect {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--paper-25);
+}
+
+.copilot-collect__btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--paper-60);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.copilot-collect__btn:hover:not(:disabled) {
+  border-color: var(--flux);
+  color: var(--flux);
+}
+.copilot-collect__btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.copilot-collect__result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: copilot-fade-in 0.35s ease both;
+}
+
+.copilot-collect__label {
+  color: var(--paper-40);
+}
+
+.copilot-collect__question {
+  margin: 0;
+  font-size: 14px;
+  color: var(--paper-90);
+  line-height: 1.5;
+}
+
+/* ── Shared keyframes ─────────────────────────────────────────────────────── */
+@keyframes copilot-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes copilot-slide-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

@@ -1,0 +1,56 @@
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.shell__bar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  background: var(--ink-900);
+  border-bottom: 1px solid var(--ink-700);
+}
+.shell__brand {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--paper);
+}
+.shell__brand span { color: var(--solar); }
+
+.shell__radar {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--solar);
+}
+.shell__radar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--solar);
+  animation: radar-pulse 2s ease-in-out infinite;
+}
+@keyframes radar-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(245, 166, 35, 0); }
+}
+
+.shell__rep {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-90);
+  border: 1px solid var(--ink-700);
+}
+.shell__bar .shell__radar + .shell__rep { margin-left: 0; }
+.shell__bar > .shell__rep:nth-child(2) { margin-left: auto; }
+
+.shell__stage { flex: 1; }
