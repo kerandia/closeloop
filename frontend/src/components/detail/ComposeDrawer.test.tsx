@@ -127,6 +127,32 @@ describe('ComposeDrawer', () => {
     })
   })
 
+  test('Send waits for an in-flight blur PATCH before posting (no race)', async () => {
+    let resolvePatch!: () => void
+    vi.mocked(client.patchMessage).mockImplementation(
+      () => new Promise((res) => { resolvePatch = () => res(mockEmailMessage) }),
+    )
+    const onSent = vi.fn()
+    render(
+      <ComposeDrawer open={true} message={mockEmailMessage} onClose={vi.fn()} onSent={onSent} />,
+    )
+
+    const bodyField = screen.getByDisplayValue('Test body text')
+    fireEvent.change(bodyField, { target: { value: 'Edited body' } })
+    fireEvent.blur(bodyField) // PATCH starts but stays in-flight
+    fireEvent.click(screen.getByRole('button', { name: /^send$/i }))
+
+    // Let microtasks flush — Send must still be waiting on the PATCH
+    await new Promise((r) => setTimeout(r, 0))
+    expect(client.sendMessage).not.toHaveBeenCalled()
+
+    resolvePatch() // PATCH settles → queue drains → send proceeds
+    await waitFor(() => {
+      expect(client.sendMessage).toHaveBeenCalledWith('msg-1')
+      expect(onSent).toHaveBeenCalledWith(mockInteraction)
+    })
+  })
+
   test('send failure shows inline error and keeps draft visible', async () => {
     vi.mocked(client.sendMessage).mockRejectedValue(new Error('Network error'))
     render(
