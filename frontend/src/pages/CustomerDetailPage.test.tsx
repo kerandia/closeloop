@@ -98,6 +98,35 @@ describe('CustomerDetailPage', () => {
         expect(screen.getByRole('heading', { name: /familie müller/i })).toBeInTheDocument()
       })
     })
+
+    test('hides raw backend error detail behind generic message', async () => {
+      const secretBackendError = 'SECRET BACKEND DETAIL'
+      vi.mocked(api.getCustomer).mockRejectedValue(new Error(secretBackendError))
+      renderPage()
+
+      await waitFor(() => {
+        const errorMsg = screen.getByText(/could not load this customer/i)
+        expect(errorMsg).toBeInTheDocument()
+        expect(screen.queryByText(secretBackendError)).not.toBeInTheDocument()
+      })
+    })
+
+    test('retries after generic error shown', async () => {
+      vi.mocked(api.getCustomer)
+        .mockRejectedValueOnce(new Error('SECRET_ERR'))
+        .mockResolvedValueOnce(mockGetCustomer())
+
+      renderPage()
+
+      const retry = await screen.findByRole('button', { name: /retry/i })
+      expect(screen.queryByText(/SECRET_ERR/)).not.toBeInTheDocument()
+
+      fireEvent.click(retry)
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /familie müller/i })).toBeInTheDocument()
+      })
+    })
   })
 
   // ── Reveal scaffold: idle → analyzing → revealed ─────────────────────────

@@ -40,6 +40,23 @@ function EmptyState() {
   )
 }
 
+// ── No-results state ───────────────────────────────────────────────────────────
+
+interface NoResultsProps {
+  onClearFilters: () => void
+}
+
+function NoResultsState({ onClearFilters }: NoResultsProps) {
+  return (
+    <div className="dash-empty">
+      <p className="dash-empty__msg">No customers match your filters</p>
+      <button className="dash-empty__button" onClick={onClearFilters}>
+        Clear filters
+      </button>
+    </div>
+  )
+}
+
 // ── Dashboard page ────────────────────────────────────────────────────────────
 
 export function Dashboard() {
@@ -75,7 +92,12 @@ export function Dashboard() {
     .filter(c => !stage || c.stage === stage)
     .filter(c => !ghostRisk || c.ghost_risk === ghostRisk)
 
-  if (loading) return <SkeletonRows />
+  const handleClearFilters = () => {
+    setSearch('')
+    setStage('')
+    setGhostRisk('')
+  }
+
   if (error) return <ErrorState message={error} onRetry={fetchData} />
 
   return (
@@ -94,8 +116,12 @@ export function Dashboard() {
         onGhostRiskChange={setGhostRisk}
       />
 
-      {customers.length === 0 ? (
+      {loading ? (
+        <SkeletonRows />
+      ) : customers.length === 0 ? (
         <EmptyState />
+      ) : filtered.length === 0 ? (
+        <NoResultsState onClearFilters={handleClearFilters} />
       ) : (
         <CustomerTable customers={filtered} />
       )}

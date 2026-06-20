@@ -97,6 +97,14 @@
   40%           { opacity: 1;   transform: scale(1);   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .compose-composing__dot {
+    animation: none;
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
 .compose-composing__label {
   font-family: var(--font-mono);
   font-size: 11px;

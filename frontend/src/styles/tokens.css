@@ -17,7 +17,7 @@
   /* ink opacities on dark ground (text is paper-ish) */
   --paper-90: rgba(244, 246, 248, 0.9);
   --paper-60: rgba(244, 246, 248, 0.6);
-  --paper-40: rgba(244, 246, 248, 0.4);
+  --paper-40: rgba(244, 246, 248, 0.55); /* a11y: 0.4 was 3.57:1 on --ink (fails AA); 0.55 ~4.6:1 */
   --paper-25: rgba(244, 246, 248, 0.25);
 
   /* deal-score bands: cold 0–39 · cool 40–59 · warm 60–79 · hot 80–100 */

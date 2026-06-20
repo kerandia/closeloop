@@ -12,9 +12,21 @@
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: var(--band-low);
+  color: var(--band-cold);
   text-transform: uppercase;
   margin-right: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-ctrl__radar-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 .dash-ctrl__search {

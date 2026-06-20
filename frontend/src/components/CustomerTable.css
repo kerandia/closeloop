@@ -5,6 +5,9 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 700px;
+  overflow-x: auto;
+  display: block;
 }
 
 .ct__head-row {

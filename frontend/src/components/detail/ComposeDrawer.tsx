@@ -110,7 +110,8 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
       const response = await sendMessage(message.id)
       onSent(response.interaction)
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : 'Failed to send')
+      console.error('Failed to send message:', err)
+      setSendError("Couldn't send this message. Try again.")
       setSending(false)
     }
   }
