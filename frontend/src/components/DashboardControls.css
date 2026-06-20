@@ -1,0 +1,62 @@
+/* DashboardControls — filter bar above the pipeline table. */
+
+.dash-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 20px;
+  flex-wrap: wrap;
+}
+
+.dash-ctrl__radar {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--band-low);
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.dash-ctrl__search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 280px;
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 7px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dash-ctrl__search::placeholder {
+  color: var(--paper-40);
+}
+
+.dash-ctrl__search:focus {
+  border-color: var(--flux);
+}
+
+.dash-ctrl__label {
+  color: var(--paper-40);
+}
+
+.dash-ctrl__select {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 7px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.dash-ctrl__select:focus {
+  border-color: var(--flux);
+}

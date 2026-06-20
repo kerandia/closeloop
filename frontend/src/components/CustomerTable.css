@@ -1,0 +1,104 @@
+/* CustomerTable — Cinematic Demo direction.
+   Ink stage, no card wrap, 64px rows, solar left-border on hover. */
+
+.ct {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.ct__head-row {
+  border-bottom: 1px solid var(--ink-700);
+}
+
+.ct__th {
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--paper-40);
+  font-weight: 500;
+}
+
+.ct__row {
+  height: 64px;
+  border-bottom: 1px solid var(--ink-700);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  position: relative;
+}
+
+.ct__row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: transparent;
+  transition: background 0.12s ease;
+}
+
+.ct__row:hover {
+  background: var(--ink-800);
+}
+
+.ct__row:hover::before {
+  background: var(--solar);
+}
+
+.ct__row:focus-visible {
+  outline: 2px solid var(--flux);
+  outline-offset: -2px;
+}
+
+.ct__cell {
+  padding: 0 16px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ct__cell--name {
+  display: table-cell; /* override block for flex children */
+}
+
+/* Name cell uses flex inside a td — achieved via a wrapper trick */
+.ct__cell--name .ct__name {
+  display: inline;
+  font-weight: 500;
+  color: var(--paper-90);
+  margin-right: 8px;
+}
+
+.ct__cell--action .ct__action-label {
+  font-size: 13px;
+  color: var(--paper-60);
+}
+
+.ct__cell--action .ct__action-label--none {
+  color: var(--paper-40);
+}
+
+.ct__rep-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink-700);
+  color: var(--paper-60);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.ct__rep-avatar--none {
+  color: var(--paper-25);
+}
+
+.ct__cell--time {
+  color: var(--paper-40);
+  font-size: 12px;
+}

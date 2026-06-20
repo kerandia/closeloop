@@ -18,5 +18,14 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // honor the _-prefix "intentionally unused" convention
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      // fetch-on-mount with a loading reset is our intended pattern (no data lib) — perf hint, not correctness
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])
