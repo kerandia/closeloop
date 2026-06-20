@@ -75,6 +75,20 @@
   gap: 20px;
 }
 
+@media (max-width: 900px) {
+  .detail-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-right {
+    position: static;
+    height: auto;
+    overflow-y: visible;
+    border-left: none;
+    border-top: 1px solid var(--flux);
+  }
+}
+
 /* ── Analyzing overlay ────────────────────────────────────────────────────── */
 .detail-analyzing {
   display: flex;
@@ -102,15 +116,15 @@
   height: 6px;
   border-radius: 50%;
   background: var(--flux);
-  animation: analyzing-bounce 1.2s ease-in-out infinite;
+  animation: analyzing-dots 1.2s ease-in-out infinite;
 }
 
 .detail-analyzing__dot:nth-child(2) { animation-delay: 0.2s; }
 .detail-analyzing__dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes analyzing-bounce {
-  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
-  40%           { opacity: 1;    transform: scale(1.2); }
+@keyframes analyzing-dots {
+  0%, 80%, 100% { opacity: 0.25; }
+  40%           { opacity: 1;    }
 }
 
 @keyframes analyzing-pulse {
@@ -149,6 +163,27 @@
 @keyframes skeleton-shimmer {
   0%, 100% { opacity: 0.4; }
   50%      { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-analyzing {
+    animation: none;
+  }
+
+  .detail-analyzing__dot {
+    animation: none;
+    opacity: 0.25;
+  }
+
+  .detail-right[data-phase='revealed'] > * {
+    animation: none;
+    opacity: 1;
+  }
+
+  .detail-skeleton__bar {
+    animation: none;
+    opacity: 0.4;
+  }
 }
 
 /* ── Error state ──────────────────────────────────────────────────────────── */

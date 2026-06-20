@@ -39,6 +39,13 @@
   100% { background-position: -100% 0; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row {
+    animation: none;
+    background: var(--ink-700);
+  }
+}
+
 /* ── Error ─────────────────────────────────────────────────────────────────── */
 
 .dash-error {
@@ -78,4 +85,21 @@
 .dash-empty__msg {
   color: var(--paper-40);
   font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.dash-empty__button {
+  background: none;
+  border: 1px solid var(--paper-40);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.dash-empty__button:hover {
+  border-color: var(--solar);
+  color: var(--solar);
 }

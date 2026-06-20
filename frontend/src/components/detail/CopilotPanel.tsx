@@ -153,8 +153,9 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
       const data = await copilotRespond({ customer_id: customerId, utterance })
       scheduleReveal(data)
     } catch (err) {
+      console.error('Copilot respond failed:', err)
       setPhase('idle')
-      setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
+      setError('Could not generate a response. Try again.')
     }
   }
 
@@ -166,7 +167,8 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
       const { question } = await copilotCollect(customerId)
       setCollectQuestion(question)
     } catch (err) {
-      setCollectError(err instanceof Error ? err.message : 'Could not fetch next question.')
+      console.error('Copilot collect failed:', err)
+      setCollectError('Could not generate a question. Try again.')
     } finally {
       setCollectLoading(false)
     }

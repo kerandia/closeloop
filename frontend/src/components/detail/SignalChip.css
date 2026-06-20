@@ -51,12 +51,18 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .signal-chip__evidence {
+    animation: none;
+  }
+}
+
 .signal-chip__quote {
   margin: 0;
   padding: 6px 10px;
-  border-left: 3px solid var(--flux);
+  border: 1px solid var(--paper-25);
   background: rgba(20, 181, 166, 0.06);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: var(--radius-sm);
   font-family: var(--font-body);
   font-size: 12px;
   font-style: italic;

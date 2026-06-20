@@ -125,4 +125,28 @@ describe('Dashboard', () => {
     expect(await screen.findByText('Familie Müller')).toBeInTheDocument()
     expect(listCustomersMock).toHaveBeenCalledTimes(2)
   })
+
+  test('no-results state shows when filter eliminates all rows', async () => {
+    listCustomersMock.mockResolvedValue(mockCustomers)
+    renderDashboard()
+    await screen.findByText('Familie Müller')
+    // Search for a name that doesn't exist
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzzzzzz' } })
+    expect(await screen.findByText(/no customers match your filters/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument()
+  })
+
+  test('Clear filters button resets filters and restores rows', async () => {
+    listCustomersMock.mockResolvedValue(mockCustomers)
+    renderDashboard()
+    await screen.findByText('Familie Müller')
+    // Apply a search that zeros rows
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzzzzzz' } })
+    expect(await screen.findByText(/no customers match your filters/i)).toBeInTheDocument()
+    // Click Clear filters
+    fireEvent.click(screen.getByRole('button', { name: /clear filters/i }))
+    // Filters reset, rows restored
+    expect(await screen.findByText('Familie Müller')).toBeInTheDocument()
+    expect(screen.getByText('Sophie Wagner')).toBeInTheDocument()
+  })
 })

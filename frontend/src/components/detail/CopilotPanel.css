@@ -270,6 +270,46 @@
   70% { box-shadow: 0 0 0 7px rgba(20, 181, 166, 0); }
   100% { box-shadow: 0 0 0 0 rgba(20, 181, 166, 0); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .copilot-flux-dot {
+    animation: none;
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  .copilot-read {
+    animation: none;
+    opacity: 1;
+  }
+
+  .copilot-line {
+    animation: none;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .copilot-why {
+    animation: none;
+    opacity: 1;
+  }
+
+  .copilot-live--new {
+    animation: none;
+    opacity: 1;
+  }
+
+  .copilot-live__dot {
+    animation: none;
+    box-shadow: none;
+  }
+
+  .copilot-collect__result {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 .copilot-live__label { font-size: 11px; letter-spacing: 0.04em; color: var(--flux); }
 .copilot-live__msg {
   font-style: italic; color: var(--paper-90); margin: 0 0 10px;

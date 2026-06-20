@@ -21,6 +21,8 @@
   height: 100%;
   background: var(--fill);
   border-radius: 3px;
+  /* Animating width is fine here (one short bar). Switch to transform: scaleX
+     with transform-origin: left if this ever shows up in a perf profile. */
   transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1), background-color 400ms ease;
 }
 .scorebar__num {

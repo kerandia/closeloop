@@ -39,6 +39,10 @@
   50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(245, 166, 35, 0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .shell__radar-dot { animation: none; }
+}
+
 .shell__rep {
   width: 28px;
   height: 28px;

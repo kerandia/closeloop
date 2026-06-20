@@ -19,12 +19,13 @@ export function CustomerDetailPage() {
     setState({ status: 'loading' })
     getCustomer(id)
       .then((data) => setState({ status: 'ok', data }))
-      .catch((err: unknown) =>
+      .catch((err: unknown) => {
+        console.error('Failed to load customer:', err)
         setState({
           status: 'error',
-          message: err instanceof Error ? err.message : 'Failed to load customer',
-        }),
-      )
+          message: 'Could not load this customer. Try again.',
+        })
+      })
   }, [id])
 
   useEffect(() => {

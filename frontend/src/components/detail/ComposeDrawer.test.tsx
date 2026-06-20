@@ -127,6 +127,18 @@ describe('ComposeDrawer', () => {
     })
   })
 
+  test('Send clears the sending state after success (button not stuck on "Sending…")', async () => {
+    render(
+      <ComposeDrawer open={true} message={mockEmailMessage} onClose={vi.fn()} onSent={vi.fn()} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /^send$/i }))
+    // After the send resolves, the button returns to an enabled "Send" — not "Sending…".
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /^send$/i })
+      expect(btn).not.toBeDisabled()
+    })
+  })
+
   test('Send waits for an in-flight blur PATCH before posting (no race)', async () => {
     let resolvePatch!: () => void
     vi.mocked(client.patchMessage).mockImplementation(
