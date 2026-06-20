@@ -1,13 +1,17 @@
 /* CustomerTable — Cinematic Demo direction.
    Ink stage, no card wrap, 64px rows, solar left-border on hover. */
 
+/* Wrapper owns the horizontal scroll so the table keeps table-layout:fixed
+   (and its cell ellipsis) and never forces page-level scroll on mobile. */
+.ct-scroll {
+  overflow-x: auto;
+}
+
 .ct {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
   min-width: 700px;
-  overflow-x: auto;
-  display: block;
 }
 
 .ct__head-row {

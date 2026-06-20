@@ -112,6 +112,9 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
     } catch (err) {
       console.error('Failed to send message:', err)
       setSendError("Couldn't send this message. Try again.")
+    } finally {
+      // Always clear; the drawer stays mounted across close/reopen, so leaving
+      // this true on success would keep Send stuck on "Sending…" next time.
       setSending(false)
     }
   }

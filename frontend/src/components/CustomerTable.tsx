@@ -33,7 +33,8 @@ export function CustomerTable({ customers }: Props) {
   const navigate = useNavigate()
 
   return (
-    <table className="ct">
+    <div className="ct-scroll">
+      <table className="ct">
       <thead>
         <tr className="ct__head-row">
           <th className="mono ct__th">Customer</th>
@@ -100,6 +101,7 @@ export function CustomerTable({ customers }: Props) {
           </tr>
         ))}
       </tbody>
-    </table>
+      </table>
+    </div>
   )
 }
