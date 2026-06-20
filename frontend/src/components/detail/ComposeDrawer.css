@@ -1,0 +1,215 @@
+/* ComposeDrawer.css — right-side drawer with scrim */
+
+/* ── Scrim ─────────────────────────────────────────────────────────────────── */
+.compose-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 27, 39, 0.6); /* --ink at 60% */
+  z-index: 40;
+}
+
+/* ── Drawer panel ──────────────────────────────────────────────────────────── */
+.compose-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  max-width: 100vw;
+  background: var(--ink-800);
+  border-left: 1px solid var(--paper-25);
+  display: flex;
+  flex-direction: column;
+  z-index: 41;
+  overflow: hidden;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+.compose-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--paper-25);
+  flex-shrink: 0;
+}
+
+.compose-drawer__title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-40);
+}
+
+.compose-drawer__close {
+  background: none;
+  border: none;
+  color: var(--paper-60);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.compose-drawer__close:hover {
+  color: var(--paper-90);
+  background: var(--paper-25);
+}
+
+/* ── Scrollable body ───────────────────────────────────────────────────────── */
+.compose-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ── Composing / loading state ─────────────────────────────────────────────── */
+.compose-composing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  min-height: 200px;
+}
+
+.compose-composing__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.compose-composing__dot {
+  width: 8px;
+  height: 8px;
+  background: var(--flux);
+  border-radius: 50%;
+  animation: compose-pulse 1.2s ease-in-out infinite;
+}
+
+.compose-composing__dot:nth-child(2) { animation-delay: 0.2s; }
+.compose-composing__dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes compose-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1);   }
+}
+
+.compose-composing__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-40);
+  margin: 0;
+}
+
+/* ── Editor ────────────────────────────────────────────────────────────────── */
+.compose-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.compose-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.compose-field__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-40);
+}
+
+.compose-field__input,
+.compose-field__textarea {
+  background: var(--ink-700);
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: none;
+  width: 100%;
+}
+
+.compose-field__input:focus,
+.compose-field__textarea:focus {
+  border-color: var(--flux);
+}
+
+.compose-field__textarea {
+  min-height: 220px;
+}
+
+/* ── Inline send error ─────────────────────────────────────────────────────── */
+.compose-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(232, 117, 106, 0.12);
+  border: 1px solid rgba(232, 117, 106, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--band-low);
+  font-size: 13px;
+}
+
+.compose-error__text {
+  flex: 1;
+}
+
+.compose-error__retry {
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}
+
+.compose-error__retry:hover {
+  background: rgba(232, 117, 106, 0.12);
+}
+
+/* ── Send action ───────────────────────────────────────────────────────────── */
+.compose-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.compose-btn {
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  transition: opacity 0.15s;
+}
+
+.compose-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.compose-btn--send {
+  background: var(--solar);
+  color: var(--ink);
+}
+
+.compose-btn--send:hover:not(:disabled) {
+  opacity: 0.88;
+}

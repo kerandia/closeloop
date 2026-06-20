@@ -1,0 +1,212 @@
+.interaction-timeline {
+  margin-top: 2rem;
+  padding: 0;
+}
+
+.interaction-timeline__title {
+  margin-bottom: 1rem;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-60);
+}
+
+.interaction-timeline__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.interaction-row {
+  padding: 1rem;
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  transition: all 150ms ease-out;
+}
+
+.interaction-row--expandable {
+  cursor: pointer;
+}
+
+.interaction-row--expandable:hover {
+  border-color: var(--ink-600);
+  background: var(--ink-700);
+}
+
+.interaction-row__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.interaction-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.interaction-row__time {
+  color: var(--paper-60);
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.interaction-row__outcome {
+  flex: 1;
+  color: var(--paper-90);
+  word-break: break-word;
+}
+
+.interaction-row__expand-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--paper-60);
+  font-size: 12px;
+}
+
+.interaction-row__transcript {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink-700);
+}
+
+.interaction-row__transcript-content {
+  margin: 0;
+  padding: 0.75rem;
+  background: var(--ink-900);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--paper-60);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.interaction-timeline__log-section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink-700);
+}
+
+.interaction-timeline__log-button {
+  padding: 0.75rem 1rem;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--solar);
+  border: 1px solid var(--ink-700);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.interaction-timeline__log-button:hover:not(:disabled) {
+  border-color: var(--solar);
+  background: rgba(245, 166, 35, 0.1);
+}
+
+.interaction-timeline__log-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.log-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+}
+
+.log-note-form__input {
+  padding: 0.75rem;
+  background: var(--ink-900);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 60px;
+  transition: all 150ms ease-out;
+}
+
+.log-note-form__input:focus {
+  outline: none;
+  border-color: var(--flux);
+  background: var(--ink-800);
+}
+
+.log-note-form__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.log-note-form__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.log-note-form__submit {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--solar);
+  color: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.log-note-form__submit:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.25);
+}
+
+.log-note-form__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.log-note-form__cancel {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--paper-60);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.log-note-form__cancel:hover:not(:disabled) {
+  color: var(--paper-90);
+  border-color: var(--paper-40);
+}
+
+.log-note-form__cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,144 @@
+/* ProfilePanel — psychographic evidence section, evidence-first design. */
+
+.profile-panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Empty / null state ──────────────────────────────────────────────────── */
+
+.profile-panel--empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 16px;
+  border: 1px dashed var(--paper-25);
+  border-radius: var(--radius);
+}
+
+.profile-panel__empty-hint {
+  font-size: 13px;
+  color: var(--paper-40);
+  margin: 0;
+}
+
+/* ── Summary ─────────────────────────────────────────────────────────────── */
+
+.profile-panel__summary {
+  margin: 0;
+  font-size: 14px;
+  color: var(--paper-90);
+  line-height: 1.5;
+}
+
+/* ── Layer section ───────────────────────────────────────────────────────── */
+
+.profile-panel__layer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-panel__layer-label {
+  /* overrides h3 margin from global */
+  margin: 0 0 2px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper-40);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.profile-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ── Motivation ──────────────────────────────────────────────────────────── */
+
+.profile-panel__motivation {
+  margin: 0;
+  font-size: 14px;
+  color: var(--flux);
+  font-weight: 500;
+}
+
+.profile-panel__conf {
+  color: var(--paper-40);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* ── Objections ──────────────────────────────────────────────────────────── */
+
+.profile-panel__objection-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-panel__objection {
+  font-size: 13px;
+  color: var(--paper-60);
+}
+
+.profile-panel__objection-note {
+  color: var(--paper-40);
+}
+
+/* ── Completeness ────────────────────────────────────────────────────────── */
+
+.profile-panel__completeness {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-panel__completeness-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink-700);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-panel__completeness-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: var(--fill, 0%);
+  background: var(--flux);
+  border-radius: 2px;
+  transition: width 600ms ease;
+}
+
+.profile-panel__completeness-label {
+  font-size: 10px;
+  color: var(--paper-40);
+}
+
+/* ── Quote summary ───────────────────────────────────────────────────────── */
+
+.profile-panel__quote-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-25);
+  border-radius: var(--radius);
+  background: var(--ink-800);
+}
+
+.profile-panel__quote-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--paper-60);
+  font-family: var(--font-mono);
+}

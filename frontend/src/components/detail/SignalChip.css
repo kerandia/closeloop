@@ -1,0 +1,65 @@
+/* SignalChip — evidence chip with inline expandable quote. */
+
+.signal-chip {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 2px;
+}
+
+.signal-chip__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--paper-25);
+  border-radius: 20px;
+  background: var(--ink-700);
+  color: var(--paper-60);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms;
+  text-align: left;
+}
+
+.signal-chip__button:hover {
+  border-color: var(--flux);
+  color: var(--paper-90);
+}
+
+/* High-severity: solar (warm amber) treatment */
+.signal-chip--high .signal-chip__button {
+  border-color: var(--solar);
+  color: var(--solar);
+  background: rgba(245, 166, 35, 0.08);
+}
+
+.signal-chip--high .signal-chip__button:hover {
+  background: rgba(245, 166, 35, 0.16);
+}
+
+/* Inline evidence quote — animates in on mount */
+.signal-chip__evidence {
+  margin: 4px 2px 2px;
+  animation: evidence-reveal 200ms ease forwards;
+}
+
+@keyframes evidence-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.signal-chip__quote {
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--flux);
+  background: rgba(20, 181, 166, 0.06);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--paper-60);
+  line-height: 1.5;
+}

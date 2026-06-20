@@ -108,8 +108,9 @@ describe('CustomerDetailPage', () => {
         expect(screen.getByRole('heading', { name: /familie müller/i })).toBeInTheDocument()
       })
 
-      // The InteractionTimeline stub exposes a test button to fire onLogInteraction
-      fireEvent.click(screen.getByTestId('stub-log-interaction'))
+      // Open the log-note form and submit it to fire onLogInteraction
+      fireEvent.click(screen.getByRole('button', { name: /log visit/i }))
+      fireEvent.click(screen.getByRole('button', { name: /^log$/i }))
 
       // Must show "Analyzing…" while in-flight
       await waitFor(() => {
@@ -145,7 +146,8 @@ describe('CustomerDetailPage', () => {
         expect(screen.getByRole('heading', { name: /familie müller/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByTestId('stub-log-interaction'))
+      fireEvent.click(screen.getByRole('button', { name: /log visit/i }))
+      fireEvent.click(screen.getByRole('button', { name: /^log$/i }))
 
       // confirm analyzing appeared
       await waitFor(() => {

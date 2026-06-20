@@ -1,0 +1,208 @@
+/* RecommendationCard — the paper hero on the ink stage.
+   ONE light surface in the right column. All design tokens from tokens.css. */
+
+.rec-card {
+  background: var(--white);
+  border-radius: var(--radius-sm); /* 4px per spec */
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--ink);
+  /* Subtle lift so it reads as paper on the dark column */
+  box-shadow: 0 2px 16px rgba(13, 27, 39, 0.18);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.rec-card--empty {
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid var(--paper-25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.rec-card__empty-text {
+  font-family: var(--font-body);
+  color: var(--paper-40);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ── Dismissed state ─────────────────────────────────────────────────────── */
+
+.rec-card--dismissed {
+  pointer-events: none;
+  filter: grayscale(0.7) opacity(0.45);
+}
+
+/* ── Header: icon + headline ─────────────────────────────────────────────── */
+
+.rec-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rec-card__channel-icon {
+  color: var(--solar);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rec-card__headline {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* ── Goal line ───────────────────────────────────────────────────────────── */
+
+.rec-card__goal {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgba(13, 27, 39, 0.6); /* ink-600 equivalent */
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Executor segmented toggle ───────────────────────────────────────────── */
+
+.rec-card__executor {
+  display: flex;
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+  width: fit-content;
+}
+
+.rec-card__exec-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(13, 27, 39, 0.55);
+  padding: 5px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  user-select: none;
+}
+
+.rec-card__exec-btn input[type='radio'] {
+  /* Hide the raw radio visually but keep it in the a11y tree */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.rec-card__exec-btn--active {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(13, 27, 39, 0.12);
+}
+
+.rec-card__exec-btn--disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ── Rationale with solar stripe ─────────────────────────────────────────── */
+
+.rec-card__rationale-wrap {
+  position: relative;
+  padding-left: 14px; /* room for the 3px stripe + breathing space */
+}
+
+.rec-card__rationale-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--solar);
+  border-radius: 2px;
+  transform-origin: left center;
+  display: block;
+}
+
+.rec-card__rationale {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink); /* full ink — the WHY, never grey */
+  margin: 0;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────────── */
+
+.rec-card__approve {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--solar);
+  color: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.rec-card__approve:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.rec-card__approve:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Dismiss text-link ───────────────────────────────────────────────────── */
+
+.rec-card__dismiss {
+  background: none;
+  border: none;
+  color: rgba(13, 27, 39, 0.45);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 4px 0;
+  cursor: pointer;
+  align-self: center;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.12s ease;
+}
+
+.rec-card__dismiss:hover {
+  color: var(--ink);
+}
+
+/* ── Sent state ──────────────────────────────────────────────────────────── */
+
+.rec-card__sent {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+  text-align: center;
+  padding: 10px 0 4px;
+  letter-spacing: 0.01em;
+}
+
+.rec-card__sent-check {
+  font-size: 18px;
+}

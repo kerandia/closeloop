@@ -27,34 +27,182 @@
  *       transcript_md? string | null
  *       rep_id?        string | null
  */
+import { useState } from 'react'
 import type { Interaction, InteractionCreate } from '../../api/types'
+import { ChannelIcon } from '../ChannelIcon'
+import { relativeTime } from '../../lib/format'
+import './InteractionTimeline.css'
 
 export interface InteractionTimelineProps {
   interactions: Interaction[]
   onLogInteraction: (payload: InteractionCreate) => Promise<void>
 }
 
-/** Stub — Step 3 replaces the body without changing the exported props type. */
-export function InteractionTimeline({ interactions, onLogInteraction }: InteractionTimelineProps) {
+function LogNoteForm({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (payload: InteractionCreate) => Promise<void>
+  onCancel: () => void
+}) {
+  const [content, setContent] = useState('')
+  const [repGutFeel, setRepGutFeel] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        channel: 'visit',
+        direction: 'outbound',
+        content: content || null,
+        rep_gut_feel: repGutFeel || null,
+        outcome: outcome || null,
+      })
+      // Form closes when parent receives the response
+      onCancel()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <div className="detail-stub" data-slot="interaction-timeline">
-      <p className="mono">Interaction Timeline ({interactions.length})</p>
-      {/* Test hook: triggers onLogInteraction with a minimal valid payload.
-          Step 3 replaces this with the real LogNote form. */}
-      <button
-        data-testid="stub-log-interaction"
-        className="mono"
-        onClick={() =>
-          onLogInteraction({
-            channel: 'phone',
-            direction: 'inbound',
-            content: 'Stub log note',
-            outcome: 'test',
-          })
-        }
-      >
-        + Log interaction (stub)
-      </button>
+    <form className="log-note-form" onSubmit={handleSubmit}>
+      <textarea
+        placeholder="Note / summary"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        className="log-note-form__input"
+        disabled={isSubmitting}
+      />
+      <textarea
+        placeholder="Gut feel"
+        value={repGutFeel}
+        onChange={(e) => setRepGutFeel(e.target.value)}
+        className="log-note-form__input"
+        disabled={isSubmitting}
+      />
+      <textarea
+        placeholder="Outcome"
+        value={outcome}
+        onChange={(e) => setOutcome(e.target.value)}
+        className="log-note-form__input"
+        disabled={isSubmitting}
+      />
+      <div className="log-note-form__actions">
+        <button
+          type="submit"
+          className="log-note-form__submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Logging...' : 'Log'}
+        </button>
+        <button
+          type="button"
+          className="log-note-form__cancel"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  )
+}
+
+/** Render reverse-chronological interactions with expandable transcripts and log form. */
+export function InteractionTimeline({
+  interactions,
+  onLogInteraction,
+}: InteractionTimelineProps) {
+  const [showLogForm, setShowLogForm] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [isLogging, setIsLogging] = useState(false)
+
+  // Already sorted newest-first by the caller, but be robust
+  const sorted = [...interactions].sort(
+    (a, b) =>
+      new Date(b.occurred_at || 0).getTime() -
+      new Date(a.occurred_at || 0).getTime(),
+  )
+
+  const handleLogInteraction = async (payload: InteractionCreate) => {
+    setIsLogging(true)
+    try {
+      await onLogInteraction(payload)
+      setShowLogForm(false)
+    } finally {
+      setIsLogging(false)
+    }
+  }
+
+  return (
+    <div className="interaction-timeline">
+      <h3 className="interaction-timeline__title mono">Interactions</h3>
+
+      <div className="interaction-timeline__rows">
+        {sorted.map((interaction) => {
+          const isExpanded = expandedId === interaction.id
+          const hasTranscript = !!interaction.transcript_md
+
+          return (
+            <div
+              key={interaction.id}
+              className={`interaction-row ${hasTranscript ? 'interaction-row--expandable' : ''}`}
+              data-testid="interaction-row"
+              onClick={() => {
+                if (hasTranscript) {
+                  setExpandedId(isExpanded ? null : interaction.id)
+                }
+              }}
+            >
+              <div className="interaction-row__header">
+                <span className="interaction-row__icon">
+                  <ChannelIcon channel={interaction.channel} size={16} />
+                </span>
+                <span className="interaction-row__time">
+                  {relativeTime(interaction.occurred_at)}
+                </span>
+                <span className="interaction-row__outcome">
+                  {interaction.outcome || '(no outcome recorded)'}
+                </span>
+                {hasTranscript && (
+                  <span className="interaction-row__expand-indicator">
+                    {isExpanded ? '▼' : '▶'}
+                  </span>
+                )}
+              </div>
+
+              {isExpanded && hasTranscript && (
+                <div className="interaction-row__transcript">
+                  <pre className="interaction-row__transcript-content">
+                    {interaction.transcript_md}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="interaction-timeline__log-section">
+        {!showLogForm ? (
+          <button
+            className="interaction-timeline__log-button mono"
+            onClick={() => setShowLogForm(true)}
+            disabled={isLogging}
+          >
+            + Log visit / note
+          </button>
+        ) : (
+          <LogNoteForm
+            onSubmit={handleLogInteraction}
+            onCancel={() => setShowLogForm(false)}
+          />
+        )}
+      </div>
     </div>
   )
 }
