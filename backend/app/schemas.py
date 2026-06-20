@@ -105,14 +105,33 @@ class ComposeOutput(BaseModel):
     language: str = "de"
 
 
+class CopilotTodo(BaseModel):
+    """The advance hook turned into a Cadence to-do (when · channel · why)."""
+
+    detail: str  # the next-step line, e.g. "Send the monthly-savings one-pager"
+    channel: str  # email|sms|whatsapp|phone|visit
+    why: str  # why this next step now
+    when_label: str | None = None  # "Wednesday", "within 48h"
+    due_at: dt.datetime | None = None
+
+
 class RespondOutput(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     read: str
     type: str  # objection|buying_signal|question|other
+    category: str | None = None  # matched playbook category key (kb_objections.key)
     tone: str
     exact_lines: list[str]
-    why: str
+    why: str  # the why-line — fixed template: "Read as <cat> — <root read>. So <dir>, not <mistake>."
+    # Part 3 of the playbook — handle the objection AND move the deal forward:
+    advance_hook: str | None = None  # the next step to offer right after handling
+    todo: CopilotTodo | None = None  # the hook persisted into Cadence
+    # The stateful loop decision (vs the currently-open hook):
+    #   advance            — they took the hook / are ready to move
+    #   handle_new_concern — a new concern surfaced; drop the open hook, handle this, re-offer
+    #   downgrade          — silence / non-committal; soften to a light to-do
+    loop_action: str = "advance"
 
 
 # --------------------------------------------------------------------------- #
@@ -205,6 +224,9 @@ class ExtractedActionOut(ApiBase):
     detail: str
     due_at: dt.datetime | None = None
     status: str
+    source: str = "analyze"  # analyze|copilot
+    channel: str | None = None
+    why: str | None = None
 
 
 class RecommendationOut(ApiBase):
@@ -344,6 +366,7 @@ class CopilotRespondRequest(BaseModel):
     customer_id: uuid.UUID
     utterance: str
     recent_context: str | None = None
+    channel: str = "phone"  # the live channel this is happening on (call/visit)
 
 
 class CollectResponse(BaseModel):

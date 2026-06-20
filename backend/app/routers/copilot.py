@@ -23,7 +23,7 @@ async def respond(
     if customer is None:
         raise HTTPException(status_code=404, detail="customer not found")
     return await respond_svc.run_respond(
-        db, customer, body.utterance, body.recent_context
+        db, customer, body.utterance, body.recent_context, body.channel
     )
 
 

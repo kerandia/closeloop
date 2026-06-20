@@ -42,10 +42,13 @@ async def structured(
     user: str,
     schema: type[T],
     temperature: float = 0.3,
+    max_completion_tokens: int = 2000,
 ) -> T:
     """Call the model and return a validated instance of `schema`.
 
     Raises RuntimeError in DEMO mode — callers must provide their own fallback.
+    A completion cap bounds cost/latency: a model that loops on structured output
+    is truncated quickly, the parse fails, and the caller falls back to DEMO.
     """
     if DEMO_MODE:
         raise RuntimeError("LLM unavailable (DEMO mode — no OPENAI_API_KEY)")
@@ -64,6 +67,7 @@ async def structured(
                 messages=messages,
                 response_format=schema,
                 temperature=temperature,
+                max_completion_tokens=max_completion_tokens,
             )
             parsed = completion.choices[0].message.parsed
             if parsed is None:
