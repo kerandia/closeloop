@@ -4,12 +4,14 @@ import './ScoreBar.css'
 
 interface Props {
   value: number | null | undefined
+  /** trend arrow — deal-score.md ②: trend beats the absolute number */
+  trend?: 'up' | 'down' | 'flat' | null
   /** compact = inline header/row variant */
   compact?: boolean
 }
 
-/** Score bar: band color + count-up + charge animation on value change. */
-export function ScoreBar({ value, compact }: Props) {
+/** Score bar: band color + count-up + charge animation + trend arrow. */
+export function ScoreBar({ value, trend, compact }: Props) {
   const band = scoreBand(value)
   const target = value ?? 0
   const [display, setDisplay] = useState(target)
@@ -40,6 +42,14 @@ export function ScoreBar({ value, compact }: Props) {
         />
       </div>
       <span className="scorebar__num">{value == null ? '—' : display}</span>
+      {value != null && trend && trend !== 'flat' && (
+        <span
+          className={`scorebar__trend scorebar__trend--${trend}`}
+          aria-label={`trend ${trend}`}
+        >
+          {trend === 'up' ? '↑' : '↓'}
+        </span>
+      )}
     </div>
   )
 }

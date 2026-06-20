@@ -23,11 +23,14 @@ export interface NextAction {
   timing_label: string | null
 }
 
+export type ScoreTrend = 'up' | 'down' | 'flat'
+
 export interface CustomerListItem {
   id: string
   name: string
   buyer_type: BuyerType | null
   sign_likelihood: number | null
+  score_trend?: ScoreTrend | null
   ghost_risk: GhostRisk | null
   stage: string
   next_action: NextAction | null
@@ -135,6 +138,7 @@ export interface Customer {
   language: string
   stage: string
   sign_likelihood: number | null
+  score_trend?: ScoreTrend | null
   ghost_risk: GhostRisk | null
   last_contact_at: string | null
   next_action_at: string | null
@@ -173,6 +177,8 @@ export interface Message {
 export interface Score {
   sign_likelihood: number | null
   ghost_risk: GhostRisk | null
+  band?: string | null
+  trend?: ScoreTrend | null
   components: Record<string, number> | null
   reason: string | null
 }

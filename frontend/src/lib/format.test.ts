@@ -2,17 +2,21 @@ import { describe, test, expect } from 'vitest'
 import { scoreBand, relativeTime } from './format'
 
 describe('scoreBand', () => {
-  test('below 40 is low', () => {
-    expect(scoreBand(0)).toBe('low')
-    expect(scoreBand(39)).toBe('low')
+  test('0–39 is cold', () => {
+    expect(scoreBand(0)).toBe('cold')
+    expect(scoreBand(39)).toBe('cold')
   })
-  test('40 to 70 inclusive is mid', () => {
-    expect(scoreBand(40)).toBe('mid')
-    expect(scoreBand(70)).toBe('mid')
+  test('40–59 is cool', () => {
+    expect(scoreBand(40)).toBe('cool')
+    expect(scoreBand(59)).toBe('cool')
   })
-  test('above 70 is high', () => {
-    expect(scoreBand(71)).toBe('high')
-    expect(scoreBand(100)).toBe('high')
+  test('60–79 is warm', () => {
+    expect(scoreBand(60)).toBe('warm')
+    expect(scoreBand(79)).toBe('warm')
+  })
+  test('80–100 is hot', () => {
+    expect(scoreBand(80)).toBe('hot')
+    expect(scoreBand(100)).toBe('hot')
   })
   test('null is unknown', () => {
     expect(scoreBand(null)).toBe('unknown')

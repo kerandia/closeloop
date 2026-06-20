@@ -16,6 +16,7 @@ from sqlalchemy import delete, select
 from app import models
 from app.db import SessionLocal, init_db
 from app.services import analyze as analyze_svc
+from app.services import scoring as scoring_svc
 
 
 def _days_ago(n: int) -> dt.datetime:
@@ -518,10 +519,12 @@ async def seed() -> None:
 
         await session.commit()
 
-        # Run ANALYZE for every customer so the dashboard opens fully populated.
+        # Run ANALYZE (profile/signals/recommendation), then initialize the
+        # event-sourced Deal Score from the seeded interactions + silence window.
         for c in created:
             fresh = await session.get(models.Customer, c.id)
             await analyze_svc.run_analyze(session, fresh)
+            await scoring_svc.initialize(session, fresh)
 
     print(f"Seeded {len(CUSTOMERS)} customers, {len(REPS)} reps, "
           f"{len(BUYER_TYPES)} buyer types, {len(OBJECTIONS)} objections, "

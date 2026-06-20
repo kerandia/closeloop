@@ -147,7 +147,7 @@ export function DetailShell({ data, customerId }: Props) {
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>
         <BuyerTypeChip type={data.profile?.buyer_type ?? null} />
-        <ScoreBar value={effectiveScore} compact />
+        <ScoreBar value={effectiveScore} trend={customer.score_trend} compact />
         <StageBadge stage={customer.stage} />
         <GhostRiskPill risk={effectiveRisk} />
         <span className="detail-header__spacer" />
