@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models, schemas, serializers
 from app.db import get_db
 from app.services import analyze as analyze_svc
+from app.services import scoring as scoring_svc
 
 router = APIRouter(prefix="/api/customers", tags=["customers"])
 
@@ -123,7 +124,7 @@ async def reanalyze(customer_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     c = await _get_customer(db, customer_id)
     rec = await analyze_svc.run_analyze(db, c)
     await db.refresh(c)
-    return _reanalyze_response(c, rec)
+    return await _reanalyze_response(db, c, rec)
 
 
 @router.post("/{customer_id}/interactions", response_model=schemas.InteractionLogResponse)
@@ -145,18 +146,21 @@ async def log_interaction(
         created_by="rep" if body.rep_id else "system",
     )
     db.add(interaction)
+    stage_changed = c.stage == "quoted"
     c.last_contact_at = _utcnow()
-    if c.stage == "quoted":
+    if stage_changed:
         c.stage = "contacted"
     await db.commit()
     await db.refresh(interaction)
 
+    # Deal Score moves on the new event(s); then ANALYZE refreshes profile/rec.
+    await scoring_svc.apply_interaction(db, c, interaction)
     rec = await analyze_svc.run_analyze(db, c)
     await db.refresh(c)
     return schemas.InteractionLogResponse(
         interaction=schemas.InteractionOut.model_validate(interaction),
         recommendation=schemas.RecommendationOut.model_validate(rec) if rec else None,
-        score=_score_out(c),
+        score=await _score_out(db, c),
     )
 
 
@@ -180,17 +184,25 @@ async def record_outcome(
     elif body.result == "lost":
         c.stage = "lost"
     await db.commit()
-    return {"ok": True}
+
+    # the outcome moves the Deal Score (incl. hard stops → 0)
+    await scoring_svc.apply_outcome(db, c, body.result)
+    return {"ok": True, "score": (await _score_out(db, c)).model_dump()}
 
 
-def _score_out(c: models.Customer) -> schemas.ScoreOut:
-    return schemas.ScoreOut(sign_likelihood=c.sign_likelihood, ghost_risk=c.ghost_risk)
+async def _score_out(db: AsyncSession, c: models.Customer) -> schemas.ScoreOut:
+    return schemas.ScoreOut(
+        sign_likelihood=c.sign_likelihood,
+        ghost_risk=c.ghost_risk,
+        band=scoring_svc.band(c.sign_likelihood) if c.sign_likelihood is not None else None,
+        trend=await scoring_svc.trend(db, c.id),
+    )
 
 
-def _reanalyze_response(
-    c: models.Customer, rec: models.Recommendation
+async def _reanalyze_response(
+    db: AsyncSession, c: models.Customer, rec: models.Recommendation
 ) -> schemas.ReanalyzeResponse:
     return schemas.ReanalyzeResponse(
         recommendation=schemas.RecommendationOut.model_validate(rec) if rec else None,
-        score=_score_out(c),
+        score=await _score_out(db, c),
     )

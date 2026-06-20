@@ -4,9 +4,10 @@
   gap: 10px;
   --fill: var(--band-unknown);
 }
-.scorebar[data-band='low'] { --fill: var(--band-low); }
-.scorebar[data-band='mid'] { --fill: var(--band-mid); }
-.scorebar[data-band='high'] { --fill: var(--band-high); }
+.scorebar[data-band='cold'] { --fill: var(--band-cold); }
+.scorebar[data-band='cool'] { --fill: var(--band-cool); }
+.scorebar[data-band='warm'] { --fill: var(--band-warm); }
+.scorebar[data-band='hot'] { --fill: var(--band-hot); }
 
 .scorebar__track {
   flex: 1;
@@ -30,4 +31,12 @@
   text-align: right;
   color: var(--paper-90);
 }
+.scorebar__trend {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  width: 1ch;
+}
+.scorebar__trend--up { color: var(--band-hot); }
+.scorebar__trend--down { color: var(--band-cold); }
 .scorebar--compact .scorebar__track { min-width: 60px; }

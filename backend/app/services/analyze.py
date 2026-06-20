@@ -27,6 +27,15 @@ def _utcnow() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
+# the only layers the UI groups by — the LLM occasionally invents others
+# ("engagement", "interaction"), so we clamp to keep the contract honest.
+_SIGNAL_LAYERS = {"motivation", "negotiation", "objection", "buying_signal"}
+
+
+def _norm_layer(layer: str | None) -> str:
+    return layer if layer in _SIGNAL_LAYERS else "negotiation"
+
+
 async def run_analyze(
     db: AsyncSession, customer: models.Customer
 ) -> models.Recommendation:
@@ -108,7 +117,7 @@ async def _persist(
         db.add(
             models.ProfileSignal(
                 customer_id=customer.id,
-                layer=s.layer,
+                layer=_norm_layer(s.layer),
                 label=s.label,
                 evidence_quote=s.evidence_quote,
                 source_interaction_id=last_interaction_id,
@@ -151,21 +160,10 @@ async def _persist(
     )
     db.add(rec)
 
-    # 5. update customer score / ghost risk / next action
-    customer.sign_likelihood = out.score.sign_likelihood
-    customer.ghost_risk = out.score.ghost_risk
+    # 5. next action timing mirrors the recommendation. The DEAL SCORE is no
+    #    longer owned here — it is event-sourced in services/scoring.py (the LLM
+    #    still emits out.score for reasoning, but it does not set the number).
     customer.next_action_at = out.recommendation.timing_at
-
-    # 6. score history
-    db.add(
-        models.ScoreHistory(
-            customer_id=customer.id,
-            sign_likelihood=out.score.sign_likelihood,
-            ghost_risk=out.score.ghost_risk,
-            components=out.score.components.model_dump(),
-            reason=out.score.reason,
-        )
-    )
 
     await db.commit()
     await db.refresh(rec)

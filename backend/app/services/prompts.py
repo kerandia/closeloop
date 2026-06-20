@@ -15,7 +15,11 @@ invent facts. Reason in this order, then return ONE JSON object:
    - objections: KB objection keys that apply
    - a one-paragraph summary for the dashboard
 2. SIGNALS: every profile read MUST be backed by the customer's OWN WORDS
-   (evidence_quote). No evidence → do not assert the read.
+   (evidence_quote). No evidence → do not assert the read. Each signal's `layer`
+   MUST be exactly one of: "motivation", "negotiation", "objection",
+   "buying_signal" — no other values. Use "motivation" for why-they-want-solar
+   reads, "objection" for concerns, "buying_signal" for readiness cues, and
+   "negotiation" for how-they-behave reads.
 3. EXTRACTED_ACTIONS: concrete asks ("call me Tuesday after 5", "send financing").
 4. SCORE: deal-closing likelihood post-quote (sign_likelihood 0-100) from four
    components (engagement, objection_severity [inverse], buying_signals, recency).

@@ -86,6 +86,7 @@ export function copilotRespond(payload: {
   customer_id: string
   utterance: string
   recent_context?: string
+  channel?: string
 }): Promise<RespondOutput> {
   if (isMockMode()) return Promise.resolve(mockRespond())
   return req('/api/copilot/respond', 'POST', payload)

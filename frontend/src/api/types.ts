@@ -23,11 +23,14 @@ export interface NextAction {
   timing_label: string | null
 }
 
+export type ScoreTrend = 'up' | 'down' | 'flat'
+
 export interface CustomerListItem {
   id: string
   name: string
   buyer_type: BuyerType | null
   sign_likelihood: number | null
+  score_trend?: ScoreTrend | null
   ghost_risk: GhostRisk | null
   stage: string
   next_action: NextAction | null
@@ -96,8 +99,9 @@ export interface Interaction {
   created_by: string
 }
 
-export type ActionType = 'callback' | 'send_info' | 'schedule_visit' | 'other'
+export type ActionType = 'callback' | 'send_info' | 'schedule_visit' | 'hook' | 'other'
 export type ActionStatus = 'open' | 'done' | 'dismissed'
+export type ActionSource = 'analyze' | 'copilot'
 
 export interface ExtractedAction {
   id: string
@@ -106,6 +110,11 @@ export interface ExtractedAction {
   detail: string
   due_at: string | null
   status: ActionStatus
+  // Cadence provenance (Level 2 co-pilot): a 'copilot' action is an advance hook
+  // promoted to a to-do, carrying its channel + why.
+  source?: ActionSource
+  channel?: Channel | null
+  why?: string | null
 }
 
 export interface Recommendation {
@@ -129,6 +138,7 @@ export interface Customer {
   language: string
   stage: string
   sign_likelihood: number | null
+  score_trend?: ScoreTrend | null
   ghost_risk: GhostRisk | null
   last_contact_at: string | null
   next_action_at: string | null
@@ -167,6 +177,8 @@ export interface Message {
 export interface Score {
   sign_likelihood: number | null
   ghost_risk: GhostRisk | null
+  band?: string | null
+  trend?: ScoreTrend | null
   components: Record<string, number> | null
   reason: string | null
 }
@@ -187,12 +199,27 @@ export interface InteractionCreate {
   rep_id?: string | null
 }
 
+export interface CopilotTodo {
+  detail: string
+  channel: Channel
+  why: string
+  when_label?: string | null
+  due_at?: string | null
+}
+
+export type LoopAction = 'advance' | 'handle_new_concern' | 'downgrade'
+
 export interface RespondOutput {
   read: string
   type: 'objection' | 'buying_signal' | 'question' | 'other'
   tone: string
   exact_lines: string[]
   why: string
+  // Level 2 co-pilot (objection playbook) — additive:
+  category?: string | null // matched playbook key, e.g. 'price_too_high'
+  advance_hook?: string | null // the next step to offer after handling
+  todo?: CopilotTodo | null // the advance hook promoted to a Cadence to-do
+  loop_action?: LoopAction // service-decided transition vs the open hook
 }
 
 export interface SendResponse {

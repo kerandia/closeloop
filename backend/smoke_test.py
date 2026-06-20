@@ -88,7 +88,7 @@ def main() -> int:
         print(f"[6c] cadence: {len(copilot_todos)} co-pilot to-do(s), {len(open_todos)} open; "
               f"current = {td['channel']} · {td['detail'][:44]!r}")
 
-        # 7. log a human interaction → score updates
+        # 7. log a positive visit → event-sourced Deal Score moves (with trend)
         before = muller["sign_likelihood"]
         r = client.post(f"/api/customers/{muller['id']}/interactions", json={
             "channel": "visit", "direction": "outbound",
@@ -97,9 +97,11 @@ def main() -> int:
             "outcome": "positive visit",
         })
         r.raise_for_status()
-        after = r.json()["score"]["sign_likelihood"]
-        print(f"[7] logged visit → score {before} → {after}, "
-              f"new rec: {r.json()['recommendation']['channel']}")
+        score = r.json()["score"]
+        after = score["sign_likelihood"]
+        assert after is not None and after > before, f"score should rise on a positive visit ({before}->{after})"
+        print(f"[7] logged visit → score {before} → {after} "
+              f"({score['band']}, trend {score['trend']}), new rec: {r.json()['recommendation']['channel']}")
 
     print("\n✅ golden path OK")
     return 0

@@ -64,7 +64,7 @@ export function CustomerTable({ customers }: Props) {
               <BuyerTypeChip type={c.buyer_type} />
             </td>
             <td className="ct__cell">
-              <ScoreBar value={c.sign_likelihood} compact />
+              <ScoreBar value={c.sign_likelihood} trend={c.score_trend} compact />
             </td>
             <td className="ct__cell">
               <GhostRiskPill risk={c.ghost_risk} />
