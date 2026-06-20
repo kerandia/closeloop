@@ -44,6 +44,7 @@ import { ProfilePanel } from './ProfilePanel'
 import { CallActionsList } from './CallActionsList'
 import { CopilotPanel } from './CopilotPanel'
 import { InteractionTimeline } from './InteractionTimeline'
+import { CallWindow } from '../CallWindow'
 import './DetailShell.css'
 
 // ── Reveal lifecycle ──────────────────────────────────────────────────────────
@@ -67,6 +68,7 @@ export function DetailShell({ data, customerId }: Props) {
   const [composeOpen, setComposeOpen] = useState(false)
   const [draftMessage, setDraftMessage] = useState<Message | null>(null)
   const [localStatus, setLocalStatus] = useState<RecStatus | null>(null)
+  const [callOpen, setCallOpen] = useState(false)
 
   // ── Derived values ────────────────────────────────────────────────────────
   const effectiveRec = liveRec ?? data.recommendation
@@ -102,18 +104,46 @@ export function DetailShell({ data, customerId }: Props) {
 
   // ── Approve handler ───────────────────────────────────────────────────────
   function handleApprove(recId: string): void {
+    const isPhoneCall = effectiveRec?.channel === 'phone' || effectiveRec?.channel === 'voice_ai'
     setLocalStatus('approved')
-    setComposeOpen(true)
-    approveRecommendation(recId)
-      .then((msg) => {
-        setDraftMessage(msg)
-        setLocalStatus('ready')
-      })
-      .catch(() => {
-        // Rollback so rep can retry
-        setLocalStatus(null)
-        setComposeOpen(false)
-      })
+    if (isPhoneCall) {
+      setCallOpen(true)
+      approveRecommendation(recId)
+        .then(() => setLocalStatus('ready'))
+        .catch(() => {
+          setLocalStatus(null)
+          setCallOpen(false)
+        })
+    } else {
+      setComposeOpen(true)
+      approveRecommendation(recId)
+        .then((msg) => {
+          setDraftMessage(msg)
+          setLocalStatus('ready')
+        })
+        .catch(() => {
+          // Rollback so rep can retry
+          setLocalStatus(null)
+          setComposeOpen(false)
+        })
+    }
+  }
+
+  function handleCallClose(): void {
+    setCallOpen(false)
+    setLocalStatus(null)
+  }
+
+  async function handleCallFinished(durationSeconds: number, transcript: string): Promise<void> {
+    setCallOpen(false)
+    setLocalStatus(null)
+    const isVoiceAI = effectiveRec?.channel === 'voice_ai'
+    await handleLogInteraction({
+      channel: isVoiceAI ? 'voice_ai' : 'phone',
+      direction: 'outbound',
+      outcome: `call completed (${durationSeconds}s)`,
+      transcript_md: transcript,
+    })
   }
 
   // ── Dismiss handler ───────────────────────────────────────────────────────
@@ -161,6 +191,9 @@ export function DetailShell({ data, customerId }: Props) {
             {assignment.rep.name}
           </span>
         )}
+        <Link to={withMock('/')} className="detail-header__close" aria-label="Close">
+          &times;
+        </Link>
       </header>
 
       {/* ── Two-column body ──────────────────────────────────────────────── */}
@@ -188,6 +221,13 @@ export function DetailShell({ data, customerId }: Props) {
               </div>
               Analyzing…
             </div>
+          ) : callOpen ? (
+            <CallWindow
+              onClose={handleCallClose}
+              customerName={customer.name}
+              customerPhone={customer.phone ?? undefined}
+              onCallFinished={handleCallFinished}
+            />
           ) : (
             <>
               <RecommendationCard

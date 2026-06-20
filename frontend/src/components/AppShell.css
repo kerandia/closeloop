@@ -1,19 +1,27 @@
-.shell { min-height: 100vh; display: flex; flex-direction: column; }
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-sage);
+}
 
 .shell__bar {
-  height: 48px;
+  height: 60px;
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 0 24px;
-  background: var(--ink-900);
+  padding: 0 32px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--ink-700);
 }
 .shell__brand {
   font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 18px;
-  color: var(--paper);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--paper-90);
+  letter-spacing: -0.02em;
 }
 .shell__brand span { color: var(--solar); }
 
@@ -26,6 +34,10 @@
   font-size: 11px;
   letter-spacing: 0.05em;
   color: var(--solar);
+  background: rgba(241, 104, 44, 0.08);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(241, 104, 44, 0.15);
 }
 .shell__radar-dot {
   width: 6px;
@@ -35,8 +47,8 @@
   animation: radar-pulse 2s ease-in-out infinite;
 }
 @keyframes radar-pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.5); }
-  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(245, 166, 35, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(241, 104, 44, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(241, 104, 44, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -44,17 +56,24 @@
 }
 
 .shell__rep {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
   font-size: 11px;
+  font-weight: 600;
   color: var(--paper-90);
+  background: var(--ink-800);
   border: 1px solid var(--ink-700);
 }
 .shell__bar .shell__radar + .shell__rep { margin-left: 0; }
 .shell__bar > .shell__rep:nth-child(2) { margin-left: auto; }
 
-.shell__stage { flex: 1; }
+.shell__stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 32px 64px;
+}

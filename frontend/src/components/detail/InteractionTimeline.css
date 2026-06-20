@@ -19,11 +19,12 @@
 }
 
 .interaction-row {
-  padding: 1rem;
-  background: var(--ink-800);
+  padding: 1.25rem;
+  background: var(--white);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   transition: all 150ms ease-out;
+  box-shadow: var(--shadow-soft);
 }
 
 .interaction-row--expandable {
@@ -32,7 +33,9 @@
 
 .interaction-row--expandable:hover {
   border-color: var(--ink-600);
-  background: var(--ink-700);
+  background: var(--white);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
 }
 
 .interaction-row__header {
@@ -82,7 +85,7 @@
 .interaction-row__transcript-content {
   margin: 0;
   padding: 0.75rem;
-  background: var(--ink-900);
+  background: var(--ink-800);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -91,6 +94,7 @@
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-word;
+  border: 1px solid var(--ink-700);
 }
 
 .interaction-timeline__log-section {
@@ -99,21 +103,22 @@
 }
 
 .interaction-timeline__log-button {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem;
   font-size: 13px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--solar);
   border: 1px solid var(--ink-700);
-  background: transparent;
-  border-radius: var(--radius-sm);
+  background: var(--white);
+  border-radius: 9999px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 150ms ease-out;
 }
 
 .interaction-timeline__log-button:hover:not(:disabled) {
   border-color: var(--solar);
-  background: rgba(245, 166, 35, 0.1);
+  background: rgba(241, 104, 44, 0.05);
 }
 
 .interaction-timeline__log-button:disabled {
@@ -125,15 +130,16 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1rem;
-  background: var(--ink-800);
+  padding: 1.25rem;
+  background: var(--white);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .log-note-form__input {
   padding: 0.75rem;
-  background: var(--ink-900);
+  background: var(--ink-800);
   border: 1px solid var(--ink-700);
   border-radius: var(--radius-sm);
   color: var(--paper-90);
@@ -141,14 +147,14 @@
   font-size: 13px;
   line-height: 1.5;
   resize: vertical;
-  min-height: 60px;
+  min-height: 80px;
   transition: all 150ms ease-out;
 }
 
 .log-note-form__input:focus {
   outline: none;
-  border-color: var(--flux);
-  background: var(--ink-800);
+  border-color: var(--bg-sage-dark);
+  background: var(--white);
 }
 
 .log-note-form__input:disabled {
@@ -165,11 +171,11 @@
   flex: 1;
   padding: 0.75rem;
   background: var(--solar);
-  color: var(--ink);
+  color: var(--white);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
@@ -179,7 +185,7 @@
 .log-note-form__submit:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 166, 35, 0.25);
+  box-shadow: 0 4px 12px rgba(241, 104, 44, 0.25);
 }
 
 .log-note-form__submit:disabled {
@@ -188,13 +194,13 @@
 }
 
 .log-note-form__cancel {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem;
   background: transparent;
   color: var(--paper-60);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;

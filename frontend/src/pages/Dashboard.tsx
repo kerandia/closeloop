@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { listCustomers } from '../api/client'
 import type { CustomerListItem } from '../api/types'
 import { CustomerTable } from '../components/CustomerTable'
 import { DashboardControls } from '../components/DashboardControls'
+import { CustomerDetailPage } from './CustomerDetailPage'
+import { withMock } from '../lib/nav'
 import './Dashboard.css'
 
 // ── Loading skeleton ─────────────────────────────────────────────────────────
@@ -60,6 +64,8 @@ function NoResultsState({ onClearFilters }: NoResultsProps) {
 // ── Dashboard page ────────────────────────────────────────────────────────────
 
 export function Dashboard() {
+  const { id: activeCustomerId } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [customers, setCustomers] = useState<CustomerListItem[]>([])
@@ -125,6 +131,32 @@ export function Dashboard() {
       ) : (
         <CustomerTable customers={filtered} />
       )}
+
+      {/* Slide-out Drawer for Customer Detail */}
+      <AnimatePresence>
+        {activeCustomerId && (
+          <>
+            {/* Blurred glass backdrop overlay */}
+            <motion.div
+              className="drawer-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => navigate(withMock('/'))}
+            />
+            {/* The slide-in drawer container */}
+            <motion.div
+              className="drawer-container"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            >
+              <CustomerDetailPage />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

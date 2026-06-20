@@ -3,7 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AppShell } from './components/AppShell'
 import { Dashboard } from './pages/Dashboard'
-import { CustomerDetailPage } from './pages/CustomerDetailPage'
+
 import { Sandbox } from './pages/Sandbox'
 import { listCustomers } from './api/client'
 
@@ -28,13 +28,18 @@ const slide = {
 export default function App() {
   const location = useLocation()
   const goingQuiet = useGoingQuiet()
+
+  // Prevent full-page animation when transitioning between Dashboard and Customer Drawer
+  const isCustomerRoute = location.pathname.startsWith('/customers/')
+  const pageKey = isCustomerRoute ? '/' : location.pathname
+
   return (
     <AppShell goingQuiet={goingQuiet}>
       <AnimatePresence mode="wait">
-        <motion.div key={location.pathname} {...slide}>
+        <motion.div key={pageKey} {...slide}>
           <Routes location={location}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/customers/:id" element={<CustomerDetailPage />} />
+            <Route path="/customers/:id" element={<Dashboard />} />
             <Route path="/sandbox" element={<Sandbox />} />
           </Routes>
         </motion.div>
