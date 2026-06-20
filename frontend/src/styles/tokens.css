@@ -20,10 +20,11 @@
   --paper-40: rgba(244, 246, 248, 0.4);
   --paper-25: rgba(244, 246, 248, 0.25);
 
-  /* score bands: red <40, amber 40–70, green >70 */
-  --band-low: #e8756a;
-  --band-mid: #e8a838;
-  --band-high: #f5a623;
+  /* deal-score bands: cold 0–39 · cool 40–59 · warm 60–79 · hot 80–100 */
+  --band-cold: #e8756a;
+  --band-cool: #e8a838;
+  --band-warm: #f5a623;
+  --band-hot: #14b5a6;
   --band-unknown: var(--ink-700);
 
   /* buyer types */
@@ -35,7 +36,7 @@
   /* ghost risk */
   --risk-low: var(--flux);
   --risk-medium: var(--solar);
-  --risk-high: var(--band-low);
+  --risk-high: var(--band-cold);
 
   /* fonts */
   --font-head: 'Space Grotesk', system-ui, sans-serif;

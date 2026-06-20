@@ -160,6 +160,7 @@ class CustomerListItem(BaseModel):
     name: str
     buyer_type: str | None = None
     sign_likelihood: int | None = None
+    score_trend: str | None = None  # up|down|flat — show as ↑/↓ (deal-score.md ②)
     ghost_risk: str | None = None
     stage: str
     next_action: NextAction | None = None
@@ -250,6 +251,7 @@ class CustomerOut(ApiBase):
     language: str
     stage: str
     sign_likelihood: int | None = None
+    score_trend: str | None = None  # up|down|flat
     ghost_risk: str | None = None
     last_contact_at: dt.datetime | None = None
     next_action_at: dt.datetime | None = None
@@ -342,6 +344,8 @@ class InteractionCreate(BaseModel):
 class ScoreOut(BaseModel):
     sign_likelihood: int | None = None
     ghost_risk: str | None = None
+    band: str | None = None  # cold|cool|warm|hot (deal-score.md Part 1)
+    trend: str | None = None  # up|down|flat (Part 1 ②)
     components: dict | None = None
     reason: str | None = None
 
