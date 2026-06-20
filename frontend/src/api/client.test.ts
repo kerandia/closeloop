@@ -83,3 +83,24 @@ describe('api client', () => {
     await expect(api.listCustomers()).rejects.toThrow()
   })
 })
+
+describe('mock mode write paths stay offline', () => {
+  test('approve/logInteraction/send return fixtures without calling fetch', async () => {
+    window.history.replaceState({}, '', '/?mock=1')
+    const fn = vi.fn()
+    vi.stubGlobal('fetch', fn)
+
+    const msg = await api.approveRecommendation('rid')
+    const log = await api.logInteraction('cid', { channel: 'visit' })
+    const sent = await api.sendMessage('mid')
+    const collect = await api.copilotCollect('cid')
+
+    expect(fn).not.toHaveBeenCalled()
+    expect(msg.body).toBeTruthy()
+    expect(log.recommendation).toBeTruthy()
+    expect(sent.ok).toBe(true)
+    expect(collect.question).toBeTruthy()
+
+    window.history.replaceState({}, '', '/')
+  })
+})

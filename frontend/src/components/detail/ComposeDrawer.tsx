@@ -61,14 +61,26 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
 
   async function handleBlurSubject() {
     if (!message || subject === savedSubjectRef.current) return
+    const prev = savedSubjectRef.current
     savedSubjectRef.current = subject
-    await patchMessage(message.id, { subject })
+    try {
+      await patchMessage(message.id, { subject })
+    } catch (err) {
+      savedSubjectRef.current = prev // revert so the next blur retries
+      setSendError(err instanceof Error ? err.message : 'Failed to save edits')
+    }
   }
 
   async function handleBlurBody() {
     if (!message || body === savedBodyRef.current) return
+    const prev = savedBodyRef.current
     savedBodyRef.current = body
-    await patchMessage(message.id, { body })
+    try {
+      await patchMessage(message.id, { body })
+    } catch (err) {
+      savedBodyRef.current = prev
+      setSendError(err instanceof Error ? err.message : 'Failed to save edits')
+    }
   }
 
   async function handleSend() {
@@ -76,6 +88,16 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
     setSending(true)
     setSendError(null)
     try {
+      // Flush any unsaved edits before sending so the backend uses the latest text,
+      // not a draft from a still-in-flight blur PATCH.
+      if (subject !== savedSubjectRef.current) {
+        await patchMessage(message.id, { subject })
+        savedSubjectRef.current = subject
+      }
+      if (body !== savedBodyRef.current) {
+        await patchMessage(message.id, { body })
+        savedBodyRef.current = body
+      }
       const response = await sendMessage(message.id)
       onSent(response.interaction)
     } catch (err) {

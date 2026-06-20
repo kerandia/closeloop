@@ -152,8 +152,17 @@ export function InteractionTimeline({
               key={interaction.id}
               className={`interaction-row ${hasTranscript ? 'interaction-row--expandable' : ''}`}
               data-testid="interaction-row"
+              role={hasTranscript ? 'button' : undefined}
+              tabIndex={hasTranscript ? 0 : undefined}
+              aria-expanded={hasTranscript ? isExpanded : undefined}
               onClick={() => {
                 if (hasTranscript) {
+                  setExpandedId(isExpanded ? null : interaction.id)
+                }
+              }}
+              onKeyDown={(e) => {
+                if (hasTranscript && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault()
                   setExpandedId(isExpanded ? null : interaction.id)
                 }
               }}

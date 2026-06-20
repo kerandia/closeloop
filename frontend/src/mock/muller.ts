@@ -2,7 +2,11 @@
 import type {
   CustomerDetail,
   CustomerListItem,
+  InteractionCreate,
+  InteractionLogResponse,
+  Message,
   RespondOutput,
+  SendResponse,
 } from '../api/types'
 
 const MULLER_ID = '11111111-1111-1111-1111-111111111111'
@@ -228,6 +232,94 @@ export function mockRespond(): RespondOutput {
       'I’ll bring the winter-yield numbers for your roof so there’s no guesswork.',
     ],
     why: 'Naming the multi-quote behaviour honestly disarms it, and a visit shifts the frame from price to trust — exactly what a skeptic needs.',
+  }
+}
+
+// ── Mock write paths — keep the golden path fully offline (?mock=1) ──────────
+export function mockLogInteraction(payload: InteractionCreate): InteractionLogResponse {
+  const rec = mockGetCustomer().recommendation!
+  return {
+    interaction: {
+      id: `i-${Date.now()}`,
+      rep_id: REP.id,
+      channel: payload.channel,
+      direction: payload.direction ?? 'outbound',
+      occurred_at: new Date().toISOString(),
+      content: payload.content ?? null,
+      transcript_md: payload.transcript_md ?? null,
+      recording_url: null,
+      outcome: payload.outcome ?? 'note logged',
+      rep_gut_feel: payload.rep_gut_feel ?? null,
+      created_by: 'rep',
+    },
+    // Visibly change the recommendation + score so the reveal beat lands offline.
+    recommendation: {
+      ...rec,
+      goal: 'Get both decision-makers in the room',
+      rationale:
+        'New note logged: the wife is hesitant. Switch to a joint home visit that brings ' +
+        'her on board and answers the winter-yield doubt together — before any competitor call.',
+    },
+    score: {
+      sign_likelihood: 81,
+      ghost_risk: 'low',
+      components: null,
+      reason: 'Engagement up after the logged touch',
+    },
+  }
+}
+
+export function mockApprove(): Message {
+  return {
+    id: `m-${Date.now()}`,
+    recommendation_id: 'r-1',
+    customer_id: MULLER_ID,
+    channel: 'email',
+    subject: 'Kurzer Besuch zu Ihrem Solar-Angebot',
+    body:
+      'Hallo Familie Müller,\n\n' +
+      'danke für das offene Gespräch. Ich komme gern für 20 Minuten vorbei, damit Sie und ' +
+      'Ihre Frau das Angebot in Ruhe vergleichen können — ich bringe die Winterertrags-Zahlen ' +
+      'für Ihr Dach mit.\n\nWann passt es Ihnen diese Woche?\n\nViele Grüße\nLena',
+    language: 'de',
+    status: 'draft',
+    sent_at: null,
+  }
+}
+
+export function mockPatchMessage(patch: { subject?: string; body?: string }): Message {
+  return {
+    ...mockApprove(),
+    subject: patch.subject ?? mockApprove().subject,
+    body: patch.body ?? mockApprove().body,
+    status: 'edited',
+  }
+}
+
+export function mockSend(): SendResponse {
+  return {
+    ok: true,
+    provider: { provider_id: 'mock-provider' },
+    interaction: {
+      id: `i-${Date.now()}`,
+      rep_id: REP.id,
+      channel: 'email',
+      direction: 'outbound',
+      occurred_at: new Date().toISOString(),
+      content: 'Message sent',
+      transcript_md: null,
+      recording_url: null,
+      outcome: 'sent via email (mock-provider)',
+      rep_gut_feel: null,
+      created_by: 'system',
+    },
+  }
+}
+
+export function mockCollect(): { question: string } {
+  return {
+    question:
+      'Were you looking at paying upfront, or would financing options be helpful to see?',
   }
 }
 

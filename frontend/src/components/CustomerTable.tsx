@@ -53,7 +53,10 @@ export function CustomerTable({ customers }: Props) {
             onClick={() => navigate(withMock(`/customers/${c.id}`))}
             tabIndex={0}
             onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') navigate(withMock(`/customers/${c.id}`))
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                navigate(withMock(`/customers/${c.id}`))
+              }
             }}
           >
             <td className="ct__cell ct__cell--name">

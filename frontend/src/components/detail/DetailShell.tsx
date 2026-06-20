@@ -85,9 +85,10 @@ export function DetailShell({ data, customerId }: Props) {
       const response = await apiLogInteraction(customerId, payload)
       // Prepend the new interaction immediately
       setExtraInteractions((prev) => [response.interaction, ...prev])
-      // Overlay new score + recommendation from the full JSON response
-      if (response.score) setLiveScore(response.score)
-      if (response.recommendation) setLiveRec(response.recommendation)
+      // Overlay new score + recommendation from the full JSON response.
+      // Set unconditionally so a cleared (null) value doesn't leave a stale overlay.
+      setLiveScore(response.score)
+      setLiveRec(response.recommendation)
       // Reset local status so card re-shows its buttons for the new recommendation
       setLocalStatus(null)
       setPhase('revealed')

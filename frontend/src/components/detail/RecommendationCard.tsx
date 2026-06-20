@@ -31,7 +31,7 @@
  *       'superseded' → fade out, new card drops in
  *     Falls back to recommendation.status when null.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import type { Recommendation, Customer, RecStatus, Channel } from '../../api/types'
 import { ChannelIcon } from '../ChannelIcon'
@@ -76,6 +76,14 @@ export function RecommendationCard({
     recommendation ? defaultExecutor(recommendation.channel) : 'ai',
   )
 
+  // Reset the executor to the suggested default whenever a new recommendation
+  // arrives (e.g. after a re-analyze) so a new `visit` rec never keeps AI selected.
+  const recId = recommendation?.id
+  const recChannel = recommendation?.channel
+  useEffect(() => {
+    if (recChannel) setExecutor(defaultExecutor(recChannel))
+  }, [recId, recChannel])
+
   // Empty / analyzing state
   if (!recommendation) {
     return (
@@ -94,7 +102,9 @@ export function RecommendationCard({
   const isLocked = effectiveStatus === 'approved' || effectiveStatus === 'composing'
   const isReady = effectiveStatus === 'ready'
 
-  const headline = `${CHANNEL_LABEL[recommendation.channel]} · ${recommendation.timing_label ?? ''}`
+  const headline = recommendation.timing_label
+    ? `${CHANNEL_LABEL[recommendation.channel]} · ${recommendation.timing_label}`
+    : CHANNEL_LABEL[recommendation.channel]
 
   return (
     <motion.div

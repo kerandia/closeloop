@@ -39,4 +39,13 @@ describe('relativeTime', () => {
   test('null reads as never', () => {
     expect(relativeTime(null, now)).toBe('never')
   })
+  test('invalid date reads as never (not "NaN days ago")', () => {
+    expect(relativeTime('not-a-date', now)).toBe('never')
+  })
+  test('future timestamp reads as soon, not "just now"', () => {
+    expect(relativeTime('2026-06-22T12:00:00Z', now)).toBe('in 2 days')
+  })
+  test('near-future (within a minute) reads as soon', () => {
+    expect(relativeTime('2026-06-20T12:00:20Z', now)).toBe('soon')
+  })
 })

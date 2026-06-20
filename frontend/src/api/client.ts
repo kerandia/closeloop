@@ -7,7 +7,16 @@ import type {
   RespondOutput,
   SendResponse,
 } from './types'
-import { mockListCustomers, mockGetCustomer, mockRespond } from '../mock/muller'
+import {
+  mockListCustomers,
+  mockGetCustomer,
+  mockRespond,
+  mockLogInteraction,
+  mockApprove,
+  mockPatchMessage,
+  mockSend,
+  mockCollect,
+} from '../mock/muller'
 
 export function isMockMode(): boolean {
   return new URLSearchParams(window.location.search).get('mock') === '1'
@@ -46,14 +55,17 @@ export function logInteraction(
   customerId: string,
   payload: InteractionCreate,
 ): Promise<InteractionLogResponse> {
+  if (isMockMode()) return Promise.resolve(mockLogInteraction(payload))
   return req(`/api/customers/${customerId}/interactions`, 'POST', payload)
 }
 
 export function approveRecommendation(recId: string): Promise<Message> {
+  if (isMockMode()) return Promise.resolve(mockApprove())
   return req(`/api/recommendations/${recId}/approve`, 'POST')
 }
 
 export function dismissRecommendation(recId: string): Promise<{ ok: boolean }> {
+  if (isMockMode()) return Promise.resolve({ ok: true })
   return req(`/api/recommendations/${recId}/dismiss`, 'POST')
 }
 
@@ -61,10 +73,12 @@ export function patchMessage(
   msgId: string,
   patch: { subject?: string; body?: string },
 ): Promise<Message> {
+  if (isMockMode()) return Promise.resolve(mockPatchMessage(patch))
   return req(`/api/messages/${msgId}`, 'PATCH', patch)
 }
 
 export function sendMessage(msgId: string): Promise<SendResponse> {
+  if (isMockMode()) return Promise.resolve(mockSend())
   return req(`/api/messages/${msgId}/send`, 'POST')
 }
 
@@ -78,5 +92,6 @@ export function copilotRespond(payload: {
 }
 
 export function copilotCollect(customerId: string): Promise<{ question: string }> {
+  if (isMockMode()) return Promise.resolve(mockCollect())
   return req(`/api/copilot/collect/${customerId}`, 'GET')
 }
