@@ -6,6 +6,7 @@ import { GhostRiskPill } from './GhostRiskPill'
 import { StageBadge } from './StageBadge'
 import { ChannelIcon } from './ChannelIcon'
 import { relativeTime } from '../lib/format'
+import { withMock } from '../lib/nav'
 import './CustomerTable.css'
 
 /** "Lena Brandt" → "LB" */
@@ -49,10 +50,10 @@ export function CustomerTable({ customers }: Props) {
           <tr
             key={c.id}
             className="ct__row"
-            onClick={() => navigate(`/customers/${c.id}`)}
+            onClick={() => navigate(withMock(`/customers/${c.id}`))}
             tabIndex={0}
             onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') navigate(`/customers/${c.id}`)
+              if (e.key === 'Enter' || e.key === ' ') navigate(withMock(`/customers/${c.id}`))
             }}
           >
             <td className="ct__cell ct__cell--name">

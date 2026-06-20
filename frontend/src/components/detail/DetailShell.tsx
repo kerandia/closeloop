@@ -33,6 +33,7 @@ import {
   approveRecommendation,
   dismissRecommendation,
 } from '../../api/client'
+import { withMock } from '../../lib/nav'
 import { BuyerTypeChip } from '../BuyerTypeChip'
 import { GhostRiskPill } from '../GhostRiskPill'
 import { ScoreBar } from '../ScoreBar'
@@ -140,7 +141,7 @@ export function DetailShell({ data, customerId }: Props) {
     <div className="detail-shell">
       {/* ── Sticky header strip ──────────────────────────────────────────── */}
       <header className="detail-header">
-        <Link to="/" className="detail-header__back">
+        <Link to={withMock('/')} className="detail-header__back">
           ← Pipeline
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>

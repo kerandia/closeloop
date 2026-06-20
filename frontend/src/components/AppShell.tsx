@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { withMock } from '../lib/nav'
 import './AppShell.css'
 
 interface Props {
@@ -12,7 +13,7 @@ export function AppShell({ children, goingQuiet = 0 }: Props) {
   return (
     <div className="shell">
       <header className="shell__bar">
-        <Link to="/" className="shell__brand">
+        <Link to={withMock('/')} className="shell__brand">
           Close<span>Loop</span>
         </Link>
         {goingQuiet > 0 && (
