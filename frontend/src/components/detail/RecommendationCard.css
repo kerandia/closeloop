@@ -206,3 +206,12 @@
 .rec-card__sent-check {
   font-size: 18px;
 }
+
+.rec-card__dismissed-state {
+  margin-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-600);
+}

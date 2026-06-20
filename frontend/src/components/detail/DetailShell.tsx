@@ -92,9 +92,11 @@ export function DetailShell({ data, customerId }: Props) {
       // Reset local status so card re-shows its buttons for the new recommendation
       setLocalStatus(null)
       setPhase('revealed')
-    } catch {
-      // Revert to idle so the user can retry — don't leave the UI stuck on "Analyzing"
+    } catch (err) {
+      // Revert to idle so the UI isn't stuck on "Analyzing", and re-throw so the
+      // log-note form stays open with the typed note intact for a retry.
       setPhase('idle')
+      throw err
     }
   }
 

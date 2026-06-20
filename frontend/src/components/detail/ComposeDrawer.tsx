@@ -40,9 +40,12 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
 
-  // Track the last persisted value so blur only patches when something changed
-  const savedSubjectRef = useRef<string>(message?.subject ?? '')
-  const savedBodyRef = useRef<string>(message?.body ?? '')
+  // Last value we've already queued a PATCH for, so blur doesn't re-queue no-ops.
+  const queuedSubjectRef = useRef<string>(message?.subject ?? '')
+  const queuedBodyRef = useRef<string>(message?.body ?? '')
+  // Serialized save queue: every edit PATCH chains onto the previous one, so
+  // PATCHes apply in order (last write wins) and Send can await the whole queue.
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve())
 
   // Sync editable fields when the draft message arrives (null → Message)
   useEffect(() => {
@@ -51,36 +54,46 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
       const b = message.body
       setSubject(s)
       setBody(b)
-      savedSubjectRef.current = s
-      savedBodyRef.current = b
+      queuedSubjectRef.current = s
+      queuedBodyRef.current = b
+      saveQueueRef.current = Promise.resolve()
       setSendError(null)
     }
   }, [message])
 
   if (!open) return null
 
-  async function handleBlurSubject() {
-    if (!message || subject === savedSubjectRef.current) return
-    const prev = savedSubjectRef.current
-    savedSubjectRef.current = subject
-    try {
-      await patchMessage(message.id, { subject })
-    } catch (err) {
-      savedSubjectRef.current = prev // revert so the next blur retries
-      setSendError(err instanceof Error ? err.message : 'Failed to save edits')
-    }
+  // Append a PATCH to the serialized queue (runs after all prior queued PATCHes).
+  function enqueuePatch(patch: { subject?: string; body?: string }): Promise<void> {
+    const next = saveQueueRef.current
+      .catch(() => {}) // a prior failure shouldn't block later saves
+      .then(() => patchMessage(message!.id, patch).then(() => {}))
+    saveQueueRef.current = next
+    return next
   }
 
-  async function handleBlurBody() {
-    if (!message || body === savedBodyRef.current) return
-    const prev = savedBodyRef.current
-    savedBodyRef.current = body
-    try {
-      await patchMessage(message.id, { body })
-    } catch (err) {
-      savedBodyRef.current = prev
-      setSendError(err instanceof Error ? err.message : 'Failed to save edits')
-    }
+  function queueSubject(): void {
+    if (!message || subject === queuedSubjectRef.current) return
+    queuedSubjectRef.current = subject
+    enqueuePatch({ subject })
+  }
+
+  function queueBody(): void {
+    if (!message || body === queuedBodyRef.current) return
+    queuedBodyRef.current = body
+    enqueuePatch({ body })
+  }
+
+  function handleBlurSubject() {
+    queueSubject()
+    saveQueueRef.current.catch(() =>
+      setSendError('Failed to save edits'),
+    )
+  }
+
+  function handleBlurBody() {
+    queueBody()
+    saveQueueRef.current.catch(() => setSendError('Failed to save edits'))
   }
 
   async function handleSend() {
@@ -88,16 +101,12 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
     setSending(true)
     setSendError(null)
     try {
-      // Flush any unsaved edits before sending so the backend uses the latest text,
-      // not a draft from a still-in-flight blur PATCH.
-      if (subject !== savedSubjectRef.current) {
-        await patchMessage(message.id, { subject })
-        savedSubjectRef.current = subject
-      }
-      if (body !== savedBodyRef.current) {
-        await patchMessage(message.id, { body })
-        savedBodyRef.current = body
-      }
+      // Queue any not-yet-saved edits, then wait for the ENTIRE save queue
+      // (including an earlier in-flight blur PATCH) so the backend has the
+      // final text before we send.
+      queueSubject()
+      queueBody()
+      await saveQueueRef.current
       const response = await sendMessage(message.id)
       onSent(response.interaction)
     } catch (err) {
