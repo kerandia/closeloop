@@ -27,6 +27,15 @@ def _utcnow() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
+# the only layers the UI groups by — the LLM occasionally invents others
+# ("engagement", "interaction"), so we clamp to keep the contract honest.
+_SIGNAL_LAYERS = {"motivation", "negotiation", "objection", "buying_signal"}
+
+
+def _norm_layer(layer: str | None) -> str:
+    return layer if layer in _SIGNAL_LAYERS else "negotiation"
+
+
 async def run_analyze(
     db: AsyncSession, customer: models.Customer
 ) -> models.Recommendation:
@@ -108,7 +117,7 @@ async def _persist(
         db.add(
             models.ProfileSignal(
                 customer_id=customer.id,
-                layer=s.layer,
+                layer=_norm_layer(s.layer),
                 label=s.label,
                 evidence_quote=s.evidence_quote,
                 source_interaction_id=last_interaction_id,
