@@ -180,6 +180,10 @@ export function RecommendationCard({
           <span className="rec-card__sent-check" style={{ color: 'var(--flux)' }}>✓</span>
           {' '}Sent
         </div>
+      ) : isDismissed ? (
+        <div className="rec-card__dismissed-state" data-testid="dismissed-state">
+          Recommendation dismissed
+        </div>
       ) : (
         <>
           <button

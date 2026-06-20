@@ -59,28 +59,38 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
 
   if (!open) return null
 
-  async function handleBlurSubject() {
+  // A field is "saved" only once its PATCH resolves — never optimistically —
+  // so Send can reliably detect and flush unsaved edits before posting.
+  async function flushSubject() {
     if (!message || subject === savedSubjectRef.current) return
-    const prev = savedSubjectRef.current
-    savedSubjectRef.current = subject
+    const value = subject
     try {
-      await patchMessage(message.id, { subject })
+      await patchMessage(message.id, { subject: value })
+      savedSubjectRef.current = value
     } catch (err) {
-      savedSubjectRef.current = prev // revert so the next blur retries
       setSendError(err instanceof Error ? err.message : 'Failed to save edits')
+      throw err
     }
   }
 
-  async function handleBlurBody() {
+  async function flushBody() {
     if (!message || body === savedBodyRef.current) return
-    const prev = savedBodyRef.current
-    savedBodyRef.current = body
+    const value = body
     try {
-      await patchMessage(message.id, { body })
+      await patchMessage(message.id, { body: value })
+      savedBodyRef.current = value
     } catch (err) {
-      savedBodyRef.current = prev
       setSendError(err instanceof Error ? err.message : 'Failed to save edits')
+      throw err
     }
+  }
+
+  function handleBlurSubject() {
+    flushSubject().catch(() => {}) // error surfaced; next blur/Send retries
+  }
+
+  function handleBlurBody() {
+    flushBody().catch(() => {})
   }
 
   async function handleSend() {
@@ -88,16 +98,10 @@ export function ComposeDrawer({ open, message, onClose, onSent }: ComposeDrawerP
     setSending(true)
     setSendError(null)
     try {
-      // Flush any unsaved edits before sending so the backend uses the latest text,
-      // not a draft from a still-in-flight blur PATCH.
-      if (subject !== savedSubjectRef.current) {
-        await patchMessage(message.id, { subject })
-        savedSubjectRef.current = subject
-      }
-      if (body !== savedBodyRef.current) {
-        await patchMessage(message.id, { body })
-        savedBodyRef.current = body
-      }
+      // Persist unsaved edits and WAIT for them before sending, so the backend
+      // never sends stale text from an in-flight blur PATCH.
+      await flushSubject()
+      await flushBody()
       const response = await sendMessage(message.id)
       onSent(response.interaction)
     } catch (err) {

@@ -100,4 +100,41 @@ describe('RecommendationCard', () => {
     renderCard({ recommendation: null })
     expect(screen.getByText(/no active recommendation/i)).toBeInTheDocument()
   })
+
+  test('status=dismissed hides Approve and Dismiss actions', () => {
+    renderCard({ status: 'dismissed' as RecStatus })
+    expect(screen.getByText(/dismissed/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /approve/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^dismiss$/i })).not.toBeInTheDocument()
+  })
+
+  test('resets executor to Rep when a new visit recommendation arrives', () => {
+    const { rerender } = renderForRerender()
+    // initial email rec → AI executes selected
+    expect(screen.getByRole('radio', { name: /ai executes/i })).toBeChecked()
+    rerender(
+      <RecommendationCard
+        recommendation={{ ...mockRec, id: 'rec-2', channel: 'visit' }}
+        customer={mockCustomer}
+        onApprove={vi.fn()}
+        onDismiss={vi.fn()}
+        status={null}
+      />,
+    )
+    // new visit rec → Rep executes, AI disabled
+    expect(screen.getByRole('radio', { name: /rep executes/i })).toBeChecked()
+    expect(screen.getByRole('radio', { name: /ai executes/i })).toBeDisabled()
+  })
 })
+
+function renderForRerender() {
+  return render(
+    <RecommendationCard
+      recommendation={mockRec}
+      customer={mockCustomer}
+      onApprove={vi.fn()}
+      onDismiss={vi.fn()}
+      status={null}
+    />,
+  )
+}

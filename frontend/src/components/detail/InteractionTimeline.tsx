@@ -49,10 +49,12 @@ function LogNoteForm({
   const [repGutFeel, setRepGutFeel] = useState('')
   const [outcome, setOutcome] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
     try {
       await onSubmit({
         channel: 'visit',
@@ -63,6 +65,9 @@ function LogNoteForm({
       })
       // Form closes when parent receives the response
       onCancel()
+    } catch {
+      // Keep the form open with the typed note intact so the rep can retry
+      setError('Could not log that — try again')
     } finally {
       setIsSubmitting(false)
     }
@@ -91,6 +96,11 @@ function LogNoteForm({
         className="log-note-form__input"
         disabled={isSubmitting}
       />
+      {error && (
+        <p className="log-note-form__error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="log-note-form__actions">
         <button
           type="submit"

@@ -239,4 +239,21 @@ describe('InteractionTimeline', () => {
       )
     })
   })
+
+  test('keeps the form open with an error when logging fails', async () => {
+    const mockOnLog = vi.fn().mockRejectedValue(new Error('network down'))
+    const user = userEvent.setup()
+    render(<InteractionTimeline interactions={mockInteractions} onLogInteraction={mockOnLog} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /log visit/i }))
+    const noteInput = screen.getAllByRole('textbox')[0]
+    await user.type(noteInput, 'wife hesitant')
+    fireEvent.click(screen.getByRole('button', { name: /^log$/i }))
+
+    // error shown, note retained, form still open (textareas present)
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+    expect(screen.getByDisplayValue('wife hesitant')).toBeInTheDocument()
+  })
 })
