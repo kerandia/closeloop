@@ -52,16 +52,24 @@
   border-bottom-right-radius: var(--radius);
 }
 
-.ct__row:hover {
+.ct__row:focus-visible {
+  outline: 2px solid var(--solar);
+  outline-offset: 2px;
+}
+
+.ct__row:hover,
+.ct__row:focus-visible {
   transform: translateY(-2px);
 }
 
-.ct__row:hover td {
+.ct__row:hover td,
+.ct__row:focus-visible td {
   border-color: var(--ink-700);
   box-shadow: var(--shadow-hover);
 }
 
-.ct__row:hover td:first-child {
+.ct__row:hover td:first-child,
+.ct__row:focus-visible td:first-child {
   border-left-color: var(--solar);
 }
 

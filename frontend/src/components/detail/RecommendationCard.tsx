@@ -95,6 +95,7 @@ export function RecommendationCard({
 
   const effectiveStatus = status ?? recommendation.status
   const isVisit = recommendation.channel === 'visit'
+  const isCallChannel = recommendation.channel === 'phone' || recommendation.channel === 'voice_ai'
 
   // Derive card lifecycle phase from status
   const isSent = effectiveStatus === 'sent'
@@ -192,10 +193,10 @@ export function RecommendationCard({
             disabled={isLocked || isReady}
           >
             {isLocked
-              ? (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Connecting…' : 'Composing…')
+              ? (isCallChannel ? 'Connecting…' : 'Composing…')
               : isReady
-              ? (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Call Active' : 'Message ready')
-              : (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Approve & Call' : 'Approve & Compose')}
+              ? (isCallChannel ? 'Call Active' : 'Message ready')
+              : (isCallChannel ? 'Approve & Call' : 'Approve & Compose')}
           </button>
 
           {/* Dismiss is only available while pending — hidden once locked or ready */}

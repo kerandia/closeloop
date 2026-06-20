@@ -13,7 +13,7 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
   const [agentId, setAgentId] = useState('agent_0701kvjz79zae3wr46301bxvd7vd') // default voice agent ID
   const [err, setErr] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const conv = useConversation({ onError: (e) => setErr(String(e)) })
 
@@ -46,11 +46,17 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
   useEffect(() => {
     if (prevStatusRef.current === 'connected' && conv.status === 'disconnected') {
       // Trigger callback if provided
-      const finalDuration = duration > 0 ? duration : Math.floor(Math.random() * 25) + 15
-      const mockTranscript = `**Agent (Voice AI):** Hello, this is the CloseLoop assistant calling on behalf of our team. We've compiled your customized winter solar yield report.\n\n**${customerName}:** Ah, excellent. Does the system really produce enough in December?\n\n**Agent (Voice AI):** Yes, with the 12 kWp Freiburg system configuration, you'll still offset 30% of baseline consumption even in peak winter. Would you like a home visit confirmation to walk through the numbers?\n\n**${customerName}:** Yes, that sounds good. Let's schedule that.`
+      const isMock = new URLSearchParams(window.location.search).get('mock') === '1'
+      let finalDuration = duration
+      let transcript = ''
+
+      if (isMock) {
+        if (finalDuration === 0) finalDuration = Math.floor(Math.random() * 25) + 15
+        transcript = `**Agent (Voice AI):** Hello, this is the CloseLoop assistant calling on behalf of our team. We've compiled your customized winter solar yield report.\n\n**${customerName}:** Ah, excellent. Does the system really produce enough in December?\n\n**Agent (Voice AI):** Yes, with the 12 kWp Freiburg system configuration, you'll still offset 30% of baseline consumption even in peak winter. Would you like a home visit confirmation to walk through the numbers?\n\n**${customerName}:** Yes, that sounds good. Let's schedule that.`
+      }
       
       if (onCallFinished) {
-        onCallFinished(finalDuration, mockTranscript)
+        onCallFinished(finalDuration, transcript)
       }
     }
     prevStatusRef.current = conv.status

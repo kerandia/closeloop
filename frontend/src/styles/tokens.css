@@ -6,7 +6,7 @@
   /* brand & theme colors */
   --bg-sage: #eef1ee;               /* Outer page background (sage green) */
   --bg-sage-dark: #cad2ca;          /* Deeper sage green accent */
-  --ink: var(--bg-sage);
+  --ink: #0f1210;                   /* Primary dark text/ink color */
   --ink-900: #1b201a;               /* Dark charcoal-green for headers */
   --ink-800: #eef1ef;               /* Hover background (very soft grey) */
   --ink-700: #d6ded8;               /* Subtle border lines */
@@ -57,7 +57,7 @@
 html, body, #root {
   margin: 0;
   min-height: 100vh;
-  background: var(--ink);
+  background: var(--bg-sage);
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 15px;

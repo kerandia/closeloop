@@ -39,6 +39,12 @@
   50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(228, 106, 106, 0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .dash-ctrl__alert-dot {
+    animation: none;
+  }
+}
+
 .dash-ctrl__search {
   flex: 1;
   min-width: 180px;

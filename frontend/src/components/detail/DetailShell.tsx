@@ -108,7 +108,12 @@ export function DetailShell({ data, customerId }: Props) {
     setLocalStatus('approved')
     if (isPhoneCall) {
       setCallOpen(true)
-      setLocalStatus('ready')
+      approveRecommendation(recId)
+        .then(() => setLocalStatus('ready'))
+        .catch(() => {
+          setLocalStatus(null)
+          setCallOpen(false)
+        })
     } else {
       setComposeOpen(true)
       approveRecommendation(recId)
