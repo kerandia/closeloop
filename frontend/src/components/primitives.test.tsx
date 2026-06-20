@@ -11,7 +11,11 @@ describe('ScoreBar', () => {
   })
   test('exposes the band as data-band', () => {
     const { container } = render(<ScoreBar value={74} />)
-    expect(container.querySelector('[data-band="high"]')).toBeTruthy()
+    expect(container.querySelector('[data-band="warm"]')).toBeTruthy()
+  })
+  test('shows a trend arrow when trending', () => {
+    const { container } = render(<ScoreBar value={74} trend="up" />)
+    expect(container.querySelector('.scorebar__trend--up')).toBeTruthy()
   })
   test('null score renders a dash, unknown band', () => {
     const { container } = render(<ScoreBar value={null} />)

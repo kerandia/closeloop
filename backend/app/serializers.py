@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
+from app.services import scoring as scoring_svc
 
 ACTIVE_REC_STATUSES = ("pending", "approved", "composing", "ready")
 
@@ -39,6 +40,7 @@ async def customer_list_item(
         name=c.name,
         buyer_type=profile.buyer_type if profile else None,
         sign_likelihood=c.sign_likelihood,
+        score_trend=await scoring_svc.trend(db, c.id),
         ghost_risk=c.ghost_risk,
         stage=c.stage,
         next_action=next_action,
@@ -113,6 +115,9 @@ async def customer_detail(
 
     rec = await current_recommendation(db, c.id)
 
+    customer_out = schemas.CustomerOut.model_validate(c)
+    customer_out.score_trend = await scoring_svc.trend(db, c.id)
+
     assignment = None
     if c.assigned_rep_id:
         r = await db.get(models.Rep, c.assigned_rep_id)
@@ -123,7 +128,7 @@ async def customer_detail(
             )
 
     return schemas.CustomerDetail(
-        customer=schemas.CustomerOut.model_validate(c),
+        customer=customer_out,
         quote=schemas.QuoteOut.model_validate(quote) if quote else None,
         profile=schemas.ProfileOut.model_validate(profile) if profile else None,
         signals=[schemas.SignalOut.model_validate(s) for s in signals],
