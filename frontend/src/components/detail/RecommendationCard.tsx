@@ -191,7 +191,11 @@ export function RecommendationCard({
             onClick={() => onApprove(recommendation.id)}
             disabled={isLocked || isReady}
           >
-            {isLocked ? 'Composing…' : isReady ? 'Message ready' : 'Approve & Compose'}
+            {isLocked
+              ? (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Connecting…' : 'Composing…')
+              : isReady
+              ? (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Call Active' : 'Message ready')
+              : (recommendation.channel === 'phone' || recommendation.channel === 'voice_ai' ? 'Approve & Call' : 'Approve & Compose')}
           </button>
 
           {/* Dismiss is only available while pending — hidden once locked or ready */}

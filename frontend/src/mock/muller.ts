@@ -201,16 +201,15 @@ export function mockGetCustomer(): CustomerDetail {
     ],
     recommendation: {
       id: 'r-1',
-      channel: 'visit',
+      channel: 'phone',
       timing_at: iso(-2),
-      timing_label: 'within 48h',
-      goal: 'Handle multi-quote risk, lock before competitors',
+      timing_label: 'today',
+      goal: 'Call to answer winter-yield doubts and compare options',
       rationale:
-        'Müller showed real intent (asked install date) but flagged a multi-quote ' +
-        'comparison and winter-yield doubt. A home visit within 48h — before a ' +
-        'competitor call — builds trust, brings the wife on board, and answers the ' +
-        'winter question with local yield data. Bring the financing sheet.',
-      play_key: 'home_visit_trust',
+        'Müller showed real intent but flagged a multi-quote comparison and winter-yield doubt. ' +
+        'A quick phone call today will address the winter question with Freiburg yield stats and ' +
+        'position us to schedule a follow-up home visit to close the deal.',
+      play_key: 'phone_call_yield',
       priority: 10,
       status: 'pending',
     },
@@ -255,6 +254,7 @@ export function mockLogInteraction(payload: InteractionCreate): InteractionLogRe
     // Visibly change the recommendation + score so the reveal beat lands offline.
     recommendation: {
       ...rec,
+      channel: 'visit',
       goal: 'Get both decision-makers in the room',
       rationale:
         'New note logged: the wife is hesitant. Switch to a joint home visit that brings ' +
