@@ -377,6 +377,13 @@ class CollectResponse(BaseModel):
     question: str
 
 
+class MessagingSendRequest(BaseModel):
+    customer_id: uuid.UUID
+    body: str
+    channel: str = "whatsapp"  # whatsapp|sms
+    suggestion_id: uuid.UUID | None = None  # mark this suggestion as sent
+
+
 class OutcomeCreate(BaseModel):
     recommendation_id: uuid.UUID | None = None
     result: str  # replied_positive|replied_negative|no_response|meeting_booked|won|lost

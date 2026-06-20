@@ -2,17 +2,78 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
 from app.db import get_db
+from app.services import realtime
 from app.services import respond as respond_svc
 
 router = APIRouter(prefix="/api/copilot", tags=["copilot"])
+
+
+def _suggestion_dict(s: models.CopilotSuggestion) -> dict:
+    return {
+        "id": str(s.id),
+        "customer_id": str(s.customer_id),
+        "utterance": s.utterance,
+        "read": s.read,
+        "category": s.category,
+        "exact_lines": s.exact_lines or [],
+        "why": s.why,
+        "advance_hook": s.advance_hook,
+        "todo": s.todo,
+        "channel": s.channel,
+        "status": s.status,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+    }
+
+
+@router.get("/suggestions/{customer_id}")
+async def list_suggestions(customer_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Recent live co-pilot suggestions (so the panel has history on mount)."""
+    rows = (
+        await db.execute(
+            select(models.CopilotSuggestion)
+            .where(models.CopilotSuggestion.customer_id == customer_id)
+            .order_by(models.CopilotSuggestion.created_at.desc())
+            .limit(10)
+        )
+    ).scalars().all()
+    return [_suggestion_dict(s) for s in rows]
+
+
+@router.get("/stream/{customer_id}")
+async def stream(customer_id: uuid.UUID):
+    """Server-Sent Events: live co-pilot suggestions for one customer (pushed by
+    the WhatsApp webhook). Heartbeats every 20s keep the connection open."""
+    cid = str(customer_id)
+    q = realtime.subscribe(cid)
+
+    async def gen():
+        try:
+            yield ": connected\n\n"
+            while True:
+                try:
+                    event = await asyncio.wait_for(q.get(), timeout=20)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+        finally:
+            realtime.unsubscribe(cid, q)
+
+    return StreamingResponse(
+        gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/respond", response_model=schemas.RespondOutput)
