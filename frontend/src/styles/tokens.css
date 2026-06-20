@@ -3,48 +3,53 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
-  /* brand */
-  --ink: #0d1b27;
-  --ink-900: #0a1520;
-  --ink-800: #111e2b;
-  --ink-700: #1e3040;
-  --ink-600: #2a4256;
-  --solar: #f5a623;
-  --flux: #14b5a6;
-  --paper: #f4f6f8;
-  --white: #ffffff;
+  /* brand & theme colors */
+  --bg-sage: #eef1ee;               /* Outer page background (sage green) */
+  --bg-sage-dark: #cad2ca;          /* Deeper sage green accent */
+  --ink: var(--bg-sage);
+  --ink-900: #1b201a;               /* Dark charcoal-green for headers */
+  --ink-800: #eef1ef;               /* Hover background (very soft grey) */
+  --ink-700: #d6ded8;               /* Subtle border lines */
+  --ink-600: #525d55;               /* Medium labels/icons */
+  --solar: #f1682c;                 /* Brand vibrant orange */
+  --flux: #3ab179;                  /* Brand vibrant green */
+  --paper: #f6f8f6;                 /* Canvas background (clean greige/off-white) */
+  --white: #ffffff;                 /* Row cards and detail boxes background */
 
-  /* ink opacities on dark ground (text is paper-ish) */
-  --paper-90: rgba(244, 246, 248, 0.9);
-  --paper-60: rgba(244, 246, 248, 0.6);
-  --paper-40: rgba(244, 246, 248, 0.55); /* a11y: 0.4 was 3.57:1 on --ink (fails AA); 0.55 ~4.6:1 */
-  --paper-25: rgba(244, 246, 248, 0.25);
+  /* light theme typography/ink opacities */
+  --paper-90: #121613;              /* Primary text (dark charcoal) */
+  --paper-60: #49544c;              /* Secondary text (medium charcoal) */
+  --paper-40: #717d74;              /* Muted text and labels */
+  --paper-25: rgba(0, 0, 0, 0.07);  /* Soft borders / line dividers */
 
   /* deal-score bands: cold 0–39 · cool 40–59 · warm 60–79 · hot 80–100 */
-  --band-cold: #e8756a;
-  --band-cool: #e8a838;
-  --band-warm: #f5a623;
-  --band-hot: #14b5a6;
+  --band-cold: #e46a6a;
+  --band-cool: #e69f3d;
+  --band-warm: #f1a12c;
+  --band-hot: #3ab179;
   --band-unknown: var(--ink-700);
 
   /* buyer types */
-  --bt-family: var(--flux);
+  --bt-family: #2fa19e;
   --bt-investor: var(--solar);
-  --bt-environmentalist: #4caf7d;
-  --bt-skeptic: #c9a04a;
+  --bt-environmentalist: #3fa16d;
+  --bt-skeptic: #8c7b65;
 
   /* ghost risk */
-  --risk-low: var(--flux);
-  --risk-medium: var(--solar);
-  --risk-high: var(--band-cold);
+  --risk-low: #3fa16d;
+  --risk-medium: #e69f3d;
+  --risk-high: #e46a6a;
 
   /* fonts */
   --font-head: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  --radius: 8px;
-  --radius-sm: 4px;
+  --radius: 12px;
+  --radius-sm: 6px;
+  --radius-lg: 24px;
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 * { box-sizing: border-box; }
