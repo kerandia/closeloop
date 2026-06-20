@@ -24,7 +24,7 @@ import {
   copilotCollect,
   listCopilotSuggestions,
   subscribeCopilot,
-  whatsappSend,
+  messagingSend,
 } from '../../api/client'
 import type { RespondOutput, CopilotSuggestion } from '../../api/types'
 import './CopilotPanel.css'
@@ -78,13 +78,15 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
       if (!live || sendingLine) return
       setSendingLine(line)
       try {
-        const res = await whatsappSend({
+        const res = await messagingSend({
           customer_id: customerId,
           body: line,
+          channel: live.channel,
           suggestion_id: live.id,
         })
         setLive({ ...live, status: 'sent' })
-        setSentNote(res.within_window ? 'Sent on WhatsApp ✓' : 'Sent (template) ✓')
+        const ch = live.channel === 'sms' ? 'SMS' : 'WhatsApp'
+        setSentNote(res.within_window ? `Sent on ${ch} ✓` : 'Sent (template) ✓')
       } catch (err) {
         setSentNote(err instanceof Error ? err.message : 'Send failed')
       } finally {
@@ -189,7 +191,9 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
         >
           <div className="copilot-live__bar">
             <span className="copilot-live__dot" aria-hidden="true" />
-            <span className="copilot-live__label mono">Live · WhatsApp</span>
+            <span className="copilot-live__label mono">
+              Live · {live.channel === 'sms' ? 'SMS' : 'WhatsApp'}
+            </span>
           </div>
           {live.utterance && (
             <p className="copilot-live__msg">“{live.utterance}”</p>
@@ -199,7 +203,9 @@ export function CopilotPanel({ customerId }: CopilotPanelProps) {
             <p className="copilot-read__text">{live.read}</p>
           </div>
           <div className="copilot-lines">
-            <span className="copilot-lines__label mono">Reply on WhatsApp</span>
+            <span className="copilot-lines__label mono">
+              Reply on {live.channel === 'sms' ? 'SMS' : 'WhatsApp'}
+            </span>
             {live.exact_lines.map((line, i) => (
               <div key={i} className="copilot-line">
                 <span className="copilot-line__text">{line}</span>

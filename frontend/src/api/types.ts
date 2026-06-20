@@ -222,7 +222,7 @@ export interface CopilotStreamEvent {
   suggestion?: CopilotSuggestion
 }
 
-export interface WhatsAppSendResponse {
+export interface MessagingSendResponse {
   ok: boolean
   within_window: boolean
   provider: Record<string, unknown>

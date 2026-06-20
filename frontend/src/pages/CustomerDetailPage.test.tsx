@@ -21,7 +21,7 @@ vi.mock('../api/client', () => ({
   copilotCollect: vi.fn(),
   listCopilotSuggestions: vi.fn().mockResolvedValue([]),
   subscribeCopilot: vi.fn().mockReturnValue(() => {}),
-  whatsappSend: vi.fn().mockResolvedValue({ ok: true, within_window: true, provider: {} }),
+  messagingSend: vi.fn().mockResolvedValue({ ok: true, within_window: true, provider: {} }),
 }))
 
 import * as api from '../api/client'

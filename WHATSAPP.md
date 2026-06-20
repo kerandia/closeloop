@@ -20,13 +20,24 @@ suggestion all work; sends are mocked. Flip on Twilio for real delivery.
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/webhooks/whatsapp` | Twilio inbound (form: `From`, `Body`) → suggestion + SSE |
+| POST | `/api/webhooks/sms` | Twilio inbound SMS (same shape; `From` is plain `+E164`) |
 | GET | `/api/copilot/stream/{customer_id}` | SSE stream of live suggestions |
 | GET | `/api/copilot/suggestions/{customer_id}` | recent suggestions (history) |
-| POST | `/api/whatsapp/send` | `{customer_id, body, suggestion_id?}` → send a reply |
+| POST | `/api/messaging/send` | `{customer_id, body, channel, suggestion_id?}` → send a reply (sms\|whatsapp) |
+
+## SMS vs WhatsApp
+Both run on the same plumbing (inbound webhook → RESPOND → SSE → send); pick per
+the channel the customer used.
+
+- **SMS** — uses your **trial number** (`TWILIO_SMS_FROM`). No sandbox join, no
+  24h/template rule → the **lowest-friction live demo**. Trial caveat: you can
+  only message *verified* numbers and Twilio adds a "Sent from your trial" prefix.
+- **WhatsApp** — uses the shared **sandbox number** (`TWILIO_WHATSAPP_FROM`, *not*
+  your trial number); join it from your phone first. Subject to the 24h window.
 
 ## Quick test (no Twilio, mock send)
 ```bash
-cd backend && python -m app.seed && python test_whatsapp.py
+cd backend && python -m app.seed && python test_messaging.py   # exercises both channels
 ```
 
 ## Going live with the Twilio WhatsApp Sandbox

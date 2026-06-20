@@ -40,36 +40,43 @@ class MockAdapter:
         return {"provider_id": provider_id, "status": "sent", "mock": True}
 
 
-def to_whatsapp_addr(phone: str | None) -> str | None:
-    """Normalise a stored phone (e.g. '+49 170 111 22 33') to Twilio's
-    'whatsapp:+E164' form."""
+def to_e164(phone: str | None) -> str | None:
+    """Normalise a stored phone (e.g. '+49 170 111 22 33') to '+E164'."""
     if not phone:
         return None
-    if phone.startswith("whatsapp:"):
-        return phone
-    digits = re.sub(r"[^\d+]", "", phone)
+    digits = re.sub(r"[^\d+]", "", phone.replace("whatsapp:", ""))
     if not digits.startswith("+"):
         digits = "+" + digits
-    return f"whatsapp:{digits}"
+    return digits
 
 
-class TwilioWhatsAppAdapter:
-    """Send a WhatsApp message via Twilio's REST API.
+def to_whatsapp_addr(phone: str | None) -> str | None:
+    e164 = to_e164(phone)
+    return f"whatsapp:{e164}" if e164 else None
 
-    Within the 24h customer-service window a freeform Body is allowed; outside it,
-    WhatsApp requires a pre-approved template — pass payload['content_sid'] (a
-    Twilio Content template) and optional payload['content_variables'] (dict)."""
+
+class TwilioAdapter:
+    """Send an SMS or WhatsApp message via Twilio's REST API.
+
+    SMS goes from the trial/SMS number; WhatsApp from the sandbox number. For
+    WhatsApp outside the 24h window a freeform Body is rejected — pass
+    payload['use_template'] (uses TWILIO_TEMPLATE_SID) or payload['content_sid']."""
 
     API = "https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json"
 
     async def send(self, channel: str, to: str | None, payload: dict) -> dict:
-        addr = to_whatsapp_addr(to)
+        if channel == "whatsapp":
+            sender, addr = settings.twilio_whatsapp_from, to_whatsapp_addr(to)
+        else:  # sms
+            sender, addr = settings.twilio_sms_from, to_e164(to)
         if addr is None:
-            raise ValueError("no destination phone for WhatsApp send")
+            raise ValueError(f"no destination phone for {channel} send")
 
-        data = {"From": settings.twilio_whatsapp_from, "To": addr}
+        data = {"From": sender, "To": addr}
         content_sid = payload.get("content_sid") or (
-            settings.twilio_template_sid if payload.get("use_template") else None
+            settings.twilio_template_sid
+            if channel == "whatsapp" and payload.get("use_template")
+            else None
         )
         if content_sid:
             data["ContentSid"] = content_sid
@@ -96,8 +103,12 @@ class TwilioWhatsAppAdapter:
 
 
 def get_adapter(channel: str | None = None) -> ChannelAdapter:
-    """Pick the adapter for a channel. WhatsApp uses Twilio when configured +
-    real_send is on; everything else (and the demo) uses the mock."""
-    if channel == "whatsapp" and settings.real_send and settings.whatsapp_configured:
-        return TwilioWhatsAppAdapter()
+    """Pick the adapter for a channel. SMS/WhatsApp use Twilio when that channel is
+    configured + real_send is on; everything else (and the demo) uses the mock."""
+    if (
+        channel in ("whatsapp", "sms")
+        and settings.real_send
+        and settings.channel_configured(channel)
+    ):
+        return TwilioAdapter()
     return MockAdapter()

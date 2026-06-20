@@ -19,7 +19,7 @@ vi.mock('../../api/client', () => ({
   isMockMode: vi.fn().mockReturnValue(false),
   listCopilotSuggestions: vi.fn().mockResolvedValue([]),
   subscribeCopilot: vi.fn().mockReturnValue(() => {}),
-  whatsappSend: vi.fn().mockResolvedValue({ ok: true, within_window: true, provider: {} }),
+  messagingSend: vi.fn().mockResolvedValue({ ok: true, within_window: true, provider: {} }),
 }))
 
 const FIXED_RESPOND: RespondOutput = {

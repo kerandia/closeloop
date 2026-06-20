@@ -8,7 +8,7 @@ import type {
   Message,
   RespondOutput,
   SendResponse,
-  WhatsAppSendResponse,
+  MessagingSendResponse,
 } from './types'
 import {
   mockListCustomers,
@@ -106,14 +106,15 @@ export function listCopilotSuggestions(customerId: string): Promise<CopilotSugge
   return req(`/api/copilot/suggestions/${customerId}`, 'GET')
 }
 
-export function whatsappSend(payload: {
+export function messagingSend(payload: {
   customer_id: string
   body: string
+  channel: string // 'whatsapp' | 'sms'
   suggestion_id?: string
-}): Promise<WhatsAppSendResponse> {
+}): Promise<MessagingSendResponse> {
   if (isMockMode())
     return Promise.resolve({ ok: true, within_window: true, provider: { provider_id: 'mock' } })
-  return req('/api/whatsapp/send', 'POST', payload)
+  return req('/api/messaging/send', 'POST', payload)
 }
 
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */

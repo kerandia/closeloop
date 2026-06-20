@@ -92,9 +92,22 @@ async def whatsapp_inbound(
     Body: str = Form(""),
     db: AsyncSession = Depends(get_db),
 ):
-    """Twilio posts an inbound WhatsApp message here (form-encoded).
+    """Twilio inbound WhatsApp message (form-encoded). See _handle_inbound."""
+    return await _handle_inbound(db, From, Body, channel="whatsapp")
 
-    Match the sender to a customer, run the RESPOND co-pilot (which also logs the
+
+@router.post("/sms")
+async def sms_inbound(
+    From: str = Form(...),
+    Body: str = Form(""),
+    db: AsyncSession = Depends(get_db),
+):
+    """Twilio inbound SMS (same shape as WhatsApp; From is a plain +E164)."""
+    return await _handle_inbound(db, From, Body, channel="sms")
+
+
+async def _handle_inbound(db: AsyncSession, From: str, Body: str, channel: str):
+    """Match the sender to a customer, run the RESPOND co-pilot (which also logs the
     inbound message + moves the Deal Score / Cadence), persist the suggestion, and
     push it live to the rep's screen over SSE. Returns empty TwiML (no auto-reply).
     """
@@ -103,7 +116,7 @@ async def whatsapp_inbound(
         # unknown number — ack so Twilio doesn't retry; nothing to suggest
         return Response(content=_EMPTY_TWIML, media_type="application/xml")
 
-    out = await respond_svc.run_respond(db, customer, Body, channel="whatsapp")
+    out = await respond_svc.run_respond(db, customer, Body, channel=channel)
 
     # the inbound message run_respond just logged
     last_itx = (
@@ -125,7 +138,7 @@ async def whatsapp_inbound(
         why=out.why,
         advance_hook=out.advance_hook,
         todo=out.todo.model_dump(mode="json") if out.todo else None,
-        channel="whatsapp",
+        channel=channel,
     )
     db.add(suggestion)
     customer.last_contact_at = _utcnow()

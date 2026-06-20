@@ -373,9 +373,10 @@ class CollectResponse(BaseModel):
     question: str
 
 
-class WhatsAppSendRequest(BaseModel):
+class MessagingSendRequest(BaseModel):
     customer_id: uuid.UUID
     body: str
+    channel: str = "whatsapp"  # whatsapp|sms
     suggestion_id: uuid.UUID | None = None  # mark this suggestion as sent
 
 
