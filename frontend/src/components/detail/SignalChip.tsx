@@ -6,8 +6,10 @@
  * `data-high-severity` attribute so tests and CSS can target them.
  *
  * Evidence renders only when expanded=true so `queryByText` in tests is reliable.
- * CSS handles the fade-in on mount; the collapse is instant (deterministic tests).
+ * Framer Motion AnimatePresence handles the height+opacity expand/collapse.
+ * Duration is set to 0 when the user prefers reduced motion.
  */
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import type { Signal } from '../../api/types'
 import './SignalChip.css'
 
@@ -18,6 +20,7 @@ export interface SignalChipProps {
 }
 
 export function SignalChip({ signal, expanded, onToggle }: SignalChipProps) {
+  const reduceMotion = useReducedMotion()
   const isHigh = signal.label.toUpperCase().includes('HIGH')
   const hasEvidence = Boolean(signal.evidence_quote)
 
@@ -35,11 +38,22 @@ export function SignalChip({ signal, expanded, onToggle }: SignalChipProps) {
         {signal.label}
       </button>
 
-      {hasEvidence && expanded && (
-        <div className="signal-chip__evidence" data-testid="chip-evidence">
-          <blockquote className="signal-chip__quote">{signal.evidence_quote}</blockquote>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {hasEvidence && expanded && (
+          <motion.div
+            data-testid="chip-evidence"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <blockquote className="signal-chip__quote signal-chip__quote--spaced">
+              {signal.evidence_quote}
+            </blockquote>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

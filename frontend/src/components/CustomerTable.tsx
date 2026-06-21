@@ -36,17 +36,19 @@ export function CustomerTable({ customers }: Props) {
     <div className="ct-scroll">
       <table className="ct">
       <colgroup>
-        <col style={{ width: '24%' }} />{/* Customer */}
-        <col style={{ width: '14%' }} />{/* Likelihood */}
-        <col style={{ width: '9%' }} />{/* Risk */}
-        <col style={{ width: '12%' }} />{/* Stage */}
-        <col style={{ width: '21%' }} />{/* Next Action */}
-        <col style={{ width: '8%' }} />{/* Rep */}
+        <col style={{ width: '18%' }} />{/* Customer */}
+        <col style={{ width: '13%' }} />{/* Type */}
+        <col style={{ width: '13%' }} />{/* Likelihood */}
+        <col style={{ width: '8%' }} />{/* Risk */}
+        <col style={{ width: '10%' }} />{/* Stage */}
+        <col style={{ width: '19%' }} />{/* Next Action */}
+        <col style={{ width: '7%' }} />{/* Rep */}
         <col style={{ width: '12%' }} />{/* Last Contact */}
       </colgroup>
       <thead>
         <tr className="ct__head-row">
           <th className="mono ct__th">Customer</th>
+          <th className="mono ct__th">Type</th>
           <th className="mono ct__th">Likelihood</th>
           <th className="mono ct__th">Risk</th>
           <th className="mono ct__th">Stage</th>
@@ -71,6 +73,8 @@ export function CustomerTable({ customers }: Props) {
           >
             <td className="ct__cell ct__cell--name">
               <span className="ct__name">{c.name}</span>
+            </td>
+            <td className="ct__cell">
               <BuyerTypeChip type={c.buyer_type} />
             </td>
             <td className="ct__cell">

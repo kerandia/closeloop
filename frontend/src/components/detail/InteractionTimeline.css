@@ -110,7 +110,7 @@
   color: var(--solar);
   border: 1px solid var(--ink-700);
   background: var(--white);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
   transition: all 150ms ease-out;
@@ -173,7 +173,7 @@
   background: var(--solar);
   color: var(--white);
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -198,7 +198,7 @@
   background: transparent;
   color: var(--paper-60);
   border: 1px solid var(--ink-700);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.05em;

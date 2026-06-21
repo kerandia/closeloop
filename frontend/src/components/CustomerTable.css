@@ -1,77 +1,58 @@
-/* CustomerTable — Cinematic Demo direction.
-   Ink stage, no card wrap, 64px rows, solar left-border on hover. */
+/* CustomerTable — Industrial Minimalist.
+   Flat rows with horizontal dividers. No floating cards, no radius. */
 
-/* Wrapper owns the horizontal scroll so the table keeps table-layout:fixed
-   (and its cell ellipsis) and never forces page-level scroll on mobile. */
 .ct-scroll {
   overflow-x: auto;
 }
 
 .ct {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px;
+  border-collapse: collapse;
   table-layout: fixed;
   min-width: 700px;
 }
 
 .ct__head-row {
-  border-bottom: none;
+  border-bottom: 2px solid var(--ink-700);
 }
 
 .ct__th {
-  padding: 8px 16px;
+  padding: 8px 16px 10px;
   text-align: left;
   white-space: nowrap;
   color: var(--paper-40);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .ct__row {
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.1s ease;
 }
 
 .ct__row td {
-  height: 64px;
+  height: 56px;
   background: var(--white);
-  border-top: 1px solid var(--ink-700);
   border-bottom: 1px solid var(--ink-700);
-  transition: border-color 0.15s ease;
-}
-
-.ct__row td:first-child {
-  border-left: 1px solid var(--ink-700);
-  border-top-left-radius: var(--radius);
-  border-bottom-left-radius: var(--radius);
-}
-
-.ct__row td:last-child {
-  border-right: 1px solid var(--ink-700);
-  border-top-right-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+  transition: background-color 0.1s ease;
 }
 
 .ct__row:focus-visible {
   outline: 2px solid var(--solar);
-  outline-offset: 2px;
-}
-
-.ct__row:hover,
-.ct__row:focus-visible {
-  transform: translateY(-2px);
+  outline-offset: -2px;
 }
 
 .ct__row:hover td,
 .ct__row:focus-visible td {
-  border-color: var(--ink-700);
-  box-shadow: var(--shadow-hover);
+  background: var(--ink-800);
 }
 
 .ct__row:hover td:first-child,
 .ct__row:focus-visible td:first-child {
-  /* solar accent via inset shadow so the 1px border (and layout) stays put */
-  box-shadow: var(--shadow-hover), inset 3px 0 0 0 var(--solar);
+  box-shadow: inset 2px 0 0 0 var(--solar);
 }
 
 .ct__cell {
@@ -83,10 +64,9 @@
 }
 
 .ct__cell--name {
-  display: table-cell; /* override block for flex children */
+  display: table-cell;
 }
 
-/* Name cell uses flex inside a td — achieved via a wrapper trick */
 .ct__cell--name .ct__name {
   display: inline;
   font-weight: 500;
@@ -124,4 +104,5 @@
 .ct__cell--time {
   color: var(--paper-40);
   font-size: 12px;
+  font-family: var(--font-mono);
 }

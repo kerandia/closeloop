@@ -25,7 +25,7 @@
  *     The sent quote (system size, price, payback, financing). Summarise
  *     key numbers for context — "12 kWp · €28,900 · 9.5yr payback".
  */
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { Profile, Signal, Quote, SignalLayer } from '../../api/types'
 import { SignalChip } from './SignalChip'
 import './ProfilePanel.css'
@@ -98,54 +98,8 @@ function LayerSection({ heading, chips, expandedIds, onToggle, children }: Layer
 /** Stub — Step 3 replaces the body without changing the exported props type. */
 export function ProfilePanel({ profile, signals, quote }: ProfilePanelProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  // cancelledRef tracks whether the user has interacted — if so, auto-demo won't run.
-  const cancelledRef = useRef(false)
 
-  // ── Auto-demo: expand first 2 negotiation chips with evidence ──────────────
-  // On mount, stagger-expand chips at 600ms / 900ms so the feature self-demonstrates.
-  // Cancel silently once cancelledRef.current is true (any toggle call sets it).
-  useEffect(() => {
-    const negoWithEvidence = signals.filter(
-      (s) => s.layer === 'negotiation' && s.evidence_quote,
-    )
-    if (negoWithEvidence.length === 0) return
-
-    const demoIds = negoWithEvidence.slice(0, 2).map((s) => s.id)
-    const timers: ReturnType<typeof setTimeout>[] = []
-
-    timers.push(
-      setTimeout(() => {
-        if (!cancelledRef.current) {
-          setExpandedIds((prev) => new Set([...prev, demoIds[0]]))
-        }
-      }, 600),
-    )
-
-    if (demoIds[1]) {
-      timers.push(
-        setTimeout(() => {
-          if (!cancelledRef.current) {
-            setExpandedIds((prev) => new Set([...prev, demoIds[1]]))
-          }
-        }, 900),
-      )
-    }
-
-    // Collapse all ~3 s after the last possible auto-expand
-    timers.push(
-      setTimeout(() => {
-        if (!cancelledRef.current) {
-          setExpandedIds(new Set())
-        }
-      }, 3900),
-    )
-
-    return () => timers.forEach(clearTimeout)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Toggle a chip and cancel any pending auto-demo
   function toggle(id: string) {
-    cancelledRef.current = true
     setExpandedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
