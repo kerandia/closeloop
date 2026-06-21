@@ -6,7 +6,9 @@ objections, sets the score, and produces the recommendation)."""
 
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
+import logging
 import re
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Response
@@ -14,11 +16,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
-from app.db import get_db
+from app.db import SessionLocal, get_db
 from app.services import analyze as analyze_svc
 from app.services import realtime
 from app.services import respond as respond_svc
 from app.services import scoring as scoring_svc
+
+logger = logging.getLogger("closeloop.webhooks")
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
 
@@ -166,8 +170,6 @@ async def process_inbound(
     # co-pilot's read so sentiment the keyword rules miss still moves the score.
     if last_itx is not None:
         await scoring_svc.apply_interaction(db, customer, last_itx, respond_type=out.type)
-    # refresh profile + next-best-action off the new message
-    await analyze_svc.run_analyze(db, customer)
     await db.refresh(customer)
 
     payload = {
@@ -178,8 +180,25 @@ async def process_inbound(
             "ghost_risk": customer.ghost_risk,
         },
     }
+    # Publish NOW — the rep needs the reply + score immediately (~5s). ANALYZE only
+    # refreshes the profile/next-best-action panel and is the slow part (~10s), so
+    # run it in the background: the webhook returns fast (Twilio's timeout is ~15s)
+    # and the live answer isn't held hostage to it.
     await realtime.publish(str(customer.id), payload)
+    asyncio.create_task(_run_analyze_bg(customer.id))
     return payload
+
+
+async def _run_analyze_bg(customer_id) -> None:
+    """Refresh the profile via ANALYZE after the suggestion is already on screen.
+    Uses its own DB session (the request's session is closed once it returns)."""
+    try:
+        async with SessionLocal() as db:
+            customer = await db.get(models.Customer, customer_id)
+            if customer is not None:
+                await analyze_svc.run_analyze(db, customer)
+    except Exception:  # noqa: BLE001 — background refresh must never crash the request
+        logger.warning("background ANALYZE failed for %s", customer_id, exc_info=True)
 
 
 def _suggestion_dict(s: models.CopilotSuggestion) -> dict:
