@@ -1,15 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-
-vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  motion: {
-    div: ({ children, initial: _i, animate: _a, exit: _e, transition: _t, ...rest }: any) => (
-      <div {...rest}>{children}</div>
-    ),
-  },
-  useReducedMotion: () => false,
-}))
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { ProfilePanel } from './ProfilePanel'
 import type { Profile, Signal, Quote } from '../../api/types'
 
@@ -80,21 +70,32 @@ const quote: Quote = {
 // ── Test suite ───────────────────────────────────────────────────────────────
 
 describe('ProfilePanel', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   // ── Core rendering ─────────────────────────────────────────────────────────
 
   it('renders summary and motivation with confidence', () => {
     render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
     expect(screen.getByText('Retired couple seeking energy independence')).toBeInTheDocument()
-    expect(screen.getByText(/peace_of_mind/)).toBeInTheDocument()
-    expect(screen.getByText(/0\.8/)).toBeInTheDocument()
+    // Raw enum is humanized; confidence is shown as a percentage. The phrase
+    // appears both as the motivation badge and the motivation-layer chip.
+    expect(screen.getAllByText('Peace of mind').length).toBeGreaterThan(0)
+    expect(screen.getByText(/80%/)).toBeInTheDocument()
   })
 
   it('renders a chip per signal label', () => {
     render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
-    expect(screen.getByText('peace of mind')).toBeInTheDocument()
-    expect(screen.getByText('multi_quote_risk: HIGH')).toBeInTheDocument()
-    expect(screen.getByText('price sensitive')).toBeInTheDocument()
-    expect(screen.getByText('winter yield doubt')).toBeInTheDocument()
+    // Chips are buttons — query by role to disambiguate from the motivation badge.
+    expect(screen.getByRole('button', { name: 'Peace of mind' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Multi quote risk · High' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Price sensitive' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Winter yield doubt' })).toBeInTheDocument()
   })
 
   it('null profile shows empty state', () => {
@@ -121,7 +122,7 @@ describe('ProfilePanel', () => {
     // Evidence not in DOM initially
     expect(screen.queryByText('We want to be energy independent')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'peace of mind' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Peace of mind' }))
 
     expect(screen.getByText('We want to be energy independent')).toBeInTheDocument()
   })
@@ -129,17 +130,17 @@ describe('ProfilePanel', () => {
   it('clicking an expanded chip collapses it', () => {
     render(<ProfilePanel profile={profile} signals={[signals[0]]} quote={null} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'peace of mind' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Peace of mind' }))
     expect(screen.getByText('We want to be energy independent')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'peace of mind' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Peace of mind' }))
     expect(screen.queryByText('We want to be energy independent')).not.toBeInTheDocument()
   })
 
   it('clicking a chip without evidence does not crash or show evidence', () => {
     render(<ProfilePanel profile={profile} signals={[signals[2]]} quote={null} />)
 
-    expect(() => fireEvent.click(screen.getByRole('button', { name: 'price sensitive' }))).not.toThrow()
+    expect(() => fireEvent.click(screen.getByRole('button', { name: 'Price sensitive' }))).not.toThrow()
     expect(screen.queryByTestId('chip-evidence')).not.toBeInTheDocument()
   })
 
@@ -148,13 +149,51 @@ describe('ProfilePanel', () => {
   it('high-severity label gets a distinguishing data attribute', () => {
     render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
 
-    const highBtn = screen.getByRole('button', { name: 'multi_quote_risk: HIGH' })
+    const highBtn = screen.getByRole('button', { name: 'Multi quote risk · High' })
     const highChip = highBtn.closest('[data-high-severity]')
     expect(highChip).not.toBeNull()
 
-    const normalBtn = screen.getByRole('button', { name: 'price sensitive' })
+    const normalBtn = screen.getByRole('button', { name: 'Price sensitive' })
     const normalChip = normalBtn.closest('[data-high-severity]')
     expect(normalChip).toBeNull()
   })
 
+  // ── Auto-demo ──────────────────────────────────────────────────────────────
+
+  it('auto-demo expands the first negotiation chip with evidence after 600ms', () => {
+    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
+
+    // Before timer fires — evidence not in DOM
+    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
+
+    act(() => { vi.advanceTimersByTime(700) })
+
+    expect(screen.getByText('We are checking other companies')).toBeInTheDocument()
+  })
+
+  it('auto-demo collapses chips after ~3 seconds', () => {
+    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
+
+    act(() => { vi.advanceTimersByTime(700) })
+    expect(screen.getByText('We are checking other companies')).toBeInTheDocument()
+
+    // Advance past the collapse timer (3900ms from mount; total here: 700 + 3300 = 4000ms)
+    act(() => { vi.advanceTimersByTime(3300) })
+    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
+  })
+
+  test('user interaction cancels auto-demo', () => {
+    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
+
+    // User clicks a chip before auto-demo fires — cancels auto-demo
+    fireEvent.click(screen.getByRole('button', { name: 'Peace of mind' }))
+
+    // Advance past all auto-demo timers
+    act(() => { vi.advanceTimersByTime(5000) })
+
+    // The chip the user clicked should be expanded (user action)
+    expect(screen.getByText('We want to be energy independent')).toBeInTheDocument()
+    // The negotiation auto-demo chip should NOT have been auto-expanded
+    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
+  })
 })

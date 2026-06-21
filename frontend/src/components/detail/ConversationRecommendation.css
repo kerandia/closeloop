@@ -1,0 +1,129 @@
+/* ConversationRecommendation — AI panel for the channel workspace, app card style. */
+
+.conv-rec {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Objection read line ──────────────────────────────────────────────────── */
+.conv-rec__read {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.conv-rec__read-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-40);
+}
+
+.conv-rec__read-value {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(241, 104, 44, 0.1);
+  color: var(--solar);
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.conv-rec__card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+.conv-rec__card-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--flux);
+}
+
+.conv-rec__reply {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--paper-90);
+  white-space: pre-wrap;
+}
+
+/* ── Talking points ───────────────────────────────────────────────────────── */
+.conv-rec__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conv-rec__line {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--paper-90);
+}
+
+.conv-rec__line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--flux);
+}
+
+/* ── Why this ─────────────────────────────────────────────────────────────── */
+.conv-rec__why {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--paper-40);
+  padding-top: 12px;
+  border-top: 1px solid var(--paper-25);
+}
+
+.conv-rec__why-label {
+  font-weight: 600;
+  color: var(--paper-60);
+}
+
+/* ── Primary action ───────────────────────────────────────────────────────── */
+.conv-rec__use {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--flux);
+  color: #fff;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms, transform 100ms;
+}
+
+.conv-rec__use:hover {
+  background: #2f9d69;
+}
+
+.conv-rec__use:active {
+  transform: scale(0.97);
+}

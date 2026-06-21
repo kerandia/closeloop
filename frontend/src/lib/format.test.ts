@@ -1,5 +1,11 @@
 import { describe, test, expect } from 'vitest'
-import { scoreBand, relativeTime } from './format'
+import {
+  scoreBand,
+  relativeTime,
+  humanizeLabel,
+  motivationLabel,
+  confidencePct,
+} from './format'
 
 describe('scoreBand', () => {
   test('0–39 is cold', () => {
@@ -51,5 +57,44 @@ describe('relativeTime', () => {
   })
   test('near-future (within a minute) reads as soon', () => {
     expect(relativeTime('2026-06-20T12:00:20Z', now)).toBe('soon')
+  })
+})
+
+describe('humanizeLabel', () => {
+  test('underscores become words, sentence-cased', () => {
+    expect(humanizeLabel('peace_of_mind')).toBe('Peace of mind')
+  })
+  test('redundant layer prefix is dropped', () => {
+    expect(humanizeLabel('MOTIVATION: peace_of_mind')).toBe('Peace of mind')
+  })
+  test('key:value with severity reads as "Key · High"', () => {
+    expect(humanizeLabel('multi_quote_risk: HIGH')).toBe('Multi quote risk · High')
+  })
+  test('non-layer key:value is kept and formatted', () => {
+    expect(humanizeLabel('decision: husband + wife')).toBe('Decision · Husband + wife')
+  })
+  test('empty input is safe', () => {
+    expect(humanizeLabel('')).toBe('')
+  })
+})
+
+describe('motivationLabel', () => {
+  test('known motivation maps to friendly phrase', () => {
+    expect(motivationLabel('independence')).toBe('Energy independence')
+  })
+  test('unknown motivation falls back to sentence case', () => {
+    expect(motivationLabel('curiosity')).toBe('Curiosity')
+  })
+  test('null is empty', () => {
+    expect(motivationLabel(null)).toBe('')
+  })
+})
+
+describe('confidencePct', () => {
+  test('0.8 → 80% sure', () => {
+    expect(confidencePct(0.8)).toBe('80% sure')
+  })
+  test('null → null (caller omits)', () => {
+    expect(confidencePct(null)).toBeNull()
   })
 })

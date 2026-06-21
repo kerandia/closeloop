@@ -5,9 +5,19 @@ import { BuyerTypeChip } from './BuyerTypeChip'
 import { GhostRiskPill } from './GhostRiskPill'
 import { StageBadge } from './StageBadge'
 import { ChannelIcon } from './ChannelIcon'
-import { relativeTime, repInitials } from '../lib/format'
+import { relativeTime } from '../lib/format'
+import { isAtRisk } from '../lib/demoPipeline'
 import { withMock } from '../lib/nav'
 import './CustomerTable.css'
+
+/** "Lena Brandt" → "LB" */
+function repInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(w => w[0] ?? '')
+    .join('')
+    .toUpperCase()
+}
 
 /** "voice_ai" → "Voice Ai", "visit" → "Visit" */
 function channelLabel(channel: Channel): string {
@@ -27,19 +37,17 @@ export function CustomerTable({ customers }: Props) {
     <div className="ct-scroll">
       <table className="ct">
       <colgroup>
-        <col style={{ width: '18%' }} />{/* Customer */}
-        <col style={{ width: '13%' }} />{/* Type */}
-        <col style={{ width: '13%' }} />{/* Likelihood */}
-        <col style={{ width: '8%' }} />{/* Risk */}
-        <col style={{ width: '10%' }} />{/* Stage */}
-        <col style={{ width: '19%' }} />{/* Next Action */}
-        <col style={{ width: '7%' }} />{/* Rep */}
+        <col style={{ width: '24%' }} />{/* Customer */}
+        <col style={{ width: '14%' }} />{/* Likelihood */}
+        <col style={{ width: '9%' }} />{/* Risk */}
+        <col style={{ width: '12%' }} />{/* Stage */}
+        <col style={{ width: '21%' }} />{/* Next Action */}
+        <col style={{ width: '8%' }} />{/* Rep */}
         <col style={{ width: '12%' }} />{/* Last Contact */}
       </colgroup>
       <thead>
         <tr className="ct__head-row">
           <th className="mono ct__th">Customer</th>
-          <th className="mono ct__th">Type</th>
           <th className="mono ct__th">Likelihood</th>
           <th className="mono ct__th">Risk</th>
           <th className="mono ct__th">Stage</th>
@@ -53,26 +61,26 @@ export function CustomerTable({ customers }: Props) {
           <tr
             key={c.id}
             className="ct__row"
-            onClick={() => navigate(withMock(`/customers/${c.id}`))}
+            onClick={() => navigate(withMock(`/app/customers/${c.id}`))}
             tabIndex={0}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                navigate(withMock(`/customers/${c.id}`))
+                navigate(withMock(`/app/customers/${c.id}`))
               }
             }}
           >
             <td className="ct__cell ct__cell--name">
               <span className="ct__name">{c.name}</span>
-            </td>
-            <td className="ct__cell">
               <BuyerTypeChip type={c.buyer_type} />
             </td>
             <td className="ct__cell">
               <ScoreBar value={c.sign_likelihood} trend={c.score_trend} compact />
             </td>
             <td className="ct__cell">
-              <GhostRiskPill risk={c.ghost_risk} />
+              {/* Risk only flags who needs rescuing — going quiet or trending down.
+                  Healthy rows leave this cell blank rather than repeating the score. */}
+              {isAtRisk(c) && <GhostRiskPill risk={c.ghost_risk ?? 'high'} />}
             </td>
             <td className="ct__cell">
               <StageBadge stage={c.stage} />

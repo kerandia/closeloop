@@ -1,4 +1,5 @@
 import type { CustomerListItem } from '../api/types'
+import { FUNNEL_STAGES, BUYER_TYPE_OPTIONS, isAtRisk } from '../lib/demoPipeline'
 import './DashboardControls.css'
 
 interface Props {
@@ -7,9 +8,11 @@ interface Props {
   search: string
   stage: string
   ghostRisk: string
+  buyerType: string
   onSearchChange: (v: string) => void
   onStageChange: (v: string) => void
   onGhostRiskChange: (v: string) => void
+  onBuyerTypeChange: (v: string) => void
 }
 
 export function DashboardControls({
@@ -17,12 +20,13 @@ export function DashboardControls({
   search,
   stage,
   ghostRisk,
+  buyerType,
   onSearchChange,
   onStageChange,
   onGhostRiskChange,
+  onBuyerTypeChange,
 }: Props) {
-  const goingQuiet = customers.filter(c => c.ghost_risk === 'high').length
-  const stages = Array.from(new Set(customers.map(c => c.stage))).sort()
+  const goingQuiet = customers.filter(isAtRisk).length
 
   return (
     <div className="dash-ctrl">
@@ -51,9 +55,26 @@ export function DashboardControls({
         className="dash-ctrl__select"
       >
         <option value="">All stages</option>
-        {stages.map(s => (
-          <option key={s} value={s}>
-            {s.replace(/_/g, ' ')}
+        {FUNNEL_STAGES.map(s => (
+          <option key={s.value} value={s.value}>
+            {s.label}
+          </option>
+        ))}
+      </select>
+
+      <label htmlFor="buyer-filter" className="mono dash-ctrl__label">
+        Buyer type
+      </label>
+      <select
+        id="buyer-filter"
+        value={buyerType}
+        onChange={e => onBuyerTypeChange(e.target.value)}
+        className="dash-ctrl__select"
+      >
+        <option value="">All types</option>
+        {BUYER_TYPE_OPTIONS.map(b => (
+          <option key={b.value} value={b.value}>
+            {b.label}
           </option>
         ))}
       </select>

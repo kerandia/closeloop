@@ -2,11 +2,11 @@
 
 .profile-panel {
   background: var(--white);
-  border-radius: var(--radius);
-  padding: 24px;
+  border-radius: var(--radius-lg);
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--ink-700);
 }
@@ -22,6 +22,14 @@
   border-radius: var(--radius);
 }
 
+.profile-panel__empty-title {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--paper-90);
+}
+
 .profile-panel__empty-hint {
   font-size: 13px;
   color: var(--paper-40);
@@ -32,9 +40,12 @@
 
 .profile-panel__summary {
   margin: 0;
-  font-size: 14px;
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 500;
   color: var(--paper-90);
-  line-height: 1.5;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 /* ── Layer section ───────────────────────────────────────────────────────── */
@@ -42,24 +53,22 @@
 .profile-panel__layer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .profile-panel__layer-label {
   /* overrides h3 margin from global */
-  margin: 0 0 2px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--paper-40);
-  font-family: var(--font-mono);
-  font-weight: 500;
 }
 
 .profile-panel__chips {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
@@ -67,15 +76,44 @@
 
 .profile-panel__motivation {
   margin: 0;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-panel__motivation-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(58, 177, 121, 0.1);
   color: var(--flux);
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-panel__motivation-value--button {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.profile-panel__motivation-value--button:hover {
+  background: rgba(58, 177, 121, 0.2);
 }
 
 .profile-panel__conf {
   color: var(--paper-40);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Evidence quote shared between motivation + objections — give it breathing room. */
+.profile-panel__evidence {
+  margin-top: 8px;
 }
 
 /* ── Objections ──────────────────────────────────────────────────────────── */
@@ -90,8 +128,54 @@
 }
 
 .profile-panel__objection {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--paper-60);
+  line-height: 1.5;
+  padding-left: 16px;
+  position: relative;
+}
+
+.profile-panel__objection::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--solar);
+}
+
+/* Name + note sit on one line; the name may be an expand button. */
+.profile-panel__objection-head {
+  display: inline;
+}
+
+.profile-panel__objection-row {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  vertical-align: baseline;
+}
+
+.profile-panel__objection-row .signal-chip__cue {
+  transform: translateY(1px);
+}
+
+.profile-panel__objection-row:hover .profile-panel__objection-key {
+  color: var(--solar);
+}
+
+.profile-panel__objection-key {
+  font-weight: 600;
+  color: var(--paper-90);
 }
 
 .profile-panel__objection-note {
@@ -103,12 +187,31 @@
 .profile-panel__completeness {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+}
+
+.profile-panel__completeness-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.profile-panel__completeness-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-40);
+}
+
+.profile-panel__completeness-pct {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--flux);
 }
 
 .profile-panel__completeness-bar {
-  height: 3px;
-  border-radius: 2px;
+  height: 6px;
+  border-radius: 999px;
   background: var(--ink-700);
   position: relative;
   overflow: hidden;
@@ -120,13 +223,8 @@
   inset: 0;
   width: var(--fill, 0%);
   background: var(--flux);
-  border-radius: 2px;
+  border-radius: 999px;
   transition: width 600ms ease;
-}
-
-.profile-panel__completeness-label {
-  font-size: 10px;
-  color: var(--paper-40);
 }
 
 /* ── Quote summary ───────────────────────────────────────────────────────── */
@@ -134,16 +232,34 @@
 .profile-panel__quote-summary {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 18px 20px;
   border: 1px solid var(--ink-700);
   border-radius: var(--radius);
-  background: var(--ink-800);
+  background: var(--paper);
 }
 
-.profile-panel__quote-line {
-  margin: 0;
-  font-size: 13px;
-  color: var(--paper-60);
-  font-family: var(--font-mono);
+.profile-panel__quote-stats {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.profile-panel__quote-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-panel__quote-stat-value {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--paper-90);
+  letter-spacing: -0.01em;
+}
+
+.profile-panel__quote-stat-label {
+  font-size: 12px;
+  color: var(--paper-40);
 }

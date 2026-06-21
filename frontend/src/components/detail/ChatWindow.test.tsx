@@ -8,7 +8,6 @@ vi.mock('../../api/client', () => ({
   listCopilotSuggestions: vi.fn().mockResolvedValue([]),
   subscribeCopilot: vi.fn().mockReturnValue(() => {}),
   messagingSend: vi.fn(),
-  composeDraft: vi.fn().mockResolvedValue(null),
 }))
 
 describe('ChatWindow Component', () => {

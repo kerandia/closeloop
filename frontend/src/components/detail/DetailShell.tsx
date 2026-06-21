@@ -40,9 +40,11 @@ import { StageBadge } from '../StageBadge'
 import { RecommendationCard } from './RecommendationCard'
 import { ComposeDrawer } from './ComposeDrawer'
 import { ProfilePanel } from './ProfilePanel'
-import { CallActionsList } from './CallActionsList'
+import { TodoList } from './TodoList'
 import { InteractionTimeline } from './InteractionTimeline'
 import { ConversationPanel } from './ConversationPanel'
+import { ChannelWorkspace } from './ChannelWorkspace'
+import { channelLabel } from '../../lib/format'
 import './DetailShell.css'
 
 // ── Reveal lifecycle ──────────────────────────────────────────────────────────
@@ -54,7 +56,7 @@ interface Props {
 }
 
 export function DetailShell({ data, customerId }: Props) {
-  const { customer, quote, profile, signals, extracted_actions, assignment } = data
+  const { customer, quote, profile, signals, assignment } = data
 
   // ── Overlay state — updated after each logInteraction call ────────────────
   const [phase, setPhase] = useState<Phase>('idle')
@@ -122,6 +124,12 @@ export function DetailShell({ data, customerId }: Props) {
     setActiveChannel(ch)
   }
 
+  /** Leave the conversation workspace back to the two-column default. */
+  function exitWorkspace(): void {
+    setActiveChannel(null)
+    cancelCompose()
+  }
+
   /** Explicit "Compose email": approve the rec to generate a draft, open drawer. */
   function handleComposeEmail(): void {
     if (!effectiveRec || emailComposing) return
@@ -167,11 +175,26 @@ export function DetailShell({ data, customerId }: Props) {
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
+  // Customer-info column — identical in both the default and workspace layouts.
+  const infoColumn = (
+    <>
+      <ProfilePanel profile={profile} signals={signals} quote={quote} />
+      <TodoList />
+      <InteractionTimeline
+        interactions={allInteractions}
+        onLogInteraction={handleLogInteraction}
+      />
+    </>
+  )
+
+  // Selecting any channel opens a focused three-column workspace.
+  const inWorkspace = activeChannel != null
+
   return (
     <div className="detail-shell">
       {/* ── Sticky header strip ──────────────────────────────────────────── */}
       <header className="detail-header">
-        <Link to={withMock('/')} className="detail-header__back">
+        <Link to={withMock('/app')} className="detail-header__back">
           ← Pipeline
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>
@@ -193,66 +216,85 @@ export function DetailShell({ data, customerId }: Props) {
             {assignment.rep.name}
           </span>
         )}
-        <Link to={withMock('/')} className="detail-header__close" aria-label="Close">
+        <Link to={withMock('/app')} className="detail-header__close" aria-label="Close">
           &times;
         </Link>
       </header>
 
-      {/* ── Two-column body ──────────────────────────────────────────────── */}
-      <div className="detail-columns">
-        {/* Left column (44%) — scrolls */}
-        <div className="detail-left">
-          <ProfilePanel profile={profile} signals={signals} quote={quote} />
-          <CallActionsList actions={extracted_actions} />
-          <InteractionTimeline
-            interactions={allInteractions}
-            onLogInteraction={handleLogInteraction}
-          />
-        </div>
-
-        {/* Right column (56%) — sticky, AI-territory */}
-        <div className="detail-right" data-phase={phase}>
-          {phase === 'analyzing' ? (
-            // ── Analyzing overlay — shown until full JSON lands ────────────
-            <div className="detail-analyzing" data-testid="analyzing-state">
-              <div className="detail-analyzing__dots">
-                <span className="detail-analyzing__dot" />
-                <span className="detail-analyzing__dot" />
-                <span className="detail-analyzing__dot" />
-              </div>
-              Analyzing…
+      {inWorkspace && activeChannel ? (
+        /* ── Conversation workspace — three equal columns ─────────────────── */
+        <div className="detail-workspace-wrap">
+          <div className="detail-workspace__bar">
+            <button
+              type="button"
+              className="conversation-surface__back"
+              onClick={exitWorkspace}
+            >
+              ← Back
+            </button>
+            <span className="detail-workspace__bar-title">
+              {channelLabel(activeChannel)} conversation
+            </span>
+          </div>
+          <div className="detail-workspace">
+            {/* Left (1/3) — customer info, unchanged */}
+            <div className="detail-workspace__col detail-workspace__col--info">
+              {infoColumn}
             </div>
-          ) : (
-            <>
-              <ConversationPanel
-                activeChannel={activeChannel}
-                recommendedChannel={effectiveRec?.channel ?? null}
-                recommendation={effectiveRec}
-                onSelectChannel={handleSelectChannel}
-                customerId={customerId}
-                customer={customer}
-                interactions={allInteractions}
-                onLogCall={handleLogCall}
-                emailComposing={emailComposing}
-                onComposeEmail={handleComposeEmail}
-                onClose={() => {
-                  setActiveChannel(null)
-                  cancelCompose()
-                }}
-                header={
-                  <RecommendationCard recommendation={effectiveRec} embedded />
-                }
-              />
-              <ComposeDrawer
-                open={emailComposing}
-                message={draftMessage}
-                onClose={handleComposeClose}
-                onSent={handleSent}
-              />
-            </>
-          )}
+            {/* Middle + Right (1/3 each) — channel surface + AI recommendation */}
+            <ChannelWorkspace key={activeChannel} channel={activeChannel} customer={customer} />
+          </div>
         </div>
-      </div>
+      ) : (
+        /* ── Two-column body (default) ───────────────────────────────────── */
+        <div className="detail-columns">
+          {/* Left column — scrolls */}
+          <div className="detail-left">{infoColumn}</div>
+
+          {/* Right column — sticky, AI-territory */}
+          <div className="detail-right" data-phase={phase}>
+            {phase === 'analyzing' ? (
+              // ── Analyzing overlay — shown until full JSON lands ────────────
+              <div className="detail-analyzing" data-testid="analyzing-state">
+                <div className="detail-analyzing__dots">
+                  <span className="detail-analyzing__dot" />
+                  <span className="detail-analyzing__dot" />
+                  <span className="detail-analyzing__dot" />
+                </div>
+                Analyzing…
+              </div>
+            ) : (
+              <>
+                <ConversationPanel
+                  activeChannel={activeChannel}
+                  recommendedChannel={effectiveRec?.channel ?? null}
+                  recommendation={effectiveRec}
+                  onSelectChannel={handleSelectChannel}
+                  customerId={customerId}
+                  customer={customer}
+                  interactions={allInteractions}
+                  onLogCall={handleLogCall}
+                  emailComposing={emailComposing}
+                  onComposeEmail={handleComposeEmail}
+                  onClose={() => {
+                    setActiveChannel(null)
+                    cancelCompose()
+                  }}
+                  header={
+                    <RecommendationCard recommendation={effectiveRec} embedded />
+                  }
+                />
+                <ComposeDrawer
+                  open={emailComposing}
+                  message={draftMessage}
+                  onClose={handleComposeClose}
+                  onSent={handleSent}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

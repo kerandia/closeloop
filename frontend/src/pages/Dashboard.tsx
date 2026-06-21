@@ -5,7 +5,6 @@ import { listCustomers } from '../api/client'
 import type { CustomerListItem } from '../api/types'
 import { CustomerTable } from '../components/CustomerTable'
 import { DashboardControls } from '../components/DashboardControls'
-import { AddCustomerForm } from '../components/AddCustomerForm'
 import { CustomerDetailPage } from './CustomerDetailPage'
 import { withMock } from '../lib/nav'
 import './Dashboard.css'
@@ -37,13 +36,10 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 
 // ── Empty state ───────────────────────────────────────────────────────────────
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState() {
   return (
     <div className="dash-empty">
-      <p className="dash-empty__msg">No customers yet</p>
-      <button className="dash-empty__button" onClick={onAdd}>
-        + Add customer
-      </button>
+      <p className="dash-empty__msg">No customers yet — import a list</p>
     </div>
   )
 }
@@ -78,7 +74,7 @@ export function Dashboard() {
   const [search, setSearch] = useState('')
   const [stage, setStage] = useState('')
   const [ghostRisk, setGhostRisk] = useState('')
-  const [showAdd, setShowAdd] = useState(false)
+  const [buyerType, setBuyerType] = useState('')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -102,11 +98,13 @@ export function Dashboard() {
     .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))
     .filter(c => !stage || c.stage === stage)
     .filter(c => !ghostRisk || c.ghost_risk === ghostRisk)
+    .filter(c => !buyerType || c.buyer_type === buyerType)
 
   const handleClearFilters = () => {
     setSearch('')
     setStage('')
     setGhostRisk('')
+    setBuyerType('')
   }
 
   if (error) return <ErrorState message={error} onRetry={fetchData} />
@@ -115,35 +113,24 @@ export function Dashboard() {
     <div className="dashboard">
       <header className="dashboard__header">
         <h1 className="dashboard__title">Pipeline</h1>
-        <button className="dashboard__add" onClick={() => setShowAdd(true)}>
-          + Add customer
-        </button>
       </header>
-
-      {showAdd && (
-        <AddCustomerForm
-          onClose={() => setShowAdd(false)}
-          onCreated={() => {
-            setShowAdd(false)
-            fetchData()
-          }}
-        />
-      )}
 
       <DashboardControls
         customers={customers}
         search={search}
         stage={stage}
         ghostRisk={ghostRisk}
+        buyerType={buyerType}
         onSearchChange={setSearch}
         onStageChange={setStage}
         onGhostRiskChange={setGhostRisk}
+        onBuyerTypeChange={setBuyerType}
       />
 
       {loading ? (
         <SkeletonRows />
       ) : customers.length === 0 ? (
-        <EmptyState onAdd={() => setShowAdd(true)} />
+        <EmptyState />
       ) : filtered.length === 0 ? (
         <NoResultsState onClearFilters={handleClearFilters} />
       ) : (
@@ -160,7 +147,7 @@ export function Dashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => navigate(withMock('/'))}
+              onClick={() => navigate(withMock('/app'))}
             />
             {/* The slide-in drawer container */}
             <motion.div
