@@ -13,6 +13,7 @@ import type {
   ImportCustomerInput,
   ImportQuoteInput,
   ImportResponse,
+  MgmtStats,
 } from './types'
 import {
   mockListCustomers,
@@ -24,6 +25,7 @@ import {
   mockSend,
   mockCollect,
 } from '../mock/muller'
+import { mockMgmtStats } from '../mock/management'
 
 export function isMockMode(): boolean {
   return new URLSearchParams(window.location.search).get('mock') === '1'
@@ -56,6 +58,11 @@ export function listCustomers(): Promise<CustomerListItem[]> {
 export function getCustomer(id: string): Promise<CustomerDetail> {
   if (isMockMode()) return Promise.resolve(mockGetCustomer())
   return req(`/api/customers/${id}`, 'GET')
+}
+
+export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats> {
+  if (isMockMode()) return Promise.resolve(mockMgmtStats(period))
+  return req(`/api/management/stats?period=${period}`, 'GET')
 }
 
 export function importCustomers(payload: {

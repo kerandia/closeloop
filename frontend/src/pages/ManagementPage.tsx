@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getManagementStats } from '../api/client'
 import { mockMgmtStats } from '../mock/management'
+import type { MgmtStats } from '../api/types'
 import { MgmtKpiRow } from '../components/mgmt/MgmtKpiRow'
 import { MgmtFunnel } from '../components/mgmt/MgmtFunnel'
 import { MgmtTrends } from '../components/mgmt/MgmtTrends'
@@ -8,13 +10,22 @@ import { MgmtNeedsAttention } from '../components/mgmt/MgmtNeedsAttention'
 import { CustomerTable } from '../components/CustomerTable'
 import './ManagementPage.css'
 
-// Frontend-only manager lens: always reads the seed fixture (there is no backend
-// aggregation endpoint yet). The period toggle swaps the precomputed snapshot.
+// Manager lens. Live aggregation from /api/management/stats; falls back to the
+// seed fixture in mock mode or if the backend is unreachable (never blanks).
 type Period = 'week' | 'month'
 
 export function ManagementPage() {
   const [period, setPeriod] = useState<Period>('month')
-  const stats = useMemo(() => mockMgmtStats(period), [period])
+  const [stats, setStats] = useState<MgmtStats | null>(null)
+
+  useEffect(() => {
+    let active = true
+    setStats(null)
+    getManagementStats(period)
+      .then((s) => { if (active) setStats(s) })
+      .catch(() => { if (active) setStats(mockMgmtStats(period)) })
+    return () => { active = false }
+  }, [period])
 
   return (
     <div className="mgmt">
@@ -35,21 +46,27 @@ export function ManagementPage() {
         </div>
       </header>
 
-      <MgmtKpiRow stats={stats} />
+      {!stats ? (
+        <p className="mgmt__loading">Loading…</p>
+      ) : (
+        <>
+          <MgmtKpiRow stats={stats} />
 
-      <div className="mgmt__split">
-        <MgmtFunnel funnel={stats.funnel} />
-        <MgmtTrends trends={stats.trends} />
-      </div>
+          <div className="mgmt__split">
+            <MgmtFunnel funnel={stats.funnel} />
+            <MgmtTrends trends={stats.trends} />
+          </div>
 
-      <MgmtRepTable reps={stats.reps} />
+          <MgmtRepTable reps={stats.reps} />
 
-      <MgmtNeedsAttention customers={stats.needs_attention} />
+          <MgmtNeedsAttention customers={stats.needs_attention} />
 
-      <section className="mgmt-pool">
-        <h3 className="mgmt-pool__heading mono">Customer Pool</h3>
-        <CustomerTable customers={stats.customers} />
-      </section>
+          <section className="mgmt-pool">
+            <h3 className="mgmt-pool__heading mono">Customer Pool</h3>
+            <CustomerTable customers={stats.customers} />
+          </section>
+        </>
+      )}
     </div>
   )
 }
