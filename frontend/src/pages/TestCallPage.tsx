@@ -72,6 +72,7 @@ export function TestCallPage() {
               customerPhone="Test Call"
               onClose={handleCallFinished}
               onCallFinished={handleCallFinished}
+              autoStart={true}
             />
           </div>
         )}

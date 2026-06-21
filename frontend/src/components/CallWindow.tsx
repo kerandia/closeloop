@@ -124,13 +124,12 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
   }
 
   // Auto-start on mount if requested
-  const hasAutoStarted = useRef(false)
   useEffect(() => {
-    if (autoStart && !hasAutoStarted.current && idle && agentId) {
-      hasAutoStarted.current = true
+    if (autoStart && idle && agentId) {
       start()
     }
-  }, [autoStart, idle, agentId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only run once on mount
 
   // Format call duration MM:SS
   function formatTime(sec: number) {
@@ -205,7 +204,7 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
         </div>
       )}
 
-      {idle && (
+      {idle && !autoStart && (
         <div className="call-config">
           <label className="call-config__label" htmlFor="agent-id-input">ElevenLabs Agent ID</label>
           <input
@@ -223,13 +222,15 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
 
       <div className="call-controls">
         {idle ? (
-          <button
-            onClick={start}
-            disabled={!agentId.trim()}
-            className="call-btn call-btn--start"
-          >
-            Start Session
-          </button>
+          !autoStart && (
+            <button
+              onClick={start}
+              disabled={!agentId.trim()}
+              className="call-btn call-btn--start"
+            >
+              Start Session
+            </button>
+          )
         ) : (
           <>
             <button
