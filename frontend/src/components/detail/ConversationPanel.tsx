@@ -16,6 +16,7 @@
  */
 import { useMemo, type ReactNode } from 'react'
 import type { Channel, Customer, Interaction, Recommendation } from '../../api/types'
+import { isMockMode } from '../../api/client'
 import { ChannelIcon } from '../ChannelIcon'
 import { CoachingCard } from './CoachingCard'
 import { ChatWindow } from './ChatWindow'
@@ -23,15 +24,16 @@ import { CallTranscriptView } from './CallTranscriptView'
 import { mockCollectedSummary } from './callTranscriptMock'
 import './ConversationPanel.css'
 
-const ALL_CHANNELS: Channel[] = [
-  'voice_ai',
-  'phone',
-  'whatsapp',
-  'sms',
-  'telegram',
-  'email',
-  'visit',
-]
+// Telegram is demo-only for now: the backend messaging adapter sends WhatsApp/SMS
+// only, so a real Telegram send would fail. Show it only in mock mode until the
+// backend supports it.
+const BASE_CHANNELS: Channel[] = ['voice_ai', 'phone', 'whatsapp', 'sms', 'email', 'visit']
+
+function availableChannels(): Channel[] {
+  return isMockMode()
+    ? ['voice_ai', 'phone', 'whatsapp', 'sms', 'telegram', 'email', 'visit']
+    : BASE_CHANNELS
+}
 
 const CHANNEL_LABEL: Record<Channel, string> = {
   voice_ai: 'AI call',
@@ -96,8 +98,9 @@ export function ConversationPanel({
   // recommendedChannel the picker doesn't render (e.g. 'system') so it can't
   // open a surface with no body.
   const ordered = useMemo<Channel[]>(() => {
-    if (!recommendedChannel || !ALL_CHANNELS.includes(recommendedChannel)) return ALL_CHANNELS
-    return [recommendedChannel, ...ALL_CHANNELS.filter((c) => c !== recommendedChannel)]
+    const channels = availableChannels()
+    if (!recommendedChannel || !channels.includes(recommendedChannel)) return channels
+    return [recommendedChannel, ...channels.filter((c) => c !== recommendedChannel)]
   }, [recommendedChannel])
 
   function transcriptFor(channel: 'voice_ai' | 'phone'): string {

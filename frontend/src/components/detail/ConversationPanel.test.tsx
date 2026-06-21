@@ -10,6 +10,7 @@ vi.mock('../../api/client', () => ({
   listCopilotSuggestions: vi.fn().mockResolvedValue([]),
   subscribeCopilot: vi.fn().mockReturnValue(() => {}),
   messagingSend: vi.fn(),
+  isMockMode: () => true, // exercise the full channel set incl. telegram
 }))
 
 const customer = { id: 'c1', name: 'Familie Müller' } as Customer
