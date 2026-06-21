@@ -14,7 +14,7 @@
  */
 import { useState } from 'react'
 import type { ExtractedAction, ActionStatus } from '../../api/types'
-import { relativeTime } from '../../lib/format'
+import { relativeTime, channelLabel } from '../../lib/format'
 import './CallActionsList.css'
 
 export interface CallActionsListProps {
@@ -47,7 +47,9 @@ export function CallActionsList({ actions }: CallActionsListProps) {
                 <p className="call-action-row__detail">{action.detail}</p>
                 <p className="call-action-row__meta">
                   {action.channel && (
-                    <span className="call-action-row__channel">{action.channel}</span>
+                    <span className="call-action-row__channel">
+                      {channelLabel(action.channel)}
+                    </span>
                   )}
                   <span className="call-action-row__due">
                     Due: {relativeTime(action.due_at)}

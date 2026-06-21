@@ -92,9 +92,11 @@ export function ConversationPanel({
   header,
   onClose,
 }: Props) {
-  // Recommended channel first, then the rest in canonical order.
+  // Recommended channel first, then the rest in canonical order. Ignore a
+  // recommendedChannel the picker doesn't render (e.g. 'system') so it can't
+  // open a surface with no body.
   const ordered = useMemo<Channel[]>(() => {
-    if (!recommendedChannel) return ALL_CHANNELS
+    if (!recommendedChannel || !ALL_CHANNELS.includes(recommendedChannel)) return ALL_CHANNELS
     return [recommendedChannel, ...ALL_CHANNELS.filter((c) => c !== recommendedChannel)]
   }, [recommendedChannel])
 

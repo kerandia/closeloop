@@ -1,4 +1,22 @@
+import type { Channel } from '../api/types'
+
 export type Band = 'cold' | 'cool' | 'warm' | 'hot' | 'unknown'
+
+// Human-readable channel labels — avoids raw enum tokens like "voice_ai" in the UI.
+const CHANNEL_LABELS: Record<Channel, string> = {
+  email: 'Email',
+  sms: 'SMS',
+  whatsapp: 'WhatsApp',
+  telegram: 'Telegram',
+  phone: 'Phone',
+  visit: 'Visit',
+  voice_ai: 'Voice AI',
+  system: 'System',
+}
+
+export function channelLabel(channel: Channel): string {
+  return CHANNEL_LABELS[channel] ?? channel
+}
 
 // Deal Score bands (deal-score.md Part 1): Cold 0–39 · Cool 40–59 · Warm 60–79 · Hot 80–100.
 export function scoreBand(score: number | null | undefined): Band {

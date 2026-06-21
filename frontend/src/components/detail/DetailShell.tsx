@@ -126,6 +126,7 @@ export function DetailShell({ data, customerId }: Props) {
   function handleComposeEmail(): void {
     if (!effectiveRec || emailComposing) return
     setEmailComposing(true)
+    setDraftMessage(null) // clear any prior draft so the drawer shows "Composing…"
     const token = ++composeToken.current
     approveRecommendation(effectiveRec.id)
       .then((msg) => {
