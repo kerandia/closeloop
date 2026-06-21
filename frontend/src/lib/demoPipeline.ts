@@ -50,45 +50,13 @@ export function demoStage(name: string, currentStage: string): string {
   return STAGE_BY_NAME[name] ?? STAGE_NORMALIZE[currentStage] ?? currentStage
 }
 
-// ── Extra rows so the funnel looks populated (Visit booked + Won) ─────────────
-const daysAgoIso = (days: number) =>
-  new Date(Date.now() - days * 86_400_000).toISOString()
-
-const DEMO_REP = { id: 'rep-demo', name: 'Lena Vogt' }
-
-const EXTRA_ROWS: CustomerListItem[] = [
-  {
-    id: 'demo-visit-booked',
-    name: 'Familie Keller',
-    buyer_type: 'family',
-    sign_likelihood: 78,
-    score_trend: 'up',
-    ghost_risk: 'low',
-    stage: 'visit_booked',
-    next_action: { channel: 'visit', timing_label: 'Wed 16:00' },
-    assigned_rep: DEMO_REP,
-    last_contact_at: daysAgoIso(1),
-  },
-  {
-    id: 'demo-won',
-    name: 'Herr Wagner',
-    buyer_type: 'investor',
-    sign_likelihood: 95,
-    score_trend: 'up',
-    ghost_risk: 'low',
-    stage: 'won',
-    next_action: null,
-    assigned_rep: DEMO_REP,
-    last_contact_at: daysAgoIso(3),
-  },
-]
-
-/** Overlay demo stages, append the extra rows, keep the score-ranked order. */
+/** Overlay demo funnel stages onto the REAL rows, keep the score-ranked order.
+ * (No injected fake rows — every row maps to a real backend customer, so each
+ * one opens a real detail page.) */
 export function applyDemoList(rows: CustomerListItem[]): CustomerListItem[] {
-  const mapped = rows.map((c) => ({ ...c, stage: demoStage(c.name, c.stage) }))
-  return [...mapped, ...EXTRA_ROWS].sort(
-    (a, b) => (b.sign_likelihood ?? 0) - (a.sign_likelihood ?? 0),
-  )
+  return rows
+    .map((c) => ({ ...c, stage: demoStage(c.name, c.stage) }))
+    .sort((a, b) => (b.sign_likelihood ?? 0) - (a.sign_likelihood ?? 0))
 }
 
 /** Keep the detail view's stage consistent with the list. */
