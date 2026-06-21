@@ -205,7 +205,19 @@ export function ChatWindow({
   )
 
   const cardCfg = live?.category ? CATEGORY_CARD[live.category] : undefined
-  const filteredInteractions = interactions.filter((i) => i.channel === channel)
+  // Oldest → newest so the thread reads top-to-bottom (the API returns DESC), with
+  // this session's optimistic bubbles appended after.
+  const filteredInteractions = interactions
+    .filter((i) => i.channel === channel)
+    .slice()
+    .sort((a, b) => (a.occurred_at ?? '').localeCompare(b.occurred_at ?? ''))
+
+  // Keep the latest message in view.
+  const bodyRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = bodyRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [filteredInteractions.length, extra.length, live, draft, simulating])
 
   // The AI co-pilot block above the composer: either the live suggestion (after
   // an inbound) or the proactive opener (before one). Same look, different source.
@@ -232,7 +244,7 @@ export function ChatWindow({
         </header>
 
         {/* ── Messages ───────────────────────────────────────────────────────── */}
-        <div className="chat-surface__messages">
+        <div className="chat-surface__messages" ref={bodyRef}>
           {filteredInteractions.length === 0 && extra.length === 0 && (
             <p className="chat-surface__empty">No messages on {channelLabel} yet.</p>
           )}
