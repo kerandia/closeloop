@@ -217,7 +217,7 @@ def _code_interpreter_png(ctx: KitContext, kind: str, headline: str,
         f"Save the figure as PNG and return the image file."
     )
     assistant = client.beta.assistants.create(
-        model="gpt-4o",
+        model=settings.closing_kit_model,
         tools=[{"type": "code_interpreter"}],
         instructions="You are a sales data-viz designer. Output exactly one matplotlib PNG. "
         "Minimal text — numbers + short labels only.",
