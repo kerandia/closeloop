@@ -1,27 +1,31 @@
 /**
  * ChatWindow — chat-thread component for messaging conversations.
  *
- * Props:
- *   customerId        string — customer ID for sending messages
- *   channel           'whatsapp' | 'sms' | 'telegram' — messaging channel
- *   interactions      Interaction[] — optional array of past interactions
- *
  * Renders:
- *   - Interaction bubbles filtered to the specified channel
- *     - inbound (left), outbound (right)
- *   - LIVE suggestion block (Read + reply lines + Send buttons)
- *     - subscribes to live suggestions
- *     - renders lines with Send buttons
+ *   - Interaction bubbles filtered to the channel (inbound left / outbound right)
+ *   - The live co-pilot suggestion (read + reply lines + Send), subscribed via SSE
+ *   - A one-tap "✨ Make the … card" when the detected objection maps to a visual
+ *     asset (Closing Kit): objection → buyer read → visual asset → send.
  */
 import { useState, useEffect, useCallback } from 'react'
 import {
   listCopilotSuggestions,
   subscribeCopilot,
   messagingSend,
+  generateClosingKit,
 } from '../../api/client'
-import type { Interaction, CopilotSuggestion } from '../../api/types'
+import type { Interaction, CopilotSuggestion, ClosingKitResult } from '../../api/types'
 import './ChatWindow.css'
 import './CopilotPanel.css'
+
+// objection category → the visual asset the rep can generate for it
+const CATEGORY_CARD: Record<string, { kind: string; label: string }> = {
+  spouse: { kind: 'spouse', label: 'partner card' },
+  need_other_quotes: { kind: 'comparison', label: 'comparison card' },
+  trust_new_company: { kind: 'comparison', label: 'comparison card' },
+  winter_yield: { kind: 'winter', label: 'winter card' },
+  price_too_high: { kind: 'etf', label: 'cost card' },
+}
 
 export interface ChatWindowProps {
   customerId: string
@@ -33,6 +37,8 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
   const [live, setLive] = useState<CopilotSuggestion | null>(null)
   const [sendingLine, setSendingLine] = useState<string | null>(null)
   const [sentNote, setSentNote] = useState<string | null>(null)
+  const [card, setCard] = useState<ClosingKitResult | null>(null) // generated visual asset
+  const [cardLoading, setCardLoading] = useState(false)
 
   // Load initial live suggestions and subscribe to updates
   useEffect(() => {
@@ -41,10 +47,10 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     setLive(null)
     setSentNote(null)
     setSendingLine(null)
+    setCard(null)
     listCopilotSuggestions(customerId)
       .then((rows) => {
-        // Only surface a suggestion for THIS channel — never fall back to a
-        // different channel's suggestion (it would send on the wrong surface).
+        // Only surface a suggestion for THIS channel.
         const matching = rows.find((r) => r.channel === channel)
         if (active && matching) setLive(matching)
       })
@@ -63,7 +69,6 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     }
   }, [customerId, channel])
 
-  // Channel label display
   const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
 
   const handleSendMessage = useCallback(
@@ -71,7 +76,6 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
       if (!live || sendingLine) return
       setSendingLine(line)
       try {
-        // Always send on the currently selected surface, not live.channel.
         const res = await messagingSend({
           customer_id: customerId,
           body: line,
@@ -89,8 +93,23 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     [live, sendingLine, customerId, channel, channelLabel],
   )
 
-  // Filter interactions to this channel
-  const filteredInteractions = interactions.filter(i => i.channel === channel)
+  const makeCard = useCallback(
+    async (kind: string) => {
+      if (cardLoading) return
+      setCardLoading(true)
+      try {
+        setCard(await generateClosingKit(customerId, kind))
+      } catch {
+        /* the visual is optional — ignore failures */
+      } finally {
+        setCardLoading(false)
+      }
+    },
+    [cardLoading, customerId],
+  )
+
+  const cardCfg = live?.category ? CATEGORY_CARD[live.category] : undefined
+  const filteredInteractions = interactions.filter((i) => i.channel === channel)
 
   return (
     <section className="chat-window" data-slot="chat-window">
@@ -113,9 +132,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
       {/* ── Live suggestion block ─────────────────────────────────────────── */}
       {live && (
         <div className="chat-window__live" data-testid="chat-window-live">
-          {live.utterance && (
-            <p className="copilot-live__msg">"{live.utterance}"</p>
-          )}
+          {live.utterance && <p className="copilot-live__msg">"{live.utterance}"</p>}
           <div className="copilot-read">
             <span className="copilot-read__label mono">Read</span>
             <p className="copilot-read__text">{live.read}</p>
@@ -137,6 +154,20 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
               </div>
             ))}
           </div>
+          {cardCfg && (
+            <div className="chat-window__card">
+              <button
+                type="button"
+                className="chat-window__cardbtn"
+                disabled={cardLoading}
+                onClick={() => makeCard(cardCfg.kind)}
+                data-testid="make-card"
+              >
+                {cardLoading ? 'Generating…' : `✨ Make the ${cardCfg.label}`}
+              </button>
+              {card && <img className="chat-window__cardimg" src={card.url} alt={card.title} />}
+            </div>
+          )}
           {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
         </div>
       )}

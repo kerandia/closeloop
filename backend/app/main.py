@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db import init_db
 from app.routers import (
+    agent,
     copilot,
     customers,
     management,
@@ -54,6 +55,7 @@ app.include_router(copilot.router)
 app.include_router(webhooks.router)
 app.include_router(messaging.router)
 app.include_router(management.router)
+app.include_router(agent.router)
 app.include_router(notes.router)
 
 

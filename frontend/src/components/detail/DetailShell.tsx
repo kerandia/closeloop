@@ -41,6 +41,7 @@ import { RecommendationCard } from './RecommendationCard'
 import { ComposeDrawer } from './ComposeDrawer'
 import { ProfilePanel } from './ProfilePanel'
 import { CallNotesButton } from './CallNotesButton'
+import { ClosingKitButton } from './ClosingKitButton'
 import { TodoList } from './TodoList'
 import { InteractionTimeline } from './InteractionTimeline'
 import { ConversationPanel } from './ConversationPanel'
@@ -181,6 +182,7 @@ export function DetailShell({ data, customerId }: Props) {
     <>
       <ProfilePanel profile={profile} signals={signals} quote={quote} />
       <CallNotesButton customerId={customerId} />
+      <ClosingKitButton customerId={customerId} />
       <TodoList />
       <InteractionTimeline
         interactions={allInteractions}

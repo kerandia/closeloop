@@ -349,6 +349,26 @@ class KBCadenceTemplate(Base):
     steps: Mapped[list | None] = mapped_column(JSONB)
 
 
+class KBInstaller(Base):
+    """The installer's own facts — warranty, service SLA, equipment, references.
+    Grounds the comparison / stakeholder visuals so claims are credible."""
+
+    __tablename__ = "kb_installer"
+
+    id: Mapped[uuid.UUID] = PK()
+    name: Mapped[str | None] = mapped_column(Text)
+    warranty_years: Mapped[int | None] = mapped_column(Integer)
+    inverter_warranty_years: Mapped[int | None] = mapped_column(Integer)
+    response_time: Mapped[str | None] = mapped_column(Text)  # e.g. "within 48h"
+    panel_brand: Mapped[str | None] = mapped_column(Text)
+    inverter_brand: Mapped[str | None] = mapped_column(Text)
+    certifications: Mapped[list | None] = mapped_column(JSONB)
+    local_installs: Mapped[int | None] = mapped_column(Integer)
+    references_count: Mapped[int | None] = mapped_column(Integer)
+    financing: Mapped[dict | None] = mapped_column(JSONB)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
 # --------------------------------------------------------------------------- #
 # C. REAL-TIME CO-PILOT (WhatsApp) — a persisted RESPOND suggestion for an
 #    inbound customer message, so the rep UI can show + replay it.
@@ -374,4 +394,23 @@ class CopilotSuggestion(Base):
     todo: Mapped[dict | None] = mapped_column(JSONB)
     channel: Mapped[str] = mapped_column(Text, server_default="whatsapp")
     status: Mapped[str] = mapped_column(Text, server_default="new")  # new|sent|dismissed
+    created_at: Mapped[dt.datetime] = _now()
+
+
+class Artifact(Base):
+    """A generated visual (chart/infographic) for a customer — produced by the
+    Closing Kit agent (Code Interpreter) or its deterministic SVG fallback."""
+
+    __tablename__ = "artifacts"
+
+    id: Mapped[uuid.UUID] = PK()
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(Text, server_default="chart")
+    buyer_type: Mapped[str | None] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(Text)
+    mime: Mapped[str] = mapped_column(Text, server_default="image/png")
+    content_b64: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(Text, server_default="agent")  # agent|fallback
     created_at: Mapped[dt.datetime] = _now()

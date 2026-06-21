@@ -355,3 +355,14 @@ export interface ImportResponse {
   imported: number
   customer_ids: string[]
 }
+
+// Closing Kit agent — a generated buyer-tailored visual (chart/infographic)
+export interface ClosingKitResult {
+  id: string
+  title: string
+  mime: string
+  buyer_type: string
+  kind: string // auto|spouse|comparison|winter|etf
+  source: 'agent' | 'fallback' // agent = OpenAI Code Interpreter; fallback = SVG
+  url: string
+}

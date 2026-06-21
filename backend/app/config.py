@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
+    # Model for the Closing Kit / visual agent (Code Interpreter). Override with a
+    # stronger model when available, e.g. CLOSING_KIT_MODEL=gpt-4.5-preview / gpt-5.
+    closing_kit_model: str = "gpt-4o"
 
     # ElevenLabs
     elevenlabs_api_key: str = ""
@@ -27,6 +30,7 @@ class Settings(BaseSettings):
     live_voice: bool = False
     real_send: bool = False
     ghost_radar: bool = False
+    closing_kit_enabled: bool = True  # the visual-generator agent (Code Interpreter)
 
     @property
     def _twilio_auth(self) -> bool:

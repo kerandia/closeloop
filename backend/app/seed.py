@@ -347,6 +347,21 @@ CADENCE_TEMPLATES = [
     ),
 ]
 
+# The installer's own facts — grounds comparison / stakeholder visuals (kb_installer).
+INSTALLER = dict(
+    name="Reonic Solar",
+    warranty_years=25,
+    inverter_warranty_years=12,
+    response_time="within 48h",
+    panel_brand="Tier-1 (Meyer Burger)",
+    inverter_brand="SMA",
+    certifications=["VDE", "Meister-Betrieb"],
+    local_installs=480,
+    references_count=12,
+    financing={"type": "kfw", "rate": 3.2},
+    notes="Local Meister-Betrieb; 25-yr product + performance warranty; 48h service SLA.",
+)
+
 REPS = [
     dict(
         name="Lena Vogt",
@@ -445,7 +460,7 @@ async def _clear(session) -> None:
         models.ExtractedAction, models.ProfileSignal, models.Profile,
         models.Interaction, models.Quote, models.Customer, models.Rep,
         models.KBCadenceTemplate, models.KBChannelPrior, models.KBPlay,
-        models.KBObjection, models.KBBuyerType,
+        models.KBObjection, models.KBBuyerType, models.KBInstaller,
     ):
         await session.execute(delete(model))
     await session.commit()
@@ -466,6 +481,7 @@ async def seed() -> None:
             session.add(models.KBChannelPrior(**c))
         for t in CADENCE_TEMPLATES:
             session.add(models.KBCadenceTemplate(**t))
+        session.add(models.KBInstaller(**INSTALLER))
 
         reps = [models.Rep(**r) for r in REPS]
         session.add_all(reps)

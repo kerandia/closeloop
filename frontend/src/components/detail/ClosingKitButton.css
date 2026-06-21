@@ -1,0 +1,43 @@
+.ckit {
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-top: 14px;
+}
+.ckit__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ckit__label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--solar);
+}
+.ckit__btn {
+  background: var(--solar);
+  color: var(--ink-900, #0d1b27);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ckit__btn:disabled { opacity: 0.55; cursor: default; }
+.ckit__err { color: var(--band-cold, #e8756a); font-size: 12px; margin: 10px 0 0; }
+.ckit__fig { margin: 12px 0 0; }
+.ckit__img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--ink-700);
+  display: block;
+}
+.ckit__cap {
+  font-size: 11px;
+  color: var(--paper-40);
+  margin-top: 6px;
+  text-align: right;
+}
