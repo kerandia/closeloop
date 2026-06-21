@@ -5,19 +5,10 @@ import { BuyerTypeChip } from './BuyerTypeChip'
 import { GhostRiskPill } from './GhostRiskPill'
 import { StageBadge } from './StageBadge'
 import { ChannelIcon } from './ChannelIcon'
-import { relativeTime } from '../lib/format'
+import { relativeTime, repInitials } from '../lib/format'
 import { isAtRisk } from '../lib/demoPipeline'
 import { withMock } from '../lib/nav'
 import './CustomerTable.css'
-
-/** "Lena Brandt" → "LB" */
-function repInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(w => w[0] ?? '')
-    .join('')
-    .toUpperCase()
-}
 
 /** "voice_ai" → "Voice Ai", "visit" → "Visit" */
 function channelLabel(channel: Channel): string {

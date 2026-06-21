@@ -115,7 +115,8 @@ export function ConversationPanel({
   // selected channel's surface REPLACES it, with a Back affordance to return.
   if (activeChannel == null) {
     return (
-      <section className="conversation-panel" data-slot="conversation-panel">
+      // key forces a remount when switching info <-> channel so panel-swap replays
+      <section key="__info__" className="conversation-panel" data-slot="conversation-panel">
         {header && <div className="conversation-panel__header">{header}</div>}
 
         {/* ── Channel rail ────────────────────────────────────────────────── */}
@@ -147,7 +148,8 @@ export function ConversationPanel({
   }
 
   return (
-    <section className="conversation-panel" data-slot="conversation-panel">
+    // key per channel so the panel-swap entry animation replays on channel change
+    <section key={activeChannel} className="conversation-panel" data-slot="conversation-panel">
       {/* ── Surface bar with Back to the info card ───────────────────────── */}
       <div className="conversation-surface__bar">
         <button

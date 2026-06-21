@@ -31,7 +31,7 @@ export function DashboardControls({
   return (
     <div className="dash-ctrl">
       {goingQuiet > 0 && (
-        <span className="dash-ctrl__radar" title="customers at high ghost risk">
+        <span className="dash-ctrl__radar" title="customers at risk of going quiet — high ghost risk or trending down">
           <span className="dash-ctrl__radar-dot" /> {goingQuiet} going quiet
         </span>
       )}
