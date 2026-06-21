@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import type { CustomerListItem, Channel } from '../api/types'
 import { ScoreBar } from './ScoreBar'
 import { BuyerTypeChip } from './BuyerTypeChip'
@@ -23,6 +23,9 @@ interface Props {
 
 export function CustomerTable({ customers }: Props) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isMgmt = location.pathname.startsWith('/app/management')
+  const basePath = isMgmt ? '/app/management' : '/app'
 
   return (
     <div className="ct-scroll">
@@ -54,12 +57,12 @@ export function CustomerTable({ customers }: Props) {
           <tr
             key={c.id}
             className="ct__row"
-            onClick={() => navigate(withMock(`/app/customers/${c.id}`))}
+            onClick={() => navigate(withMock(`${basePath}/customers/${c.id}`))}
             tabIndex={0}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                navigate(withMock(`/app/customers/${c.id}`))
+                navigate(withMock(`${basePath}/customers/${c.id}`))
               }
             }}
           >

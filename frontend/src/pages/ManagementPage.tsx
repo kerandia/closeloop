@@ -8,6 +8,10 @@ import { MgmtTrends } from '../components/mgmt/MgmtTrends'
 import { MgmtRepTable } from '../components/mgmt/MgmtRepTable'
 import { MgmtNeedsAttention } from '../components/mgmt/MgmtNeedsAttention'
 import { CustomerTable } from '../components/CustomerTable'
+import { CustomerDetailPage } from './CustomerDetailPage'
+import { useMatch, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { withMock } from '../lib/nav'
 import './ManagementPage.css'
 
 // Manager lens. Live aggregation from /api/management/stats; falls back to the
@@ -15,6 +19,10 @@ import './ManagementPage.css'
 type Period = 'week' | 'month'
 
 export function ManagementPage() {
+  const match = useMatch('/app/management/customers/:id')
+  const activeCustomerId = match?.params.id
+  const navigate = useNavigate()
+
   const [period, setPeriod] = useState<Period>('month')
   const [stats, setStats] = useState<MgmtStats | null>(null)
 
@@ -67,6 +75,32 @@ export function ManagementPage() {
           </section>
         </>
       )}
+
+      {/* Slide-out Drawer for Customer Detail */}
+      <AnimatePresence>
+        {activeCustomerId && (
+          <>
+            {/* Blurred glass backdrop overlay */}
+            <motion.div
+              className="drawer-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => navigate(withMock('/app/management'))}
+            />
+            {/* The slide-in drawer container */}
+            <motion.div
+              className="drawer-container"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            >
+              <CustomerDetailPage id={activeCustomerId} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
