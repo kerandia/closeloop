@@ -196,13 +196,21 @@ export function simulateInbound(
   })
 }
 
+// The Vite dev proxy buffers SSE (it forwards ": connected" but swallows the data
+// frames), so live suggestions never reach the browser. Connect EventSource
+// straight to the backend in dev (CORS already allows the dev origin); in prod
+// it's same-origin, so a relative path is correct.
+const SSE_ORIGIN: string =
+  (import.meta.env.VITE_API_URL as string | undefined) ||
+  (import.meta.env.DEV ? 'http://localhost:8000' : '')
+
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */
 export function subscribeCopilot(
   customerId: string,
   onEvent: (e: CopilotStreamEvent) => void,
 ): () => void {
   if (isMockMode() || typeof EventSource === 'undefined') return () => {}
-  const es = new EventSource(`/api/copilot/stream/${customerId}`)
+  const es = new EventSource(`${SSE_ORIGIN}/api/copilot/stream/${customerId}`)
   es.onmessage = (m) => {
     try {
       onEvent(JSON.parse(m.data) as CopilotStreamEvent)

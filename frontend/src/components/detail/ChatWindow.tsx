@@ -116,9 +116,21 @@ export function ChatWindow({
 
     const unsub = subscribeCopilot(customerId, (e) => {
       if (e.type === 'suggestion' && e.suggestion && e.suggestion.channel === channel) {
-        setLive(e.suggestion)
+        const sug = e.suggestion
+        setLive(sug)
         setDraft(null)
         setSentNote(null)
+        // Show the customer's incoming message as an inbound bubble. This is the
+        // ONLY place a real (Twilio) inbound shows — it isn't in the page-load
+        // snapshot. Dedupe against the last inbound so the simulate path (which
+        // already echoed it optimistically) doesn't double it up.
+        if (sug.utterance) {
+          setExtra((prev) => {
+            const lastInbound = [...prev].reverse().find((m) => m.direction === 'inbound')
+            if (lastInbound && lastInbound.content === sug.utterance) return prev
+            return [...prev, { id: `sug-${sug.id}`, direction: 'inbound', content: sug.utterance! }]
+          })
+        }
       }
     })
 
