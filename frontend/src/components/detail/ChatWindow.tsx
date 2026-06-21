@@ -1,22 +1,25 @@
 /**
  * ChatWindow — chat-thread component for messaging conversations.
  *
- * Renders, for the selected channel:
- *   - past interaction bubbles (inbound left / outbound right)
- *   - either:
- *       • a LIVE suggestion (reply) when the customer has messaged in, or
- *       • the AI's PROACTIVE recommended opener (composed for this channel) when
- *         there's no inbound yet — so the rep can start the conversation.
- *   Both render with Send buttons (messagingSend on the current channel).
+ * Props:
+ *   customerId        string — customer ID for sending messages
+ *   channel           'whatsapp' | 'sms' | 'telegram' — messaging channel
+ *   interactions      Interaction[] — optional array of past interactions
+ *
+ * Renders:
+ *   - Interaction bubbles filtered to the specified channel
+ *     - inbound (left), outbound (right)
+ *   - LIVE suggestion block (Read + reply lines + Send buttons)
+ *     - subscribes to live suggestions
+ *     - renders lines with Send buttons
  */
 import { useState, useEffect, useCallback } from 'react'
 import {
   listCopilotSuggestions,
   subscribeCopilot,
   messagingSend,
-  composeDraft,
 } from '../../api/client'
-import type { Interaction, CopilotSuggestion, MessagingDraft } from '../../api/types'
+import type { Interaction, CopilotSuggestion } from '../../api/types'
 import './ChatWindow.css'
 import './CopilotPanel.css'
 
@@ -27,53 +30,55 @@ export interface ChatWindowProps {
 }
 
 export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindowProps) {
-  const [live, setLive] = useState<CopilotSuggestion | null>(null) // inbound-driven reply
-  const [draft, setDraft] = useState<MessagingDraft | null>(null) // proactive opener
+  const [live, setLive] = useState<CopilotSuggestion | null>(null)
   const [sendingLine, setSendingLine] = useState<string | null>(null)
   const [sentNote, setSentNote] = useState<string | null>(null)
-  const [draftSent, setDraftSent] = useState(false)
 
+  // Load initial live suggestions and subscribe to updates
   useEffect(() => {
     let active = true
-    // Reset per-channel state so a prior channel can't linger.
-    setLive(null); setDraft(null); setSentNote(null); setSendingLine(null); setDraftSent(false)
-
+    // Reset per-channel state so a prior channel's suggestion can't linger.
+    setLive(null)
+    setSentNote(null)
+    setSendingLine(null)
     listCopilotSuggestions(customerId)
       .then((rows) => {
-        if (!active) return
+        // Only surface a suggestion for THIS channel — never fall back to a
+        // different channel's suggestion (it would send on the wrong surface).
         const matching = rows.find((r) => r.channel === channel)
-        if (matching) {
-          setLive(matching)
-        } else {
-          // No inbound suggestion for this channel → compose the AI's opener.
-          composeDraft(customerId, channel)
-            .then((d) => { if (active) setDraft(d) })
-            .catch(() => {})
-        }
+        if (active && matching) setLive(matching)
       })
       .catch(() => {})
 
     const unsub = subscribeCopilot(customerId, (e) => {
       if (e.type === 'suggestion' && e.suggestion && e.suggestion.channel === channel) {
         setLive(e.suggestion)
-        setDraft(null)
         setSentNote(null)
       }
     })
 
-    return () => { active = false; unsub() }
+    return () => {
+      active = false
+      unsub()
+    }
   }, [customerId, channel])
 
+  // Channel label display
   const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
 
-  const handleSend = useCallback(
-    async (line: string, suggestionId?: string) => {
-      if (sendingLine) return
+  const handleSendMessage = useCallback(
+    async (line: string) => {
+      if (!live || sendingLine) return
       setSendingLine(line)
       try {
-        const res = await messagingSend({ customer_id: customerId, body: line, channel, suggestion_id: suggestionId })
-        if (suggestionId) setLive((s) => (s ? { ...s, status: 'sent' } : s))
-        else setDraftSent(true)
+        // Always send on the currently selected surface, not live.channel.
+        const res = await messagingSend({
+          customer_id: customerId,
+          body: line,
+          channel,
+          suggestion_id: live.id,
+        })
+        setLive({ ...live, status: 'sent' })
         setSentNote(res.within_window ? `Sent on ${channelLabel} ✓` : 'Sent (template) ✓')
       } catch (err) {
         setSentNote(err instanceof Error ? err.message : 'Send failed')
@@ -81,10 +86,11 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
         setSendingLine(null)
       }
     },
-    [sendingLine, customerId, channel, channelLabel],
+    [live, sendingLine, customerId, channel, channelLabel],
   )
 
-  const filteredInteractions = interactions.filter((i) => i.channel === channel)
+  // Filter interactions to this channel
+  const filteredInteractions = interactions.filter(i => i.channel === channel)
 
   return (
     <section className="chat-window" data-slot="chat-window">
@@ -104,10 +110,12 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
         ))}
       </div>
 
-      {/* ── Inbound-driven suggestion (reply to what the customer said) ──────── */}
+      {/* ── Live suggestion block ─────────────────────────────────────────── */}
       {live && (
         <div className="chat-window__live" data-testid="chat-window-live">
-          {live.utterance && <p className="copilot-live__msg">"{live.utterance}"</p>}
+          {live.utterance && (
+            <p className="copilot-live__msg">"{live.utterance}"</p>
+          )}
           <div className="copilot-read">
             <span className="copilot-read__label mono">Read</span>
             <p className="copilot-read__text">{live.read}</p>
@@ -121,41 +129,8 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
                   type="button"
                   className="copilot-line__send"
                   disabled={live.status === 'sent' || sendingLine !== null}
-                  onClick={() => handleSend(line, live.id)}
+                  onClick={() => handleSendMessage(line)}
                   data-testid={`send-button-${i}`}
-                >
-                  {sendingLine === line ? 'Sending…' : 'Send'}
-                </button>
-              </div>
-            ))}
-          </div>
-          {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
-        </div>
-      )}
-
-      {/* ── Proactive opener (AI recommendation) when there's no inbound yet ─── */}
-      {!live && draft && (
-        <div className="chat-window__live" data-testid="chat-window-draft">
-          <div className="copilot-live__bar">
-            <span className="copilot-live__label mono">Recommended by AI</span>
-          </div>
-          {draft.why && (
-            <div className="copilot-read">
-              <span className="copilot-read__label mono">Why now</span>
-              <p className="copilot-read__text">{draft.why}</p>
-            </div>
-          )}
-          <div className="copilot-lines">
-            <span className="copilot-lines__label mono">Suggested first message</span>
-            {draft.exact_lines.map((line, i) => (
-              <div key={i} className="copilot-line">
-                <span className="copilot-line__text">{line}</span>
-                <button
-                  type="button"
-                  className="copilot-line__send"
-                  disabled={draftSent || sendingLine !== null}
-                  onClick={() => handleSend(line)}
-                  data-testid={`draft-send-button-${i}`}
                 >
                   {sendingLine === line ? 'Sending…' : 'Send'}
                 </button>

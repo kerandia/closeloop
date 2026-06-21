@@ -43,7 +43,7 @@ function renderWithRouter(customers = mockCustomers) {
     <MemoryRouter initialEntries={['/']}>
       <Routes>
         <Route path="/" element={<CustomerTable customers={customers} />} />
-        <Route path="/customers/:id" element={<LocationProbe />} />
+        <Route path="/app/customers/:id" element={<LocationProbe />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -68,10 +68,23 @@ describe('CustomerTable', () => {
     expect(screen.getByText('61')).toBeInTheDocument()
   })
 
-  test('renders ghost risk pills', () => {
+  test('shows risk badge only for at-risk rows (going quiet / trending down)', () => {
+    // Müller (medium, no trend) and Sophie (low, no trend) are NOT at risk → blank.
     renderWithRouter()
-    expect(screen.getByText('MED')).toBeInTheDocument()
-    expect(screen.getByText('LOW')).toBeInTheDocument()
+    expect(screen.queryByText('MED')).not.toBeInTheDocument()
+    expect(screen.queryByText('LOW')).not.toBeInTheDocument()
+    expect(screen.queryByText('HIGH')).not.toBeInTheDocument()
+  })
+
+  test('shows a HIGH badge for a down-trending / high-risk row', () => {
+    const atRisk: CustomerListItem[] = [
+      { ...mockCustomers[0], ghost_risk: 'high', score_trend: 'down' },
+      { ...mockCustomers[1], ghost_risk: 'low', score_trend: 'up' },
+    ]
+    renderWithRouter(atRisk)
+    expect(screen.getByText('HIGH')).toBeInTheDocument()
+    // The healthy row stays blank.
+    expect(screen.queryByText('LOW')).not.toBeInTheDocument()
   })
 
   test('renders stage badges with underscores replaced', () => {
@@ -102,13 +115,13 @@ describe('CustomerTable', () => {
     renderWithRouter()
     fireEvent.click(screen.getByText('Familie Müller'))
     const loc = await screen.findByTestId('location')
-    expect(loc.textContent).toBe('/customers/c-1')
+    expect(loc.textContent).toBe('/app/customers/c-1')
   })
 
   test('clicking second row navigates to correct customer id', async () => {
     renderWithRouter()
     fireEvent.click(screen.getByText('Sophie Wagner'))
     const loc = await screen.findByTestId('location')
-    expect(loc.textContent).toBe('/customers/c-2')
+    expect(loc.textContent).toBe('/app/customers/c-2')
   })
 })

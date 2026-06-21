@@ -218,7 +218,7 @@
 .call-btn {
   flex: 1;
   padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   font-family: var(--font-head);
   font-weight: 700;
   font-size: 14px;

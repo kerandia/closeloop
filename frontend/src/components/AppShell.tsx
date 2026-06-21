@@ -12,7 +12,7 @@ interface Props {
 export function AppShell({ children, goingQuiet = 0 }: Props) {
   // Management is a separate (team-lead) persona — hide its nav link on the
   // installer/rep pages so the design + business demo flows stay clean.
-  const onManagement = useLocation().pathname.startsWith('/management')
+  const onManagement = useLocation().pathname.startsWith('/app/management')
   return (
     <div className="shell">
       <header className="shell__bar">
@@ -22,7 +22,7 @@ export function AppShell({ children, goingQuiet = 0 }: Props) {
         <nav className="shell__nav">
           {!onManagement && (
             <NavLink
-              to={withMock('/')}
+              to={withMock('/app')}
               end
               className={({ isActive }) =>
                 `shell__nav-link${isActive ? ' shell__nav-link--active' : ''}`
@@ -33,7 +33,7 @@ export function AppShell({ children, goingQuiet = 0 }: Props) {
           )}
           {onManagement && (
             <NavLink
-              to={withMock('/management')}
+              to={withMock('/app/management')}
               className={({ isActive }) =>
                 `shell__nav-link${isActive ? ' shell__nav-link--active' : ''}`
               }

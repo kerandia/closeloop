@@ -9,7 +9,6 @@ import type {
   RespondOutput,
   SendResponse,
   MessagingSendResponse,
-  MessagingDraft,
   ImportCustomerInput,
   ImportQuoteInput,
   ImportResponse,
@@ -26,6 +25,7 @@ import {
   mockCollect,
 } from '../mock/muller'
 import { mockMgmtStats } from '../mock/management'
+import { applyDemoList, applyDemoDetail } from '../lib/demoPipeline'
 
 export function isMockMode(): boolean {
   return new URLSearchParams(window.location.search).get('mock') === '1'
@@ -52,12 +52,16 @@ async function req<T>(url: string, method: string, body?: unknown): Promise<T> {
 
 export function listCustomers(): Promise<CustomerListItem[]> {
   if (isMockMode()) return Promise.resolve(mockListCustomers())
-  return req('/api/customers?sort=sign_likelihood&order=desc', 'GET')
+  // DEMO: overlay funnel stages + extra rows on the real list (see demoPipeline).
+  return req<CustomerListItem[]>('/api/customers?sort=sign_likelihood&order=desc', 'GET').then(
+    applyDemoList,
+  )
 }
 
 export function getCustomer(id: string): Promise<CustomerDetail> {
   if (isMockMode()) return Promise.resolve(mockGetCustomer())
-  return req(`/api/customers/${id}`, 'GET')
+  // DEMO: keep the detail's stage consistent with the funnel shown in the list.
+  return req<CustomerDetail>(`/api/customers/${id}`, 'GET').then(applyDemoDetail)
 }
 
 export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats> {
@@ -136,20 +140,6 @@ export function messagingSend(payload: {
   if (isMockMode())
     return Promise.resolve({ ok: true, within_window: true, provider: { provider_id: 'mock' } })
   return req('/api/messaging/send', 'POST', payload)
-}
-
-/** Compose the AI's proactive opening message for a channel (no inbound needed). */
-export function composeDraft(customerId: string, channel: string): Promise<MessagingDraft> {
-  if (isMockMode())
-    return Promise.resolve({
-      channel,
-      read: 'Re-open the conversation',
-      why: 'Re-engage warmly and low-pressure.',
-      subject: null,
-      exact_lines: ['Hallo! Ich wollte mich kurz zu Ihrem Solar-Angebot melden — kein Druck.'],
-      proactive: true,
-    })
-  return req('/api/messaging/draft', 'POST', { customer_id: customerId, channel })
 }
 
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */

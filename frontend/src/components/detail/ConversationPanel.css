@@ -75,7 +75,7 @@
   color: var(--white);
   background: var(--solar);
   padding: 3px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
 }
 
 /* ── Surface bar (back to info card) ──────────────────────────────────────── */
