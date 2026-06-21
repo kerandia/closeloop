@@ -246,7 +246,12 @@ export function DetailShell({ data, customerId }: Props) {
               {infoColumn}
             </div>
             {/* Middle + Right (1/3 each) — channel surface + AI recommendation */}
-            <ChannelWorkspace key={activeChannel} channel={activeChannel} customer={customer} />
+            <ChannelWorkspace
+              key={activeChannel}
+              channel={activeChannel}
+              customer={customer}
+              interactions={allInteractions}
+            />
           </div>
         </div>
       ) : (
