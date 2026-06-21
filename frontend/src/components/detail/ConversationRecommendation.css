@@ -25,7 +25,7 @@
   align-items: center;
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(241, 104, 44, 0.1);
+  background: rgba(241, 104, 44, 0.1); /* solar-muted, no token */
   color: var(--solar);
   font-family: var(--font-head);
   font-size: 14px;
@@ -121,7 +121,7 @@
 }
 
 .conv-rec__use:hover {
-  background: #2f9d69;
+  background: #2f9d69; /* darker --flux, no token */
 }
 
 .conv-rec__use:active {

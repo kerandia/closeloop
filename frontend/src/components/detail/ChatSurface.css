@@ -19,8 +19,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--chat-header);
-  color: #fff;
+  background: var(--chat-header); /* channel identity, not themed */
+  color: var(--white);
 }
 
 .chat-surface__avatar {
@@ -30,7 +30,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.22); /* channel identity, not themed */
   font-family: var(--font-head);
   font-size: 14px;
   font-weight: 600;
@@ -74,20 +74,20 @@
   border-radius: 10px;
   font-size: 14px;
   line-height: 1.45;
-  color: #111b21;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+  color: #111b21; /* channel identity, not themed */
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06); /* bubble lift — --shadow-soft is none */
   position: relative;
 }
 
 .chat-bubble--in {
   align-self: flex-start;
-  background: #fff;
+  background: #fff; /* channel identity, not themed */
   border-top-left-radius: 2px;
 }
 
 .chat-bubble--out {
   align-self: flex-end;
-  background: var(--chat-out);
+  background: var(--chat-out); /* channel identity, not themed */
   border-top-right-radius: 2px;
 }
 
@@ -101,11 +101,11 @@
   margin-top: 2px;
   text-align: right;
   font-size: 10.5px;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgba(0, 0, 0, 0.45); /* channel identity, not themed */
 }
 
 .chat-bubble__ticks {
-  color: #53bdeb;
+  color: #53bdeb; /* channel identity — WhatsApp read-tick blue */
 }
 
 /* Typing indicator — three blinking dots in a bubble. */
@@ -119,7 +119,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #9aa5ad;
+  background: #9aa5ad; /* channel identity — WhatsApp typing dot */
   animation: chat-typing 1.2s infinite;
 }
 .chat-bubble--typing span:nth-child(2) {
@@ -167,7 +167,7 @@
 }
 
 .chat-surface__field:focus {
-  border-color: var(--chat-accent);
+  border-color: var(--solar);
 }
 
 .chat-surface__send {
@@ -179,8 +179,8 @@
   flex-shrink: 0;
   border: none;
   border-radius: 50%;
-  background: var(--chat-accent);
-  color: #fff;
+  background: var(--solar);
+  color: var(--white);
   cursor: pointer;
   transition: filter 150ms, transform 100ms;
 }
