@@ -49,7 +49,8 @@ type ChatChannel = (typeof CHAT_CHANNELS)[number]
 const isChatChannel = (c: Channel): c is ChatChannel =>
   (CHAT_CHANNELS as readonly string[]).includes(c)
 
-// ponytail: demo fallback so the transcript surface is never empty on stage.
+// Demo/stage fallback: shown when no real transcript exists yet for the channel,
+// so the call surface is never empty during a live demo.
 const MOCK_TRANSCRIPT: Record<'voice_ai' | 'phone', string> = {
   voice_ai:
     "**Agent:** Hallo Herr Müller, hier ist die Assistentin vom Solar-Team — ich melde mich kurz zu Ihrem Angebot.\n\n**Müller:** Ah ja, wir vergleichen gerade noch ein, zwei andere Firmen.\n\n**Agent:** Völlig verständlich. Darf ich fragen, was Ihnen am wichtigsten ist — die monatliche Ersparnis?\n\n**Müller:** Genau, die Stromrechnung steigt ständig. Aber im Winter, bringt das überhaupt was?",
