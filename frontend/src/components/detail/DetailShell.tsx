@@ -17,7 +17,7 @@
  *
  * Step 3 agents implement the panel bodies without touching this file or props.
  */
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type {
   CustomerDetail,
@@ -72,6 +72,15 @@ export function DetailShell({ data, customerId }: Props) {
   // Compose drawer is gated on this explicit flag, never on activeChannel alone,
   // so browsing to the email channel doesn't open the drawer or approve the rec.
   const [emailComposing, setEmailComposing] = useState(false)
+  // Invalidates an in-flight compose request so a late resolve can't repopulate
+  // a draft after the rep already closed the drawer.
+  const composeToken = useRef(0)
+
+  function cancelCompose(): void {
+    composeToken.current++
+    setEmailComposing(false)
+    setDraftMessage(null)
+  }
 
   // ── Derived values ────────────────────────────────────────────────────────
   const effectiveRec = liveRec ?? data.recommendation
@@ -117,9 +126,15 @@ export function DetailShell({ data, customerId }: Props) {
   function handleComposeEmail(): void {
     if (!effectiveRec || emailComposing) return
     setEmailComposing(true)
+    const token = ++composeToken.current
     approveRecommendation(effectiveRec.id)
-      .then((msg) => setDraftMessage(msg))
-      .catch(() => setEmailComposing(false)) // roll back so the drawer isn't stuck
+      .then((msg) => {
+        // Ignore a late resolve if the rep closed/restarted compose meanwhile.
+        if (composeToken.current === token) setDraftMessage(msg)
+      })
+      .catch(() => {
+        if (composeToken.current === token) setEmailComposing(false)
+      })
   }
 
   /** Log the shown call transcript → runs ANALYZE so the score moves. */
@@ -141,14 +156,12 @@ export function DetailShell({ data, customerId }: Props) {
 
   // ── Compose close / sent ──────────────────────────────────────────────────
   function handleComposeClose(): void {
-    setDraftMessage(null)
-    setEmailComposing(false)
+    cancelCompose()
   }
 
   function handleSent(interaction: Interaction): void {
-    setDraftMessage(null)
+    cancelCompose()
     setExtraInteractions((prev) => [interaction, ...prev])
-    setEmailComposing(false)
     setActiveChannel(null)
   }
 
@@ -223,8 +236,7 @@ export function DetailShell({ data, customerId }: Props) {
                 onComposeEmail={handleComposeEmail}
                 onClose={() => {
                   setActiveChannel(null)
-                  setEmailComposing(false)
-                  setDraftMessage(null)
+                  cancelCompose()
                 }}
                 header={
                   <RecommendationCard recommendation={effectiveRec} embedded />
