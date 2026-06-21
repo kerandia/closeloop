@@ -350,6 +350,7 @@ export interface ClosingKitResult {
   title: string
   mime: string
   buyer_type: string
+  kind: string // auto|spouse|comparison|winter|etf
   source: 'agent' | 'fallback' // agent = OpenAI Code Interpreter; fallback = SVG
   url: string
 }

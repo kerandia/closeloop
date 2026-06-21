@@ -70,3 +70,24 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* ── Generated visual asset (objection → card) ──────────────────────────── */
+.chat-window__card { margin-top: 10px; }
+.chat-window__cardbtn {
+  background: var(--solar);
+  color: var(--ink-900, #0d1b27);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-window__cardbtn:disabled { opacity: 0.55; cursor: default; }
+.chat-window__cardimg {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--ink-700);
+}

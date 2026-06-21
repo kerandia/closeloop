@@ -6,7 +6,7 @@ from __future__ import annotations
 import base64
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,16 +17,26 @@ from app.services import closing_kit
 router = APIRouter(prefix="/api", tags=["agent"])
 
 
+# the visual assets the agent can produce
+_KINDS = {"auto", "spouse", "comparison", "winter", "etf"}
+
+
 @router.post("/customers/{customer_id}/closing-kit")
-async def generate_closing_kit(customer_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def generate_closing_kit(
+    customer_id: uuid.UUID,
+    kind: str = Query("auto"),
+    db: AsyncSession = Depends(get_db),
+):
     customer = await db.get(models.Customer, customer_id)
     if customer is None:
         raise HTTPException(status_code=404, detail="customer not found")
+    if kind not in _KINDS:
+        kind = "auto"
 
-    result = await closing_kit.generate(db, customer)
+    result = await closing_kit.generate(db, customer, kind=kind)
     artifact = models.Artifact(
         customer_id=customer.id,
-        kind="chart",
+        kind=result["kind"],
         buyer_type=result["buyer_type"],
         title=result["title"],
         mime=result["mime"],
@@ -41,6 +51,7 @@ async def generate_closing_kit(customer_id: uuid.UUID, db: AsyncSession = Depend
         "title": artifact.title,
         "mime": artifact.mime,
         "buyer_type": artifact.buyer_type,
+        "kind": artifact.kind,
         "source": artifact.source,  # 'agent' (Code Interpreter) or 'fallback' (SVG)
         "url": f"/api/artifacts/{artifact.id}",
     }

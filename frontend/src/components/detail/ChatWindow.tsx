@@ -15,10 +15,26 @@ import {
   subscribeCopilot,
   messagingSend,
   composeDraft,
+  generateClosingKit,
 } from '../../api/client'
-import type { Interaction, CopilotSuggestion, MessagingDraft } from '../../api/types'
+import type {
+  Interaction,
+  CopilotSuggestion,
+  MessagingDraft,
+  ClosingKitResult,
+} from '../../api/types'
 import './ChatWindow.css'
 import './CopilotPanel.css'
+
+// objection category → the visual asset the rep can generate for it (missing-
+// stakeholder / comparison / etc.). The headline demo beat: objection → visual.
+const CATEGORY_CARD: Record<string, { kind: string; label: string }> = {
+  spouse: { kind: 'spouse', label: 'partner card' },
+  need_other_quotes: { kind: 'comparison', label: 'comparison card' },
+  trust_new_company: { kind: 'comparison', label: 'comparison card' },
+  winter_yield: { kind: 'winter', label: 'winter card' },
+  price_too_high: { kind: 'etf', label: 'cost card' },
+}
 
 export interface ChatWindowProps {
   customerId: string
@@ -32,11 +48,13 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
   const [sendingLine, setSendingLine] = useState<string | null>(null)
   const [sentNote, setSentNote] = useState<string | null>(null)
   const [draftSent, setDraftSent] = useState(false)
+  const [card, setCard] = useState<ClosingKitResult | null>(null) // generated visual asset
+  const [cardLoading, setCardLoading] = useState(false)
 
   useEffect(() => {
     let active = true
     // Reset per-channel state so a prior channel can't linger.
-    setLive(null); setDraft(null); setSentNote(null); setSendingLine(null); setDraftSent(false)
+    setLive(null); setDraft(null); setSentNote(null); setSendingLine(null); setDraftSent(false); setCard(null)
 
     listCopilotSuggestions(customerId)
       .then((rows) => {
@@ -84,6 +102,22 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     [sendingLine, customerId, channel, channelLabel],
   )
 
+  const makeCard = useCallback(
+    async (kind: string) => {
+      if (cardLoading) return
+      setCardLoading(true)
+      try {
+        setCard(await generateClosingKit(customerId, kind))
+      } catch {
+        /* the visual is optional — ignore failures */
+      } finally {
+        setCardLoading(false)
+      }
+    },
+    [cardLoading, customerId],
+  )
+
+  const cardCfg = live?.category ? CATEGORY_CARD[live.category] : undefined
   const filteredInteractions = interactions.filter((i) => i.channel === channel)
 
   return (
@@ -129,6 +163,20 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
               </div>
             ))}
           </div>
+          {cardCfg && (
+            <div className="chat-window__card">
+              <button
+                type="button"
+                className="chat-window__cardbtn"
+                disabled={cardLoading}
+                onClick={() => makeCard(cardCfg.kind)}
+                data-testid="make-card"
+              >
+                {cardLoading ? 'Generating…' : `✨ Make the ${cardCfg.label}`}
+              </button>
+              {card && <img className="chat-window__cardimg" src={card.url} alt={card.title} />}
+            </div>
+          )}
           {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
         </div>
       )}

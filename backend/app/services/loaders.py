@@ -55,6 +55,13 @@ async def load_knowledge_base(db: AsyncSession) -> dict:
     }
 
 
+async def load_installer(db: AsyncSession) -> models.KBInstaller | None:
+    """The installer's own facts (warranty, service SLA, equipment) — grounds the
+    comparison / stakeholder visuals."""
+    res = await db.execute(select(models.KBInstaller).limit(1))
+    return res.scalar_one_or_none()
+
+
 async def latest_quote(db: AsyncSession, customer_id: uuid.UUID) -> models.Quote | None:
     res = await db.execute(
         select(models.Quote)

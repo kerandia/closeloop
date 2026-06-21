@@ -349,6 +349,26 @@ class KBCadenceTemplate(Base):
     steps: Mapped[list | None] = mapped_column(JSONB)
 
 
+class KBInstaller(Base):
+    """The installer's own facts — warranty, service SLA, equipment, references.
+    Grounds the comparison / stakeholder visuals so claims are credible."""
+
+    __tablename__ = "kb_installer"
+
+    id: Mapped[uuid.UUID] = PK()
+    name: Mapped[str | None] = mapped_column(Text)
+    warranty_years: Mapped[int | None] = mapped_column(Integer)
+    inverter_warranty_years: Mapped[int | None] = mapped_column(Integer)
+    response_time: Mapped[str | None] = mapped_column(Text)  # e.g. "within 48h"
+    panel_brand: Mapped[str | None] = mapped_column(Text)
+    inverter_brand: Mapped[str | None] = mapped_column(Text)
+    certifications: Mapped[list | None] = mapped_column(JSONB)
+    local_installs: Mapped[int | None] = mapped_column(Integer)
+    references_count: Mapped[int | None] = mapped_column(Integer)
+    financing: Mapped[dict | None] = mapped_column(JSONB)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
 # --------------------------------------------------------------------------- #
 # C. REAL-TIME CO-PILOT (WhatsApp) — a persisted RESPOND suggestion for an
 #    inbound customer message, so the rep UI can show + replay it.

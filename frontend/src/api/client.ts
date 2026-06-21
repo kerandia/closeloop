@@ -66,10 +66,13 @@ export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats>
   return req(`/api/management/stats?period=${period}`, 'GET')
 }
 
-export function generateClosingKit(customerId: string): Promise<ClosingKitResult> {
+export function generateClosingKit(
+  customerId: string,
+  kind: string = 'auto',
+): Promise<ClosingKitResult> {
   if (isMockMode())
     return Promise.reject(new Error('The visual agent needs the live backend (remove ?mock=1).'))
-  return req(`/api/customers/${customerId}/closing-kit`, 'POST')
+  return req(`/api/customers/${customerId}/closing-kit?kind=${encodeURIComponent(kind)}`, 'POST')
 }
 
 export function importCustomers(payload: {
