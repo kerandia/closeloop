@@ -10,6 +10,9 @@ import type {
   SendResponse,
   MessagingSendResponse,
   MessagingDraft,
+  ImportCustomerInput,
+  ImportQuoteInput,
+  ImportResponse,
 } from './types'
 import {
   mockListCustomers,
@@ -53,6 +56,15 @@ export function listCustomers(): Promise<CustomerListItem[]> {
 export function getCustomer(id: string): Promise<CustomerDetail> {
   if (isMockMode()) return Promise.resolve(mockGetCustomer())
   return req(`/api/customers/${id}`, 'GET')
+}
+
+export function importCustomers(payload: {
+  customers: ImportCustomerInput[]
+  quotes: ImportQuoteInput[]
+}): Promise<ImportResponse> {
+  if (isMockMode())
+    return Promise.reject(new Error('Add customer needs the live backend (remove ?mock=1).'))
+  return req('/api/customers/import', 'POST', payload)
 }
 
 export function logInteraction(
