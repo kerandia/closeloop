@@ -39,10 +39,10 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     let active = true
     listCopilotSuggestions(customerId)
       .then((rows) => {
-        if (active && rows.length) {
-          const matching = rows.find(r => r.channel === channel)
-          setLive(matching || rows[0])
-        }
+        // Only surface a suggestion for THIS channel — never fall back to a
+        // different channel's suggestion (it would send on the wrong surface).
+        const matching = rows.find((r) => r.channel === channel)
+        if (active && matching) setLive(matching)
       })
       .catch(() => {})
 
@@ -59,34 +59,34 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     }
   }, [customerId, channel])
 
+  // Channel label display
+  const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
+
   const handleSendWhatsApp = useCallback(
     async (line: string) => {
       if (!live || sendingLine) return
       setSendingLine(line)
       try {
+        // Always send on the currently selected surface, not live.channel.
         const res = await messagingSend({
           customer_id: customerId,
           body: line,
-          channel: live.channel,
+          channel,
           suggestion_id: live.id,
         })
         setLive({ ...live, status: 'sent' })
-        const chLabel = live.channel === 'sms' ? 'SMS' : live.channel === 'telegram' ? 'Telegram' : 'WhatsApp'
-        setSentNote(res.within_window ? `Sent on ${chLabel} ✓` : 'Sent (template) ✓')
+        setSentNote(res.within_window ? `Sent on ${channelLabel} ✓` : 'Sent (template) ✓')
       } catch (err) {
         setSentNote(err instanceof Error ? err.message : 'Send failed')
       } finally {
         setSendingLine(null)
       }
     },
-    [live, sendingLine, customerId],
+    [live, sendingLine, customerId, channel, channelLabel],
   )
 
   // Filter interactions to this channel
   const filteredInteractions = interactions.filter(i => i.channel === channel)
-
-  // Channel label display
-  const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
 
   return (
     <section className="chat-window" data-slot="chat-window">

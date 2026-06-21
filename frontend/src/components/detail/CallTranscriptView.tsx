@@ -19,6 +19,12 @@ interface CallTranscriptViewProps {
   collected?: CollectedSummary | null
 }
 
+// Role → safe CSS class slug (alphanumeric + single hyphens), e.g.
+// "Agent (Voice AI)" → "agent-voice-ai".
+function slugifyRole(role: string): string {
+  return role.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
 function parseTranscriptMd(transcriptMd: string | null | undefined): TranscriptTurn[] {
   if (!transcriptMd) return []
 
@@ -50,7 +56,7 @@ export function CallTranscriptView({ transcriptMd, mode, collected }: CallTransc
           {turns.map((turn, idx) => (
             <div
               key={idx}
-              className={`transcript-turn transcript-turn--${turn.role.toLowerCase().replace(/\s+/g, '-')}`}
+              className={`transcript-turn transcript-turn--${slugifyRole(turn.role)}`}
             >
               <div className="transcript-turn__role">{turn.role}</div>
               <div className="transcript-turn__text">{turn.text}</div>

@@ -150,7 +150,13 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
         <div className="call-transcript">
           <div className="call-transcript__list">
             {transcript.map((turn, idx) => (
-              <div key={idx} className={`call-transcript__turn call-transcript__turn--${turn.role}`}>
+              <div
+                key={idx}
+                className={`call-transcript__turn call-transcript__turn--${turn.role
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-+|-+$/g, '')}`}
+              >
                 <div className="call-transcript__role">{turn.role}</div>
                 <div className="call-transcript__text">{turn.text}</div>
               </div>

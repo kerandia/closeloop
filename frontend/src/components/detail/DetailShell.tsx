@@ -70,6 +70,9 @@ export function DetailShell({ data, customerId }: Props) {
   const [draftMessage, setDraftMessage] = useState<Message | null>(null)
   const [localStatus, setLocalStatus] = useState<RecStatus | null>(null)
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
+  // Compose drawer is gated on this explicit flag, never on activeChannel alone,
+  // so browsing to the email channel doesn't open the drawer or approve the rec.
+  const [emailComposing, setEmailComposing] = useState(false)
 
   // ── Derived values ────────────────────────────────────────────────────────
   const effectiveRec = liveRec ?? data.recommendation
@@ -104,34 +107,49 @@ export function DetailShell({ data, customerId }: Props) {
   }
 
   // ── Approve / channel selection ───────────────────────────────────────────
+  /** Kick off email compose: approve the rec to generate a draft, open the drawer. */
+  function startCompose(recId: string): void {
+    setEmailComposing(true)
+    setLocalStatus('approved')
+    approveRecommendation(recId)
+      .then((msg) => {
+        setDraftMessage(msg)
+        setLocalStatus('ready')
+      })
+      .catch(() => {
+        // Roll back so the rep isn't stuck on the loading drawer.
+        setEmailComposing(false)
+        setLocalStatus(null)
+      })
+  }
+
   /** RecommendationCard "Approve" — pre-selects the recommended channel. */
   function handleApprove(recId: string): void {
     const ch = effectiveRec?.channel ?? null
     setActiveChannel(ch)
-    setLocalStatus('approved')
     if (ch === 'email') {
-      approveRecommendation(recId)
-        .then((msg) => {
-          setDraftMessage(msg)
-          setLocalStatus('ready')
-        })
-        .catch(() => setLocalStatus(null))
+      startCompose(recId)
     } else {
+      setLocalStatus('approved')
       approveRecommendation(recId)
         .then(() => setLocalStatus('ready'))
         .catch(() => setLocalStatus(null))
     }
   }
 
-  /** Rep overrides the recommended channel via the picker. */
+  /**
+   * Rep overrides the recommended channel via the picker.
+   * Selection alone NEVER mutates server state — email compose is an explicit
+   * action (handleComposeEmail) triggered from the email surface button.
+   */
   function handleSelectChannel(ch: Channel): void {
     setActiveChannel(ch)
-    // Email is the only surface that needs a generated draft; fetch it lazily.
-    if (ch === 'email' && effectiveRec && !draftMessage) {
-      approveRecommendation(effectiveRec.id)
-        .then((msg) => setDraftMessage(msg))
-        .catch(() => {})
-    }
+  }
+
+  /** Explicit "Compose email" action from the email surface. */
+  function handleComposeEmail(): void {
+    if (!effectiveRec || emailComposing) return
+    startCompose(effectiveRec.id)
   }
 
   /** Log the shown call transcript → runs ANALYZE so the score moves. */
@@ -159,13 +177,14 @@ export function DetailShell({ data, customerId }: Props) {
   function handleComposeClose(): void {
     setDraftMessage(null)
     setLocalStatus(null)
-    setActiveChannel(null)
+    setEmailComposing(false)
   }
 
   function handleSent(interaction: Interaction): void {
     setDraftMessage(null)
     setLocalStatus('sent')
     setExtraInteractions((prev) => [interaction, ...prev])
+    setEmailComposing(false)
     setActiveChannel(null)
   }
 
@@ -243,9 +262,11 @@ export function DetailShell({ data, customerId }: Props) {
                 customer={customer}
                 interactions={allInteractions}
                 onLogCall={handleLogCall}
+                emailComposing={emailComposing}
+                onComposeEmail={handleComposeEmail}
               />
               <ComposeDrawer
-                open={activeChannel === 'email'}
+                open={emailComposing}
                 message={draftMessage}
                 onClose={handleComposeClose}
                 onSent={handleSent}

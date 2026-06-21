@@ -28,6 +28,8 @@ function setup(overrides = {}) {
       customer={customer}
       interactions={[]}
       onLogCall={onLogCall}
+      emailComposing={false}
+      onComposeEmail={vi.fn()}
       {...overrides}
     />,
   )
@@ -57,6 +59,8 @@ describe('ConversationPanel', () => {
         customer={customer}
         interactions={[]}
         onLogCall={vi.fn()}
+        emailComposing={false}
+        onComposeEmail={vi.fn()}
       />,
     )
     const first = container.querySelector('.conversation-rail__chip')
@@ -68,6 +72,14 @@ describe('ConversationPanel', () => {
     const { onSelectChannel } = setup()
     fireEvent.click(screen.getByText('WhatsApp'))
     expect(onSelectChannel).toHaveBeenCalledWith('whatsapp')
+  })
+
+  test('email surface needs an explicit compose action (no approve on browse)', () => {
+    const onComposeEmail = vi.fn()
+    setup({ activeChannel: 'email', onComposeEmail })
+    const btn = screen.getByText('Compose email draft')
+    fireEvent.click(btn)
+    expect(onComposeEmail).toHaveBeenCalledTimes(1)
   })
 
   test('voice_ai surface renders transcript turns and logs the call', () => {

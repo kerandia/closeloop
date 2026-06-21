@@ -67,6 +67,10 @@ interface Props {
   interactions: Interaction[]
   /** Log the shown call transcript → triggers analyze + score move. */
   onLogCall: (channel: 'voice_ai' | 'phone', transcriptMd: string) => void
+  /** True once the rep explicitly started composing an email. */
+  emailComposing: boolean
+  /** Explicit "compose email" action — the only thing that approves the rec. */
+  onComposeEmail: () => void
 }
 
 export function ConversationPanel({
@@ -78,6 +82,8 @@ export function ConversationPanel({
   customer,
   interactions,
   onLogCall,
+  emailComposing,
+  onComposeEmail,
 }: Props) {
   // Recommended channel first, then the rest in canonical order.
   const ordered = useMemo<Channel[]>(() => {
@@ -93,7 +99,7 @@ export function ConversationPanel({
   return (
     <section className="conversation-panel" data-slot="conversation-panel">
       {/* ── Channel rail ──────────────────────────────────────────────────── */}
-      <div className="conversation-rail" role="tablist" aria-label="Channels">
+      <div className="conversation-rail" role="group" aria-label="Channels">
         {ordered.map((c) => {
           const isRec = c === recommendedChannel
           const isActive = c === activeChannel
@@ -101,8 +107,7 @@ export function ConversationPanel({
             <button
               key={c}
               type="button"
-              role="tab"
-              aria-selected={isActive}
+              aria-pressed={isActive}
               className={`conversation-rail__chip${isActive ? ' conversation-rail__chip--active' : ''}${
                 isRec ? ' conversation-rail__chip--recommended' : ''
               }`}
@@ -164,11 +169,18 @@ export function ConversationPanel({
           />
         )}
 
-        {activeChannel === 'email' && (
-          <p className="conversation-hint">
-            Draft opens in the composer →
-          </p>
-        )}
+        {activeChannel === 'email' &&
+          (emailComposing ? (
+            <p className="conversation-hint">Draft opens in the composer →</p>
+          ) : (
+            <button
+              type="button"
+              className="conversation-call__log"
+              onClick={onComposeEmail}
+            >
+              Compose email draft
+            </button>
+          ))}
 
         {activeChannel === 'visit' && (
           <div className="conversation-visit">
