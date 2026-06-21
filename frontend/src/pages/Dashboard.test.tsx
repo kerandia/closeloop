@@ -93,6 +93,15 @@ describe('Dashboard', () => {
     expect(screen.getByText('Sophie Wagner')).toBeInTheDocument()
   })
 
+  test('buyer-type filter shows only rows matching the selected buyer type', async () => {
+    listCustomersMock.mockResolvedValue(mockCustomers)
+    renderDashboard()
+    await screen.findByText('Familie Müller')
+    fireEvent.change(screen.getByLabelText(/buyer type/i), { target: { value: 'investor' } })
+    expect(screen.queryByText('Familie Müller')).not.toBeInTheDocument()
+    expect(screen.getByText('Sophie Wagner')).toBeInTheDocument()
+  })
+
   test('ghost risk filter shows only rows matching the selected risk', async () => {
     listCustomersMock.mockResolvedValue(mockCustomers)
     renderDashboard()
@@ -106,7 +115,7 @@ describe('Dashboard', () => {
     listCustomersMock.mockResolvedValue([])
     renderDashboard()
     expect(await screen.findByText(/no customers yet/i)).toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: /add customer/i }).length).toBeGreaterThan(0)
+    expect(screen.getByText(/import a list/i)).toBeInTheDocument()
   })
 
   test('error state shows inline error and Retry button', async () => {

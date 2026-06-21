@@ -15,7 +15,7 @@
   color: var(--risk-high);
   background: oklch(0.602 0.148 26 / 0.10);
   padding: 6px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   border: 1px solid oklch(0.602 0.148 26 / 0.25);
   text-transform: uppercase;
   margin-right: 8px;
@@ -49,7 +49,7 @@
   max-width: 280px;
   background: var(--white);
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 14px;
@@ -77,12 +77,13 @@
   appearance: none;
   -webkit-appearance: none;
   background-color: var(--white);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23606070' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  /* custom down chevron so we control the trailing gap */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2349544c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   background-size: 12px;
   border: 1px solid var(--ink-700);
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 13px;

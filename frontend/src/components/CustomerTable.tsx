@@ -6,6 +6,7 @@ import { GhostRiskPill } from './GhostRiskPill'
 import { StageBadge } from './StageBadge'
 import { ChannelIcon } from './ChannelIcon'
 import { relativeTime, repInitials } from '../lib/format'
+import { isAtRisk } from '../lib/demoPipeline'
 import { withMock } from '../lib/nav'
 import './CustomerTable.css'
 
@@ -53,12 +54,12 @@ export function CustomerTable({ customers }: Props) {
           <tr
             key={c.id}
             className="ct__row"
-            onClick={() => navigate(withMock(`/customers/${c.id}`))}
+            onClick={() => navigate(withMock(`/app/customers/${c.id}`))}
             tabIndex={0}
             onKeyDown={e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                navigate(withMock(`/customers/${c.id}`))
+                navigate(withMock(`/app/customers/${c.id}`))
               }
             }}
           >
@@ -72,7 +73,9 @@ export function CustomerTable({ customers }: Props) {
               <ScoreBar value={c.sign_likelihood} trend={c.score_trend} compact />
             </td>
             <td className="ct__cell">
-              <GhostRiskPill risk={c.ghost_risk} />
+              {/* Risk only flags who needs rescuing — going quiet or trending down.
+                  Healthy rows leave this cell blank rather than repeating the score. */}
+              {isAtRisk(c) && <GhostRiskPill risk={c.ghost_risk ?? 'high'} />}
             </td>
             <td className="ct__cell">
               <StageBadge stage={c.stage} />

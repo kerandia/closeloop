@@ -1,0 +1,109 @@
+/* EmailSurface — email composer inside an app card. DEMO only. */
+
+.email-surface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 420px;
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.email-surface__header {
+  padding: 12px 16px;
+  background: var(--ink-900);
+  color: var(--white);
+}
+
+.email-surface__brand {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.email-surface__fields {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--ink-700);
+}
+
+.email-surface__row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+}
+
+.email-surface__row + .email-surface__row {
+  border-top: 1px solid var(--paper-25);
+}
+
+.email-surface__label {
+  flex-shrink: 0;
+  width: 56px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-40);
+}
+
+.email-surface__value {
+  font-size: 14px;
+  color: var(--paper-90);
+}
+
+.email-surface__value--subject {
+  font-weight: 600;
+}
+
+.email-surface__body {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--paper-90);
+  background: var(--white);
+}
+
+.email-surface__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ink-700);
+  background: var(--paper);
+}
+
+.email-surface__send {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--flux);
+  color: #fff;
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.email-surface__send:hover:not(:disabled) {
+  background: #2f9d69; /* darker --flux, no token */
+}
+
+.email-surface__send:disabled {
+  background: var(--ink-700);
+  color: var(--paper-40);
+  cursor: not-allowed;
+}
+
+.email-surface__hint {
+  font-size: 12px;
+  color: var(--paper-40);
+}

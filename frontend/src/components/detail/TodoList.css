@@ -1,0 +1,169 @@
+/* TodoList — concrete next-step cards. Matches the app card style. */
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.todo-list__title {
+  margin: 0;
+  color: var(--paper-40);
+}
+
+.todo-list__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.todo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-soft);
+  transition: opacity 150ms;
+}
+
+.todo-card[data-done='true'] {
+  opacity: 0.55;
+}
+
+.todo-card[data-done='true'] .todo-card__title {
+  text-decoration: line-through;
+  color: var(--paper-40);
+}
+
+/* ── Head: channel chip + status badge ───────────────────────────────────── */
+.todo-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.todo-card__channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid var(--ink-700);
+  border-radius: 999px;
+  background: var(--paper);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-60);
+}
+
+.todo-card__status {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.todo-card__status--confirmed {
+  background: rgba(58, 177, 121, 0.13); /* flux-muted, no token */
+  color: #2f8f63;                        /* darker --flux, no token */
+}
+
+.todo-card__status--suggested {
+  background: rgba(230, 159, 61, 0.16); /* warm-amber muted, no token */
+  color: #9a7012;                        /* warm-amber dark, no token */
+}
+
+/* ── Body ─────────────────────────────────────────────────────────────────── */
+.todo-card__title {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--paper-90);
+}
+
+/* The muted reasoning line — same treatment as other "why" lines in the app. */
+.todo-card__why {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--paper-40);
+}
+
+.todo-card__hint {
+  margin: 0;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--paper-40);
+}
+
+/* ── Foot: due + actions ─────────────────────────────────────────────────── */
+.todo-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.todo-card__due {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--paper-60);
+}
+
+.todo-card__due--overdue {
+  color: var(--risk-high);
+}
+
+.todo-card__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.todo-card__done {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--flux);
+  color: #fff;
+  font-family: var(--font-head);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms, transform 100ms;
+}
+
+.todo-card__done:hover {
+  background: #2f9d69; /* darker --flux, no token */
+}
+
+.todo-card__done:active {
+  transform: scale(0.97);
+}
+
+.todo-card__transcript {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--paper-40);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms;
+}
+
+.todo-card__transcript:hover {
+  color: var(--paper-90);
+}

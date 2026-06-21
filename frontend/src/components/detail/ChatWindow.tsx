@@ -1,33 +1,24 @@
 /**
  * ChatWindow — chat-thread component for messaging conversations.
  *
- * Renders, for the selected channel:
- *   - past interaction bubbles (inbound left / outbound right)
- *   - either:
- *       • a LIVE suggestion (reply) when the customer has messaged in, or
- *       • the AI's PROACTIVE recommended opener (composed for this channel) when
- *         there's no inbound yet — so the rep can start the conversation.
- *   Both render with Send buttons (messagingSend on the current channel).
+ * Renders:
+ *   - Interaction bubbles filtered to the channel (inbound left / outbound right)
+ *   - The live co-pilot suggestion (read + reply lines + Send), subscribed via SSE
+ *   - A one-tap "✨ Make the … card" when the detected objection maps to a visual
+ *     asset (Closing Kit): objection → buyer read → visual asset → send.
  */
 import { useState, useEffect, useCallback } from 'react'
 import {
   listCopilotSuggestions,
   subscribeCopilot,
   messagingSend,
-  composeDraft,
   generateClosingKit,
 } from '../../api/client'
-import type {
-  Interaction,
-  CopilotSuggestion,
-  MessagingDraft,
-  ClosingKitResult,
-} from '../../api/types'
+import type { Interaction, CopilotSuggestion, ClosingKitResult } from '../../api/types'
 import './ChatWindow.css'
 import './CopilotPanel.css'
 
-// objection category → the visual asset the rep can generate for it (missing-
-// stakeholder / comparison / etc.). The headline demo beat: objection → visual.
+// objection category → the visual asset the rep can generate for it
 const CATEGORY_CARD: Record<string, { kind: string; label: string }> = {
   spouse: { kind: 'spouse', label: 'partner card' },
   need_other_quotes: { kind: 'comparison', label: 'comparison card' },
@@ -43,55 +34,55 @@ export interface ChatWindowProps {
 }
 
 export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindowProps) {
-  const [live, setLive] = useState<CopilotSuggestion | null>(null) // inbound-driven reply
-  const [draft, setDraft] = useState<MessagingDraft | null>(null) // proactive opener
+  const [live, setLive] = useState<CopilotSuggestion | null>(null)
   const [sendingLine, setSendingLine] = useState<string | null>(null)
   const [sentNote, setSentNote] = useState<string | null>(null)
-  const [draftSent, setDraftSent] = useState(false)
   const [card, setCard] = useState<ClosingKitResult | null>(null) // generated visual asset
   const [cardLoading, setCardLoading] = useState(false)
 
+  // Load initial live suggestions and subscribe to updates
   useEffect(() => {
     let active = true
-    // Reset per-channel state so a prior channel can't linger.
-    setLive(null); setDraft(null); setSentNote(null); setSendingLine(null); setDraftSent(false); setCard(null)
-
+    // Reset per-channel state so a prior channel's suggestion can't linger.
+    setLive(null)
+    setSentNote(null)
+    setSendingLine(null)
+    setCard(null)
     listCopilotSuggestions(customerId)
       .then((rows) => {
-        if (!active) return
+        // Only surface a suggestion for THIS channel.
         const matching = rows.find((r) => r.channel === channel)
-        if (matching) {
-          setLive(matching)
-        } else {
-          // No inbound suggestion for this channel → compose the AI's opener.
-          composeDraft(customerId, channel)
-            .then((d) => { if (active) setDraft(d) })
-            .catch(() => {})
-        }
+        if (active && matching) setLive(matching)
       })
       .catch(() => {})
 
     const unsub = subscribeCopilot(customerId, (e) => {
       if (e.type === 'suggestion' && e.suggestion && e.suggestion.channel === channel) {
         setLive(e.suggestion)
-        setDraft(null)
         setSentNote(null)
       }
     })
 
-    return () => { active = false; unsub() }
+    return () => {
+      active = false
+      unsub()
+    }
   }, [customerId, channel])
 
   const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
 
-  const handleSend = useCallback(
-    async (line: string, suggestionId?: string) => {
-      if (sendingLine) return
+  const handleSendMessage = useCallback(
+    async (line: string) => {
+      if (!live || sendingLine) return
       setSendingLine(line)
       try {
-        const res = await messagingSend({ customer_id: customerId, body: line, channel, suggestion_id: suggestionId })
-        if (suggestionId) setLive((s) => (s ? { ...s, status: 'sent' } : s))
-        else setDraftSent(true)
+        const res = await messagingSend({
+          customer_id: customerId,
+          body: line,
+          channel,
+          suggestion_id: live.id,
+        })
+        setLive({ ...live, status: 'sent' })
         setSentNote(res.within_window ? `Sent on ${channelLabel} ✓` : 'Sent (template) ✓')
       } catch (err) {
         setSentNote(err instanceof Error ? err.message : 'Send failed')
@@ -99,7 +90,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
         setSendingLine(null)
       }
     },
-    [sendingLine, customerId, channel, channelLabel],
+    [live, sendingLine, customerId, channel, channelLabel],
   )
 
   const makeCard = useCallback(
@@ -138,7 +129,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
         ))}
       </div>
 
-      {/* ── Inbound-driven suggestion (reply to what the customer said) ──────── */}
+      {/* ── Live suggestion block ─────────────────────────────────────────── */}
       {live && (
         <div className="chat-window__live" data-testid="chat-window-live">
           {live.utterance && <p className="copilot-live__msg">"{live.utterance}"</p>}
@@ -155,7 +146,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
                   type="button"
                   className="copilot-line__send"
                   disabled={live.status === 'sent' || sendingLine !== null}
-                  onClick={() => handleSend(line, live.id)}
+                  onClick={() => handleSendMessage(line)}
                   data-testid={`send-button-${i}`}
                 >
                   {sendingLine === line ? 'Sending…' : 'Send'}
@@ -177,39 +168,6 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
               {card && <img className="chat-window__cardimg" src={card.url} alt={card.title} />}
             </div>
           )}
-          {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
-        </div>
-      )}
-
-      {/* ── Proactive opener (AI recommendation) when there's no inbound yet ─── */}
-      {!live && draft && (
-        <div className="chat-window__live" data-testid="chat-window-draft">
-          <div className="copilot-live__bar">
-            <span className="copilot-live__label mono">Recommended by AI</span>
-          </div>
-          {draft.why && (
-            <div className="copilot-read">
-              <span className="copilot-read__label mono">Why now</span>
-              <p className="copilot-read__text">{draft.why}</p>
-            </div>
-          )}
-          <div className="copilot-lines">
-            <span className="copilot-lines__label mono">Suggested first message</span>
-            {draft.exact_lines.map((line, i) => (
-              <div key={i} className="copilot-line">
-                <span className="copilot-line__text">{line}</span>
-                <button
-                  type="button"
-                  className="copilot-line__send"
-                  disabled={draftSent || sendingLine !== null}
-                  onClick={() => handleSend(line)}
-                  data-testid={`draft-send-button-${i}`}
-                >
-                  {sendingLine === line ? 'Sending…' : 'Send'}
-                </button>
-              </div>
-            ))}
-          </div>
           {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
         </div>
       )}

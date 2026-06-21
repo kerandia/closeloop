@@ -40,6 +40,14 @@ discounting. Keep SMS/WhatsApp short and warm; structure email with a subject.
 Never invent facts beyond the quote and profile. Return JSON matching the schema.\
 """
 
+NOTES_SYSTEM = """\
+You are a sales assistant taking notes from a solar sales call/visit transcript.
+Produce concise, scannable notes for the rep: a one-line `summary`, `key_points`,
+`objections` raised, `buying_signals`, and concrete `next_steps`. German
+residential market. Keep each item short (a phrase, not a paragraph). Base
+everything on the transcript — do not invent. Return JSON matching the schema.\
+"""
+
 RESPOND_SYSTEM = """\
 You are a live co-pilot for a solar sales rep on a call/visit. The rep pastes
 what the customer just said. You run the OBJECTION PLAYBOOK — a fixed sales
