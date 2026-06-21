@@ -409,7 +409,10 @@ CUSTOMERS = [
         quote=dict(system_size_kwp=9, product_summary="9 kWp roof", price_eur=13500,
                    monthly_saving_eur=95, payback_years=8, annual_return_pct=13,
                    co2_tons_25y=110, sent_at=_days_ago(15)),
-        seed_interaction="**Rep note:** Asked a lot about annual return and payback. Wants the numbers to add up.",
+        seed_interaction="**Rep note:** Investor mindset — pushed hard on the annual "
+        "return (13%) and the 8-year payback, and compared it to his ETF savings plan. "
+        "Said he'll decide fast if the numbers add up; asked for the full economics "
+        "breakdown by email. Comparing a couple of other offers.",
     ),
     dict(
         ref="weber", name="Frau Weber", email="weber@example.de", phone="+49 170 3334455",
