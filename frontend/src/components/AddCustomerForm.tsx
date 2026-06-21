@@ -5,6 +5,7 @@
  */
 import { useState } from 'react'
 import { importCustomers } from '../api/client'
+import { parseImportFile } from '../lib/importParse'
 import './AddCustomerForm.css'
 
 interface Props {
@@ -34,6 +35,22 @@ export function AddCustomerForm({ onClose, onCreated }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const num = (s: string) => (s.trim() === '' ? null : Number(s))
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const payload = parseImportFile(await file.text(), file.name)
+      const res = await importCustomers(payload)
+      onCreated(res.customer_ids[0] ?? '')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not parse / import that file')
+      setSubmitting(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -89,6 +106,18 @@ export function AddCustomerForm({ onClose, onCreated }: Props) {
         </header>
 
         <form className="addc-form" onSubmit={handleSubmit}>
+          {/* Bulk import (Reonic input format: JSON profile+quote, or CSV) */}
+          <label className="addc-upload">
+            <span>📄 Import JSON / CSV (bulk)</span>
+            <input type="file" accept=".json,.csv,text/csv,application/json" onChange={handleFile} disabled={submitting} />
+          </label>
+          <p className="addc-upload__hint">
+            CSV header or JSON keys: <code>name, phone, email, language, price_eur,
+            monthly_saving_eur, payback_years, annual_return_pct, co2_tons_25y,
+            system_size_kwp, battery_kwh, product_summary</code>. Or paste a
+            customer below.
+          </p>
+
           <p className="addc-section mono">Customer</p>
           <div className="addc-grid">
             <label className="addc-field addc-field--wide">

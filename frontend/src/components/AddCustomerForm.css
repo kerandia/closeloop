@@ -87,3 +87,20 @@
 @media (max-width: 560px) {
   .addc-grid { grid-template-columns: 1fr; }
 }
+
+.addc-upload {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px dashed var(--flux);
+  border-radius: var(--radius);
+  background: rgba(20, 181, 166, 0.06);
+  font-size: 14px;
+  color: var(--paper-90);
+  margin-bottom: 8px;
+}
+.addc-upload input[type='file'] { color: var(--paper-60); font-size: 12px; max-width: 55%; }
+.addc-upload__hint { font-size: 11px; color: var(--paper-40); margin: 0 0 16px; line-height: 1.5; }
+.addc-upload__hint code { font-family: var(--font-mono); color: var(--paper-60); }
