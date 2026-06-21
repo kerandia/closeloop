@@ -115,23 +115,6 @@
   gap: 12px;
 }
 
-/* rep call: transcript + coaching side by side on wide screens */
-.conversation-call--rep {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-@media (min-width: 920px) {
-  .conversation-call--rep {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-  .conversation-call--rep .conversation-call__log {
-    grid-column: 1 / -1;
-  }
-}
-
 .conversation-call__log {
   align-self: flex-start;
   padding: 8px 14px;

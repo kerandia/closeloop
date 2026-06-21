@@ -183,7 +183,7 @@ export function ConversationPanel({
         )}
 
         {activeChannel === 'phone' && (
-          <div className="conversation-call conversation-call--rep">
+          <div className="conversation-call">
             <CallTranscriptView transcriptMd={transcriptFor('phone')} mode="phone" />
             <CoachingCard customerId={customerId} />
             <button
