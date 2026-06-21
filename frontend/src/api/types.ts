@@ -267,3 +267,32 @@ export interface MessagingDraft {
   exact_lines: string[]
   proactive: true
 }
+
+// Import / add-customer (rep enters quote + customer info → profile is built)
+export interface ImportCustomerInput {
+  ref?: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  language?: string
+  consent_voice?: boolean
+  consent_marketing?: boolean
+  source?: string
+}
+
+export interface ImportQuoteInput {
+  customer_ref?: string
+  system_size_kwp?: number | null
+  battery_kwh?: number | null
+  product_summary?: string | null
+  price_eur?: number | null
+  monthly_saving_eur?: number | null
+  payback_years?: number | null
+  annual_return_pct?: number | null
+  co2_tons_25y?: number | null
+}
+
+export interface ImportResponse {
+  imported: number
+  customer_ids: string[]
+}

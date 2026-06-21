@@ -105,6 +105,19 @@ async def import_customers(
         )
 
     await db.commit()
+
+    # Build each imported customer's profile + Deal Score so they land on the
+    # dashboard fully populated (not empty). Best-effort per customer.
+    for cid in created_ids:
+        c = await db.get(models.Customer, cid)
+        if c is None:
+            continue
+        try:
+            await analyze_svc.run_analyze(db, c)
+            await scoring_svc.initialize(db, c)
+        except Exception:  # noqa: BLE001 — a flaky LLM call shouldn't fail the import
+            pass
+
     return schemas.ImportResponse(imported=len(created_ids), customer_ids=created_ids)
 
 
