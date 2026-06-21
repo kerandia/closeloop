@@ -162,9 +162,10 @@ async def process_inbound(
     await db.refresh(suggestion)
 
     # the inbound message is a real engagement event → move the Deal Score
-    # (ANALYZE owns profile/recommendation; scoring owns the number).
+    # (ANALYZE owns profile/recommendation; scoring owns the number). Pass the
+    # co-pilot's read so sentiment the keyword rules miss still moves the score.
     if last_itx is not None:
-        await scoring_svc.apply_interaction(db, customer, last_itx)
+        await scoring_svc.apply_interaction(db, customer, last_itx, respond_type=out.type)
     # refresh profile + next-best-action off the new message
     await analyze_svc.run_analyze(db, customer)
     await db.refresh(customer)

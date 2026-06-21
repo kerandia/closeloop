@@ -46,6 +46,7 @@ DELTAS: dict[str, int] = {
     "opens_docs": 4,
     # sentiment / progress
     "positive_language": 5,
+    "negative_language": -6,
     "objection_resolved": 5,
     "stage_up": 9,
     # disengagement / silence
@@ -157,9 +158,26 @@ _RULES: list[tuple[str, str, list[str]]] = [
     # sentiment / progress
     ("objection_resolved", "an objection was resolved",
      ["resolved", "convinced", "on board", "überzeugt", "sounds good", "klingt gut"]),
+    ("negative_language", "negative sentiment / dissatisfaction",
+     ["hate", "terrible", "awful", "useless", "frustrat", "angry", "annoyed",
+      "disappointed", "not happy", "unhappy", "hasse", "schrecklich", "furchtbar",
+      "enttäuscht", "wütend", "nervt", "ärgerlich", "schlecht", "mist", "blöd"]),
     ("positive_language", "positive sentiment",
      ["excited", "great", "perfect", "warm", "begeistert", "super", "freuen"]),
 ]
+
+# events that already carry a sentiment polarity — used to decide whether the
+# RESPOND read should add a fallback sentiment event (below).
+_POS_EVENTS = {
+    "positive_language", "objection_resolved", "ask_install_timeline", "ask_financing",
+    "ask_logistics", "bring_decision_maker", "agree_home_visit", "agree_call_meeting",
+    "acknowledge_docs", "talks_when_not_whether",
+}
+_NEG_EVENTS = {
+    "negative_language", "new_objection_unresolved", "reraise_objection", "still_comparing",
+    "push_price_discount", "competitor_favorable", "decision_maker_absent", "no_rush",
+    "declines_next_step", "no_show", "repeated_cancel",
+}
 
 
 def detect_events(interaction: models.Interaction) -> list[tuple[str, str, int]]:
@@ -356,8 +374,15 @@ async def _previous_interaction(
 
 
 async def apply_interaction(db: AsyncSession, customer: models.Customer,
-                            interaction: models.Interaction) -> None:
-    """Move the score for one new interaction (the live, incremental path)."""
+                            interaction: models.Interaction,
+                            respond_type: str | None = None) -> None:
+    """Move the score for one new interaction (the live, incremental path).
+
+    `respond_type` is the co-pilot's read of the message ("objection" /
+    "buying_signal" / ...). Keyword rules can't enumerate every way a customer
+    sounds negative ("I hate it" matches nothing), so when no sentiment event
+    fired we trust that read for the polarity.
+    """
     raw = detect_events(interaction)
     # In an ongoing back-and-forth, an inbound is a REPLY, not a fresh initiation —
     # otherwise every message hands out the +10 initiation bonus and the score only
@@ -372,6 +397,18 @@ async def apply_interaction(db: AsyncSession, customer: models.Customer,
                 if key == "initiates_contact" else (key, why, delta)
                 for (key, why, delta) in raw
             ]
+
+    # Fallback: if the keyword rules caught no sentiment but the co-pilot read the
+    # message as a concern or a buying signal, register that polarity.
+    fired = {key for key, _, _ in raw}
+    if respond_type and not (fired & (_POS_EVENTS | _NEG_EVENTS)):
+        if respond_type == "buying_signal":
+            raw.append(("positive_language", "co-pilot read a buying signal",
+                        DELTAS["positive_language"]))
+        elif respond_type == "objection":
+            raw.append(("new_objection_unresolved", "co-pilot read an unresolved concern",
+                        DELTAS["new_objection_unresolved"]))
+
     events = _cap_events(raw)
     if not events:
         # still log a tiny 'replies' nudge so engagement registers
