@@ -1,0 +1,41 @@
+/* MgmtTrends — Industrial Minimalist trends chart.
+   Dual-axis AreaChart with flux green (conversion) and solar orange (revenue). */
+
+.mgmt-trends {
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.mgmt-trends__heading {
+  margin: 0 0 20px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-40);
+}
+
+.mgmt-trends__chart-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Recharts overrides for axis labels and legend */
+.mgmt-trends .recharts-text {
+  fill: var(--paper-40);
+}
+
+.mgmt-trends .recharts-legend-wrapper {
+  padding-top: 16px !important;
+}
+
+.mgmt-trends .recharts-legend-item-text {
+  color: var(--paper-60) !important;
+  font-size: 13px;
+}
+
+.mgmt-trends .recharts-tooltip-wrapper {
+  outline: none;
+}
