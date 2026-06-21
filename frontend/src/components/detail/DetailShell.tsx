@@ -18,7 +18,7 @@
  * Step 3 agents implement the panel bodies without touching this file or props.
  */
 import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import type {
   CustomerDetail,
   Recommendation,
@@ -57,6 +57,10 @@ interface Props {
 
 export function DetailShell({ data, customerId }: Props) {
   const { customer, quote, profile, signals, assignment } = data
+  const location = useLocation()
+  const isMgmt = location.pathname.startsWith('/app/management')
+  const backPath = isMgmt ? '/app/management' : '/app'
+  const backLabel = isMgmt ? '← Management' : '← Pipeline'
 
   // ── Overlay state — updated after each logInteraction call ────────────────
   const [phase, setPhase] = useState<Phase>('idle')
@@ -194,8 +198,8 @@ export function DetailShell({ data, customerId }: Props) {
     <div className="detail-shell">
       {/* ── Sticky header strip ──────────────────────────────────────────── */}
       <header className="detail-header">
-        <Link to={withMock('/app')} className="detail-header__back">
-          ← Pipeline
+        <Link to={withMock(backPath)} className="detail-header__back">
+          {backLabel}
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>
         <BuyerTypeChip type={data.profile?.buyer_type ?? null} />
@@ -216,7 +220,7 @@ export function DetailShell({ data, customerId }: Props) {
             {assignment.rep.name}
           </span>
         )}
-        <Link to={withMock('/app')} className="detail-header__close" aria-label="Close">
+        <Link to={withMock(backPath)} className="detail-header__close" aria-label="Close">
           &times;
         </Link>
       </header>
@@ -247,11 +251,12 @@ export function DetailShell({ data, customerId }: Props) {
         </div>
       ) : (
         /* ── Two-column body (default) ───────────────────────────────────── */
-        <div className="detail-columns">
+        <div className={`detail-columns ${isMgmt ? 'detail-columns--mgmt' : ''}`}>
           {/* Left column — scrolls */}
           <div className="detail-left">{infoColumn}</div>
 
           {/* Right column — sticky, AI-territory */}
+          {!isMgmt && (
           <div className="detail-right" data-phase={phase}>
             {phase === 'analyzing' ? (
               // ── Analyzing overlay — shown until full JSON lands ────────────
@@ -293,6 +298,7 @@ export function DetailShell({ data, customerId }: Props) {
               </>
             )}
           </div>
+          )}
         </div>
       )}
     </div>
