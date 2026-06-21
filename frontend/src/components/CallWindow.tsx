@@ -12,9 +12,10 @@ interface CallInnerProps {
   customerName?: string
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
+  autoStart?: boolean
 }
 
-function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished }: CallInnerProps) {
+function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished, autoStart }: CallInnerProps) {
   const [agentId, setAgentId] = useState('agent_0701kvjz79zae3wr46301bxvd7vd') // default voice agent ID
   const [err, setErr] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
@@ -24,6 +25,19 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
 
   const handleMessage = (msg: { role: string; message: string }) => {
     setTranscript((prev) => [...prev, { role: msg.role, text: msg.message }])
+    
+    // Broadcast to dashboard
+    try {
+      const channel = new BroadcastChannel('live-call-demo')
+      channel.postMessage({ 
+        type: 'TRANSCRIPT_TURN', 
+        role: msg.role, 
+        text: msg.message 
+      })
+      channel.close()
+    } catch (e) {
+      // ignore channel errors
+    }
   }
 
   const conv = useConversation({ onError: (e) => setErr(String(e)), onMessage: handleMessage })
@@ -38,6 +52,12 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       timerRef.current = setInterval(() => {
         setDuration((d) => d + 1)
       }, 1000)
+      
+      try {
+        const channel = new BroadcastChannel('live-call-demo')
+        channel.postMessage({ type: 'CALL_CONNECTED' })
+        channel.close()
+      } catch (e) {}
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current)
@@ -83,6 +103,12 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       if (onCallFinished) {
         onCallFinished(finalDuration, finalTranscript)
       }
+      
+      try {
+        const channel = new BroadcastChannel('live-call-demo')
+        channel.postMessage({ type: 'CALL_ENDED' })
+        channel.close()
+      } catch (e) {}
     }
     prevStatusRef.current = conv.status
   }, [conv.status, duration, customerName, onCallFinished, transcript])
@@ -96,6 +122,15 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       setErr(String(e))
     }
   }
+
+  // Auto-start on mount if requested
+  const hasAutoStarted = useRef(false)
+  useEffect(() => {
+    if (autoStart && !hasAutoStarted.current && idle && agentId) {
+      hasAutoStarted.current = true
+      start()
+    }
+  }, [autoStart, idle, agentId])
 
   // Format call duration MM:SS
   function formatTime(sec: number) {
@@ -221,9 +256,10 @@ interface CallWindowProps {
   customerName?: string
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
+  autoStart?: boolean
 }
 
-export function CallWindow({ onClose, customerName, customerPhone, onCallFinished }: CallWindowProps) {
+export function CallWindow({ onClose, customerName, customerPhone, onCallFinished, autoStart }: CallWindowProps) {
   // Provider required by ElevenLabs React SDK; scope it to this window for state cleanup on close.
   return (
     <ConversationProvider>
@@ -232,6 +268,7 @@ export function CallWindow({ onClose, customerName, customerPhone, onCallFinishe
         customerName={customerName}
         customerPhone={customerPhone}
         onCallFinished={onCallFinished}
+        autoStart={autoStart}
       />
     </ConversationProvider>
   )

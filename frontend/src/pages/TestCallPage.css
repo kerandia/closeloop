@@ -1,0 +1,120 @@
+.test-call-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #111;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.phone-container {
+  width: 375px;
+  height: 812px; /* iPhone X dimensions */
+  background: #000;
+  border-radius: 40px;
+  border: 12px solid #333;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.phone-screen--idle {
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.phone-time {
+  font-size: 64px;
+  font-weight: 200;
+  margin-bottom: 20px;
+}
+
+.phone-status {
+  color: #888;
+  font-size: 16px;
+}
+
+.phone-screen--ringing {
+  background: linear-gradient(180deg, #2a2a2a 0%, #111 100%);
+  align-items: center;
+  padding-top: 100px;
+}
+
+.incoming-label {
+  font-size: 18px;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+
+.incoming-caller {
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.incoming-for {
+  font-size: 14px;
+  color: #888;
+}
+
+.phone-actions {
+  margin-top: auto;
+  margin-bottom: 60px;
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  justify-content: center;
+}
+
+.phone-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.phone-btn:hover {
+  transform: scale(1.05);
+}
+
+.phone-btn--decline {
+  background: #ff3b30;
+}
+
+.phone-btn--accept {
+  background: #34c759;
+}
+
+.phone-screen--connected {
+  padding: 0;
+  background: #fff; /* CallWindow has its own styling */
+  color: #000;
+}
+
+.phone-screen--connected .call-panel {
+  border: none;
+  box-shadow: none;
+  height: 100%;
+  width: 100%;
+  border-radius: 0;
+  padding: 20px 16px;
+}

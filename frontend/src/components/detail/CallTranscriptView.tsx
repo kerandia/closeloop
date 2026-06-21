@@ -17,6 +17,7 @@ interface CallTranscriptViewProps {
   transcriptMd?: string | null
   mode: 'voice_ai' | 'phone'
   collected?: CollectedSummary | null
+  liveTurns?: TranscriptTurn[] | null
 }
 
 // Role → safe CSS class slug (alphanumeric + single hyphens), e.g.
@@ -42,10 +43,10 @@ function parseTranscriptMd(transcriptMd: string | null | undefined): TranscriptT
   return turns
 }
 
-export function CallTranscriptView({ transcriptMd, mode, collected }: CallTranscriptViewProps) {
-  const turns = parseTranscriptMd(transcriptMd)
+export function CallTranscriptView({ transcriptMd, mode, collected, liveTurns }: CallTranscriptViewProps) {
+  const turns = liveTurns || parseTranscriptMd(transcriptMd)
 
-  if (!turns.length && !collected) {
+  if (!turns.length && !collected && !liveTurns) {
     return <div className="transcript-view transcript-view--empty">No transcript or summary available.</div>
   }
 

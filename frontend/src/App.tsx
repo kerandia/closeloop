@@ -7,6 +7,7 @@ import { Landing } from './pages/Landing'
 import { ManagementPage } from './pages/ManagementPage'
 
 import { Sandbox } from './pages/Sandbox'
+import { TestCallPage } from './pages/TestCallPage'
 import { listCustomers } from './api/client'
 
 /** Real "going quiet" count = customers at high ghost risk. */
@@ -48,6 +49,7 @@ function AppLayout() {
             <Route path="/management/*" element={<Navigate to="/app/management" replace />} />
             <Route path="/app/*" element={<Dashboard />} />
             <Route path="/sandbox" element={<Sandbox />} />
+            <Route path="/test-call" element={<TestCallPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

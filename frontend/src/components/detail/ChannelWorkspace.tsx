@@ -7,7 +7,7 @@
  * the suggested text drops into the middle surface. Owns its own local draft
  * state; mounted with key={channel} so switching channels resets it.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Channel, Customer } from '../../api/types'
 import { ChatSurface, type ChatMessage } from './ChatSurface'
 import { ScriptedChat } from './ScriptedChat'
@@ -35,6 +35,37 @@ export function ChannelWorkspace({ channel, customer }: Props) {
   const [playSignal, setPlaySignal] = useState(0)
 
   const isWhatsApp = channel === 'whatsapp'
+
+  // Live Demo Call State
+  const [liveTurns, setLiveTurns] = useState<{role: string; text: string}[] | null>(null)
+  const [callFinished, setCallFinished] = useState(false)
+  
+  useEffect(() => {
+    // Only automatically trigger demo for voice_ai channel in mock mode
+    if (channel !== 'voice_ai') return
+    const isMock = new URLSearchParams(window.location.search).get('mock') === '1'
+    if (!isMock) return
+
+    const bc = new BroadcastChannel('live-call-demo')
+    
+    // Auto-start the call on the test-call tab
+    bc.postMessage({ type: 'START_CALL', customerName: customer.name })
+    setLiveTurns([]) // Initialize live array to override static markdown
+    setCallFinished(false)
+
+    bc.onmessage = (event) => {
+      if (event.data?.type === 'TRANSCRIPT_TURN') {
+        setLiveTurns(prev => [...(prev || []), { role: event.data.role, text: event.data.text }])
+      } else if (event.data?.type === 'CALL_ENDED' || event.data?.type === 'CALL_DECLINED') {
+        setCallFinished(true)
+      }
+    }
+
+    return () => {
+      bc.postMessage({ type: 'END_CALL' }) // clean up if user navigates away
+      bc.close()
+    }
+  }, [channel, customer.name])
 
   if (!content) {
     // No demo content for this channel yet — keep the layout intact.
@@ -81,7 +112,8 @@ export function ChannelWorkspace({ channel, customer }: Props) {
           <CallTranscriptView
             transcriptMd={content.transcriptMd}
             mode={content.mode}
-            collected={content.collected ?? null}
+            collected={(liveTurns && !callFinished) ? null : (content.collected ?? null)}
+            liveTurns={liveTurns}
           />
         </div>
       </section>
