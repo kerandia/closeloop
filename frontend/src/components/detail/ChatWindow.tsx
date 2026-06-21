@@ -37,6 +37,10 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
   // Load initial live suggestions and subscribe to updates
   useEffect(() => {
     let active = true
+    // Reset per-channel state so a prior channel's suggestion can't linger.
+    setLive(null)
+    setSentNote(null)
+    setSendingLine(null)
     listCopilotSuggestions(customerId)
       .then((rows) => {
         // Only surface a suggestion for THIS channel — never fall back to a
