@@ -104,6 +104,18 @@ async def import_customers(
         )
 
     await db.commit()
+
+    # Run ANALYZE so each imported customer lands on the dashboard fully
+    # populated (profile, signals, score, recommendation). Best-effort per
+    # customer — a flaky LLM call shouldn't fail the whole import.
+    for cid in created_ids:
+        c = await db.get(models.Customer, cid)
+        if c is not None:
+            try:
+                await analyze_svc.run_analyze(db, c)
+            except Exception:  # noqa: BLE001
+                pass
+
     return schemas.ImportResponse(imported=len(created_ids), customer_ids=created_ids)
 
 

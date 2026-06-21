@@ -6,6 +6,10 @@
 
 .dashboard__header {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .dashboard__title {
@@ -14,6 +18,18 @@
   font-weight: 600;
   color: var(--paper-90);
 }
+
+.dashboard__add {
+  background: var(--solar);
+  color: var(--ink-900, #0d1b27);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dashboard__add:hover { filter: brightness(1.05); }
 
 /* ── Skeleton ──────────────────────────────────────────────────────────────── */
 
