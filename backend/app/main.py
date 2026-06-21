@@ -13,6 +13,7 @@ from app.db import init_db
 from app.routers import (
     copilot,
     customers,
+    management,
     messaging,
     messages,
     recommendations,
@@ -51,6 +52,7 @@ app.include_router(messages.router)
 app.include_router(copilot.router)
 app.include_router(webhooks.router)
 app.include_router(messaging.router)
+app.include_router(management.router)
 
 
 @app.get("/health", tags=["meta"])

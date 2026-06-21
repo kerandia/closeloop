@@ -86,3 +86,5 @@
   font-size: 14px;
   color: var(--paper-40);
 }
+
+.mgmt__loading { padding: 48px 0; text-align: center; color: var(--paper-40); }
