@@ -73,6 +73,7 @@ export function TestCallPage() {
               onClose={handleCallFinished}
               onCallFinished={handleCallFinished}
               autoStart={true}
+              hideTranscript={true}
             />
           </div>
         )}

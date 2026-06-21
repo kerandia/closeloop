@@ -13,9 +13,10 @@ interface CallInnerProps {
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
   autoStart?: boolean
+  hideTranscript?: boolean
 }
 
-function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished, autoStart }: CallInnerProps) {
+function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished, autoStart, hideTranscript }: CallInnerProps) {
   const [agentId, setAgentId] = useState('agent_0701kvjz79zae3wr46301bxvd7vd') // default voice agent ID
   const [err, setErr] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
@@ -184,7 +185,7 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       </div>
 
       {/* Live Transcript Display */}
-      {isConnected && transcript.length > 0 && (
+      {isConnected && transcript.length > 0 && !hideTranscript && (
         <div className="call-transcript">
           <div className="call-transcript__list">
             {transcript.map((turn, idx) => (
@@ -258,9 +259,10 @@ interface CallWindowProps {
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
   autoStart?: boolean
+  hideTranscript?: boolean
 }
 
-export function CallWindow({ onClose, customerName, customerPhone, onCallFinished, autoStart }: CallWindowProps) {
+export function CallWindow({ onClose, customerName, customerPhone, onCallFinished, autoStart, hideTranscript }: CallWindowProps) {
   // Provider required by ElevenLabs React SDK; scope it to this window for state cleanup on close.
   return (
     <ConversationProvider>
@@ -270,6 +272,7 @@ export function CallWindow({ onClose, customerName, customerPhone, onCallFinishe
         customerPhone={customerPhone}
         onCallFinished={onCallFinished}
         autoStart={autoStart}
+        hideTranscript={hideTranscript}
       />
     </ConversationProvider>
   )
