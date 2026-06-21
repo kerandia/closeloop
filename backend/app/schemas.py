@@ -384,6 +384,11 @@ class MessagingSendRequest(BaseModel):
     suggestion_id: uuid.UUID | None = None  # mark this suggestion as sent
 
 
+class MessagingDraftRequest(BaseModel):
+    customer_id: uuid.UUID
+    channel: str = "whatsapp"  # whatsapp|sms — compose the AI's opener for this channel
+
+
 class OutcomeCreate(BaseModel):
     recommendation_id: uuid.UUID | None = None
     result: str  # replied_positive|replied_negative|no_response|meeting_booked|won|lost

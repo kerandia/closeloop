@@ -10,10 +10,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
+from app import models, schemas, serializers
 from app.adapters.channels import get_adapter
 from app.config import settings
 from app.db import get_db
+from app.services import compose as compose_svc
 
 router = APIRouter(prefix="/api/messaging", tags=["messaging"])
 
@@ -37,6 +38,54 @@ async def _last_inbound_at(db: AsyncSession, customer_id, channel: str) -> dt.da
             .limit(1)
         )
     ).scalar_one_or_none()
+
+
+@router.post("/draft")
+async def draft_message(body: schemas.MessagingDraftRequest, db: AsyncSession = Depends(get_db)):
+    """Compose the AI's recommended OPENING message for a channel — the proactive
+    side of the co-pilot, so the rep can start the conversation (vs only replying
+    to an inbound message). Returns a suggestion-shaped object the chat surface
+    renders. Does NOT persist or mutate the recommendation."""
+    customer = await db.get(models.Customer, body.customer_id)
+    if customer is None:
+        raise HTTPException(status_code=404, detail="customer not found")
+
+    rec = await serializers.current_recommendation(db, customer.id)
+    if rec is not None:
+        goal, rationale, timing, play = rec.goal, rec.rationale, rec.timing_label, rec.play_key
+    else:
+        # No active recommendation → fall back to the customer's actual profile
+        # read (its summary), not a stock line, so the "why now" stays meaningful.
+        profile = (
+            await db.execute(
+                select(models.Profile).where(models.Profile.customer_id == customer.id)
+            )
+        ).scalar_one_or_none()
+        bt = profile.buyer_type if profile else None
+        rationale = (profile.summary if profile and profile.summary else None) or (
+            "Re-engage warmly and low-pressure — keep the deal moving."
+        )
+        goal = f"Re-open the conversation ({bt})" if bt else "Re-open the conversation"
+        timing, play = None, None
+
+    # a transient recommendation for THIS channel (don't mutate/persist the real one)
+    draft_rec = models.Recommendation(
+        customer_id=customer.id,
+        channel=body.channel,
+        timing_label=timing,
+        goal=goal,
+        rationale=rationale,
+        play_key=play,
+    )
+    composed = await compose_svc.run_compose(db, customer, draft_rec)
+    return {
+        "channel": body.channel,
+        "read": draft_rec.goal,
+        "why": draft_rec.rationale,
+        "subject": composed.subject,
+        "exact_lines": [composed.body],
+        "proactive": True,
+    }
 
 
 @router.post("/send")

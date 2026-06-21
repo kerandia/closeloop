@@ -106,7 +106,7 @@ describe('Dashboard', () => {
     listCustomersMock.mockResolvedValue([])
     renderDashboard()
     expect(await screen.findByText(/no customers yet/i)).toBeInTheDocument()
-    expect(screen.getByText(/import a list/i)).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /add customer/i }).length).toBeGreaterThan(0)
   })
 
   test('error state shows inline error and Retry button', async () => {

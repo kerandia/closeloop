@@ -9,6 +9,10 @@ import type {
   RespondOutput,
   SendResponse,
   MessagingSendResponse,
+  MessagingDraft,
+  ImportCustomerInput,
+  ImportQuoteInput,
+  ImportResponse,
 } from './types'
 import {
   mockListCustomers,
@@ -52,6 +56,15 @@ export function listCustomers(): Promise<CustomerListItem[]> {
 export function getCustomer(id: string): Promise<CustomerDetail> {
   if (isMockMode()) return Promise.resolve(mockGetCustomer())
   return req(`/api/customers/${id}`, 'GET')
+}
+
+export function importCustomers(payload: {
+  customers: ImportCustomerInput[]
+  quotes: ImportQuoteInput[]
+}): Promise<ImportResponse> {
+  if (isMockMode())
+    return Promise.reject(new Error('Add customer needs the live backend (remove ?mock=1).'))
+  return req('/api/customers/import', 'POST', payload)
 }
 
 export function logInteraction(
@@ -116,6 +129,20 @@ export function messagingSend(payload: {
   if (isMockMode())
     return Promise.resolve({ ok: true, within_window: true, provider: { provider_id: 'mock' } })
   return req('/api/messaging/send', 'POST', payload)
+}
+
+/** Compose the AI's proactive opening message for a channel (no inbound needed). */
+export function composeDraft(customerId: string, channel: string): Promise<MessagingDraft> {
+  if (isMockMode())
+    return Promise.resolve({
+      channel,
+      read: 'Re-open the conversation',
+      why: 'Re-engage warmly and low-pressure.',
+      subject: null,
+      exact_lines: ['Hallo! Ich wollte mich kurz zu Ihrem Solar-Angebot melden — kein Druck.'],
+      proactive: true,
+    })
+  return req('/api/messaging/draft', 'POST', { customer_id: customerId, channel })
 }
 
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */
