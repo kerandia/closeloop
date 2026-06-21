@@ -41,7 +41,7 @@
 }
 
 .ct__row td:first-child {
-  border-left: 3px solid transparent;
+  border-left: 1px solid var(--ink-700);
   border-top-left-radius: var(--radius);
   border-bottom-left-radius: var(--radius);
 }
@@ -70,7 +70,8 @@
 
 .ct__row:hover td:first-child,
 .ct__row:focus-visible td:first-child {
-  border-left-color: var(--solar);
+  /* solar accent via inset shadow so the 1px border (and layout) stays put */
+  box-shadow: var(--shadow-hover), inset 3px 0 0 0 var(--solar);
 }
 
 .ct__cell {

@@ -37,6 +37,12 @@
   flex: 1;
 }
 
+/* Status capsules keep their natural width — they wrap rather than shrink when
+   the detail content mounts beside them. */
+.detail-header > :not(.detail-header__spacer):not(.detail-header__name) {
+  flex-shrink: 0;
+}
+
 .detail-header__assignment {
   font-family: var(--font-mono);
   font-size: 11px;

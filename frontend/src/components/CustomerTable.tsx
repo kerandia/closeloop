@@ -35,6 +35,15 @@ export function CustomerTable({ customers }: Props) {
   return (
     <div className="ct-scroll">
       <table className="ct">
+      <colgroup>
+        <col style={{ width: '24%' }} />{/* Customer */}
+        <col style={{ width: '14%' }} />{/* Likelihood */}
+        <col style={{ width: '9%' }} />{/* Risk */}
+        <col style={{ width: '12%' }} />{/* Stage */}
+        <col style={{ width: '21%' }} />{/* Next Action */}
+        <col style={{ width: '8%' }} />{/* Rep */}
+        <col style={{ width: '12%' }} />{/* Last Contact */}
+      </colgroup>
       <thead>
         <tr className="ct__head-row">
           <th className="mono ct__th">Customer</th>

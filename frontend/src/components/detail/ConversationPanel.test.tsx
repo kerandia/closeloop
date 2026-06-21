@@ -18,6 +18,7 @@ const rec = { id: 'r1', channel: 'visit', goal: 'Book a home visit' } as Recomme
 function setup(overrides = {}) {
   const onSelectChannel = vi.fn()
   const onLogCall = vi.fn()
+  const onClose = vi.fn()
   render(
     <ConversationPanel
       activeChannel={null}
@@ -30,10 +31,11 @@ function setup(overrides = {}) {
       onLogCall={onLogCall}
       emailComposing={false}
       onComposeEmail={vi.fn()}
+      onClose={onClose}
       {...overrides}
     />,
   )
-  return { onSelectChannel, onLogCall }
+  return { onSelectChannel, onLogCall, onClose }
 }
 
 describe('ConversationPanel', () => {
@@ -61,6 +63,7 @@ describe('ConversationPanel', () => {
         onLogCall={vi.fn()}
         emailComposing={false}
         onComposeEmail={vi.fn()}
+        onClose={vi.fn()}
       />,
     )
     const first = container.querySelector('.conversation-rail__chip')
@@ -88,5 +91,13 @@ describe('ConversationPanel', () => {
     expect(screen.getAllByText('Agent').length).toBeGreaterThan(0)
     fireEvent.click(screen.getByText(/Log call/))
     expect(onLogCall).toHaveBeenCalledWith('voice_ai', expect.stringContaining('**Agent:**'))
+  })
+
+  test('surface view hides the picker and Back returns to the info card', () => {
+    const { onClose } = setup({ activeChannel: 'voice_ai' })
+    // Picker chips are not shown while a surface is active.
+    expect(screen.queryByText('WhatsApp')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText(/Back/))
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

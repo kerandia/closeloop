@@ -60,7 +60,11 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
   // Call end feedback loop
   const prevStatusRef = useRef(conv.status)
   useEffect(() => {
-    if (prevStatusRef.current === 'connected' && conv.status === 'disconnected') {
+    // Fire on either a clean disconnect or an error ending the session.
+    if (
+      prevStatusRef.current === 'connected' &&
+      (conv.status === 'disconnected' || conv.status === 'error')
+    ) {
       // Trigger callback if provided
       const isMock = new URLSearchParams(window.location.search).get('mock') === '1'
       let finalDuration = duration

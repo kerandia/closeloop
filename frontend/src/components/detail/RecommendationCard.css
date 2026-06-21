@@ -13,6 +13,15 @@
   border: 1px solid var(--ink-700);
 }
 
+/* Merged into ConversationPanel — drop its own card chrome. */
+.rec-card--embedded {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 4px;
+}
+
 /* ── Empty state ─────────────────────────────────────────────────────────── */
 
 .rec-card--empty {

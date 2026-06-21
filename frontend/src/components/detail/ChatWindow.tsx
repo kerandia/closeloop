@@ -62,7 +62,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
   // Channel label display
   const channelLabel = channel === 'sms' ? 'SMS' : channel === 'telegram' ? 'Telegram' : 'WhatsApp'
 
-  const handleSendWhatsApp = useCallback(
+  const handleSendMessage = useCallback(
     async (line: string) => {
       if (!live || sendingLine) return
       setSendingLine(line)
@@ -125,7 +125,7 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
                   type="button"
                   className="copilot-line__send"
                   disabled={live.status === 'sent' || sendingLine !== null}
-                  onClick={() => handleSendWhatsApp(line)}
+                  onClick={() => handleSendMessage(line)}
                   data-testid={`send-button-${i}`}
                 >
                   {sendingLine === line ? 'Sending…' : 'Send'}

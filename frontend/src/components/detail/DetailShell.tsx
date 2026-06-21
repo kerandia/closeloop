@@ -24,7 +24,6 @@ import type {
   Recommendation,
   Interaction,
   InteractionCreate,
-  RecStatus,
   Message,
   Score,
   Channel,
@@ -32,7 +31,6 @@ import type {
 import {
   logInteraction as apiLogInteraction,
   approveRecommendation,
-  dismissRecommendation,
 } from '../../api/client'
 import { withMock } from '../../lib/nav'
 import { BuyerTypeChip } from '../BuyerTypeChip'
@@ -68,7 +66,8 @@ export function DetailShell({ data, customerId }: Props) {
   // activeChannel drives the right-column ConversationPanel mode; email also
   // opens the ComposeDrawer overlay. null = no channel selected yet.
   const [draftMessage, setDraftMessage] = useState<Message | null>(null)
-  const [localStatus, setLocalStatus] = useState<RecStatus | null>(null)
+  // null = show the info card (recommendation + picker); a value swaps in that
+  // channel's call/chat surface. Back returns to null.
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
   // Compose drawer is gated on this explicit flag, never on activeChannel alone,
   // so browsing to the email channel doesn't open the drawer or approve the rec.
@@ -106,39 +105,9 @@ export function DetailShell({ data, customerId }: Props) {
     }
   }
 
-  // ── Approve / channel selection ───────────────────────────────────────────
-  /** Kick off email compose: approve the rec to generate a draft, open the drawer. */
-  function startCompose(recId: string): void {
-    setEmailComposing(true)
-    setLocalStatus('approved')
-    approveRecommendation(recId)
-      .then((msg) => {
-        setDraftMessage(msg)
-        setLocalStatus('ready')
-      })
-      .catch(() => {
-        // Roll back so the rep isn't stuck on the loading drawer.
-        setEmailComposing(false)
-        setLocalStatus(null)
-      })
-  }
-
-  /** RecommendationCard "Approve" — pre-selects the recommended channel. */
-  function handleApprove(recId: string): void {
-    const ch = effectiveRec?.channel ?? null
-    setActiveChannel(ch)
-    if (ch === 'email') {
-      startCompose(recId)
-    } else {
-      setLocalStatus('approved')
-      approveRecommendation(recId)
-        .then(() => setLocalStatus('ready'))
-        .catch(() => setLocalStatus(null))
-    }
-  }
-
+  // ── Channel selection / compose ───────────────────────────────────────────
   /**
-   * Rep overrides the recommended channel via the picker.
+   * Rep selects a channel via the picker.
    * Selection alone NEVER mutates server state — email compose is an explicit
    * action (handleComposeEmail) triggered from the email surface button.
    */
@@ -146,10 +115,13 @@ export function DetailShell({ data, customerId }: Props) {
     setActiveChannel(ch)
   }
 
-  /** Explicit "Compose email" action from the email surface. */
+  /** Explicit "Compose email": approve the rec to generate a draft, open drawer. */
   function handleComposeEmail(): void {
     if (!effectiveRec || emailComposing) return
-    startCompose(effectiveRec.id)
+    setEmailComposing(true)
+    approveRecommendation(effectiveRec.id)
+      .then((msg) => setDraftMessage(msg))
+      .catch(() => setEmailComposing(false)) // roll back so the drawer isn't stuck
   }
 
   /** Log the shown call transcript → runs ANALYZE so the score moves. */
@@ -157,32 +129,26 @@ export function DetailShell({ data, customerId }: Props) {
     channel: 'voice_ai' | 'phone',
     transcriptMd: string,
   ): Promise<void> {
-    await handleLogInteraction({
-      channel,
-      direction: 'outbound',
-      outcome: 'call completed',
-      transcript_md: transcriptMd,
-    })
-  }
-
-  // ── Dismiss handler ───────────────────────────────────────────────────────
-  function handleDismiss(recId: string): void {
-    setLocalStatus('dismissed')
-    dismissRecommendation(recId).catch(() => {
-      setLocalStatus(null)
-    })
+    try {
+      await handleLogInteraction({
+        channel,
+        direction: 'outbound',
+        outcome: 'call completed',
+        transcript_md: transcriptMd,
+      })
+    } catch {
+      // handleLogInteraction already reverts the analyzing overlay on failure.
+    }
   }
 
   // ── Compose close / sent ──────────────────────────────────────────────────
   function handleComposeClose(): void {
     setDraftMessage(null)
-    setLocalStatus(null)
     setEmailComposing(false)
   }
 
   function handleSent(interaction: Interaction): void {
     setDraftMessage(null)
-    setLocalStatus('sent')
     setExtraInteractions((prev) => [interaction, ...prev])
     setEmailComposing(false)
     setActiveChannel(null)
@@ -246,13 +212,6 @@ export function DetailShell({ data, customerId }: Props) {
             </div>
           ) : (
             <>
-              <RecommendationCard
-                recommendation={effectiveRec}
-                customer={customer}
-                onApprove={handleApprove}
-                onDismiss={handleDismiss}
-                status={localStatus}
-              />
               <ConversationPanel
                 activeChannel={activeChannel}
                 recommendedChannel={effectiveRec?.channel ?? null}
@@ -264,6 +223,14 @@ export function DetailShell({ data, customerId }: Props) {
                 onLogCall={handleLogCall}
                 emailComposing={emailComposing}
                 onComposeEmail={handleComposeEmail}
+                onClose={() => {
+                  setActiveChannel(null)
+                  setEmailComposing(false)
+                  setDraftMessage(null)
+                }}
+                header={
+                  <RecommendationCard recommendation={effectiveRec} embedded />
+                }
               />
               <ComposeDrawer
                 open={emailComposing}

@@ -14,7 +14,7 @@
  * the detail screen renders recorded/streamed transcript only — never connects
  * the agent to the local mic.
  */
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import type { Channel, Customer, Interaction, Recommendation } from '../../api/types'
 import { ChannelIcon } from '../ChannelIcon'
 import { CoachingCard } from './CoachingCard'
@@ -71,6 +71,10 @@ interface Props {
   emailComposing: boolean
   /** Explicit "compose email" action — the only thing that approves the rec. */
   onComposeEmail: () => void
+  /** Recommendation header (embedded RecommendationCard) merged into this card. */
+  header?: ReactNode
+  /** Return from a channel surface back to the info card. */
+  onClose: () => void
 }
 
 export function ConversationPanel({
@@ -84,6 +88,8 @@ export function ConversationPanel({
   onLogCall,
   emailComposing,
   onComposeEmail,
+  header,
+  onClose,
 }: Props) {
   // Recommended channel first, then the rest in canonical order.
   const ordered = useMemo<Channel[]>(() => {
@@ -92,44 +98,67 @@ export function ConversationPanel({
   }, [recommendedChannel])
 
   function transcriptFor(channel: 'voice_ai' | 'phone'): string {
-    const hit = interactions.find((i) => i.channel === channel && i.transcript_md)
-    return hit?.transcript_md ?? MOCK_TRANSCRIPT[channel]
+    // Most recent transcript for this channel — don't depend on array order.
+    const latest = interactions
+      .filter((i) => i.channel === channel && i.transcript_md)
+      .sort((a, b) => (b.occurred_at ?? '').localeCompare(a.occurred_at ?? ''))[0]
+    return latest?.transcript_md ?? MOCK_TRANSCRIPT[channel]
+  }
+
+  // Info view (recommendation + channel picker) when no channel is active; the
+  // selected channel's surface REPLACES it, with a Back affordance to return.
+  if (activeChannel == null) {
+    return (
+      <section className="conversation-panel" data-slot="conversation-panel">
+        {header && <div className="conversation-panel__header">{header}</div>}
+
+        {/* ── Channel rail ────────────────────────────────────────────────── */}
+        <div className="conversation-rail" role="group" aria-label="Channels">
+          {ordered.map((c) => {
+            const isRec = c === recommendedChannel
+            return (
+              <button
+                key={c}
+                type="button"
+                className={`conversation-rail__chip${
+                  isRec ? ' conversation-rail__chip--recommended' : ''
+                }`}
+                title={isRec && recommendation?.goal ? recommendation.goal : CHANNEL_LABEL[c]}
+                onClick={() => onSelectChannel(c)}
+              >
+                <ChannelIcon channel={c} />
+                <span className="conversation-rail__label">{CHANNEL_LABEL[c]}</span>
+                {isRec && <span className="conversation-rail__badge">Recommended</span>}
+              </button>
+            )
+          })}
+        </div>
+        <p className="conversation-hint">
+          Pick a channel to start — the recommended one is highlighted.
+        </p>
+      </section>
+    )
   }
 
   return (
     <section className="conversation-panel" data-slot="conversation-panel">
-      {/* ── Channel rail ──────────────────────────────────────────────────── */}
-      <div className="conversation-rail" role="group" aria-label="Channels">
-        {ordered.map((c) => {
-          const isRec = c === recommendedChannel
-          const isActive = c === activeChannel
-          return (
-            <button
-              key={c}
-              type="button"
-              aria-pressed={isActive}
-              className={`conversation-rail__chip${isActive ? ' conversation-rail__chip--active' : ''}${
-                isRec ? ' conversation-rail__chip--recommended' : ''
-              }`}
-              title={isRec && recommendation?.goal ? recommendation.goal : CHANNEL_LABEL[c]}
-              onClick={() => onSelectChannel(c)}
-            >
-              <ChannelIcon channel={c} />
-              <span className="conversation-rail__label">{CHANNEL_LABEL[c]}</span>
-              {isRec && <span className="conversation-rail__badge">Recommended</span>}
-            </button>
-          )
-        })}
+      {/* ── Surface bar with Back to the info card ───────────────────────── */}
+      <div className="conversation-surface__bar">
+        <button
+          type="button"
+          className="conversation-surface__back"
+          onClick={onClose}
+        >
+          ← Back
+        </button>
+        <span className="conversation-surface__title">
+          <ChannelIcon channel={activeChannel} />
+          {CHANNEL_LABEL[activeChannel]}
+        </span>
       </div>
 
       {/* ── Active surface ────────────────────────────────────────────────── */}
       <div className="conversation-body">
-        {activeChannel == null && (
-          <p className="conversation-hint">
-            Pick a channel above — the recommended one is highlighted.
-          </p>
-        )}
-
         {activeChannel === 'voice_ai' && (
           <div className="conversation-call">
             <CallTranscriptView
