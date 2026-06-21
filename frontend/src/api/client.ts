@@ -13,6 +13,7 @@ import type {
   ImportQuoteInput,
   ImportResponse,
   MgmtStats,
+  CallNotes,
 } from './types'
 import {
   mockListCustomers,
@@ -67,6 +68,19 @@ export function getCustomer(id: string): Promise<CustomerDetail> {
 export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats> {
   if (isMockMode()) return Promise.resolve(mockMgmtStats(period))
   return req(`/api/management/stats?period=${period}`, 'GET')
+}
+
+export function generateCallNotes(customerId: string): Promise<CallNotes> {
+  if (isMockMode())
+    return Promise.resolve({
+      summary: 'Warm call; comparing other quotes and wants to involve the spouse.',
+      key_points: ['Interested in savings', 'Comparing 2 other companies'],
+      objections: ['comparing', 'spouse'],
+      buying_signals: ['asked about install timing'],
+      next_steps: ['Send the partner one-pager', 'Follow up Tuesday'],
+      source_interaction_id: null,
+    })
+  return req(`/api/customers/${customerId}/call-notes`, 'POST')
 }
 
 export function importCustomers(payload: {

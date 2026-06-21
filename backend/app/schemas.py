@@ -115,6 +115,18 @@ class CopilotTodo(BaseModel):
     due_at: dt.datetime | None = None
 
 
+class CallNotes(BaseModel):
+    """Structured notes auto-extracted from a call transcript (Phase 3)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    summary: str
+    key_points: list[str] = Field(default_factory=list)
+    objections: list[str] = Field(default_factory=list)
+    buying_signals: list[str] = Field(default_factory=list)
+    next_steps: list[str] = Field(default_factory=list)
+
+
 class RespondOutput(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
