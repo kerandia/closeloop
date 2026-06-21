@@ -12,9 +12,11 @@ interface CallInnerProps {
   customerName?: string
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
+  autoStart?: boolean
+  hideTranscript?: boolean
 }
 
-function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished }: CallInnerProps) {
+function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknown Phone', onCallFinished, autoStart, hideTranscript }: CallInnerProps) {
   const [agentId, setAgentId] = useState('agent_0701kvjz79zae3wr46301bxvd7vd') // default voice agent ID
   const [err, setErr] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
@@ -24,6 +26,19 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
 
   const handleMessage = (msg: { role: string; message: string }) => {
     setTranscript((prev) => [...prev, { role: msg.role, text: msg.message }])
+    
+    // Broadcast to dashboard
+    try {
+      const channel = new BroadcastChannel('live-call-demo')
+      channel.postMessage({ 
+        type: 'TRANSCRIPT_TURN', 
+        role: msg.role, 
+        text: msg.message 
+      })
+      channel.close()
+    } catch (e) {
+      // ignore channel errors
+    }
   }
 
   const conv = useConversation({ onError: (e) => setErr(String(e)), onMessage: handleMessage })
@@ -38,6 +53,12 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       timerRef.current = setInterval(() => {
         setDuration((d) => d + 1)
       }, 1000)
+      
+      try {
+        const channel = new BroadcastChannel('live-call-demo')
+        channel.postMessage({ type: 'CALL_CONNECTED' })
+        channel.close()
+      } catch (e) {}
     } else {
       if (timerRef.current) {
         clearInterval(timerRef.current)
@@ -83,6 +104,12 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       if (onCallFinished) {
         onCallFinished(finalDuration, finalTranscript)
       }
+      
+      try {
+        const channel = new BroadcastChannel('live-call-demo')
+        channel.postMessage({ type: 'CALL_ENDED' })
+        channel.close()
+      } catch (e) {}
     }
     prevStatusRef.current = conv.status
   }, [conv.status, duration, customerName, onCallFinished, transcript])
@@ -96,6 +123,14 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       setErr(String(e))
     }
   }
+
+  // Auto-start on mount if requested
+  useEffect(() => {
+    if (autoStart && idle && agentId) {
+      start()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only run once on mount
 
   // Format call duration MM:SS
   function formatTime(sec: number) {
@@ -150,7 +185,7 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
       </div>
 
       {/* Live Transcript Display */}
-      {isConnected && transcript.length > 0 && (
+      {isConnected && transcript.length > 0 && !hideTranscript && (
         <div className="call-transcript">
           <div className="call-transcript__list">
             {transcript.map((turn, idx) => (
@@ -170,7 +205,7 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
         </div>
       )}
 
-      {idle && (
+      {idle && !autoStart && (
         <div className="call-config">
           <label className="call-config__label" htmlFor="agent-id-input">ElevenLabs Agent ID</label>
           <input
@@ -188,13 +223,15 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
 
       <div className="call-controls">
         {idle ? (
-          <button
-            onClick={start}
-            disabled={!agentId.trim()}
-            className="call-btn call-btn--start"
-          >
-            Start Session
-          </button>
+          !autoStart && (
+            <button
+              onClick={start}
+              disabled={!agentId.trim()}
+              className="call-btn call-btn--start"
+            >
+              Start Session
+            </button>
+          )
         ) : (
           <>
             <button
@@ -221,9 +258,11 @@ interface CallWindowProps {
   customerName?: string
   customerPhone?: string
   onCallFinished?: (durationSeconds: number, transcript: string) => void
+  autoStart?: boolean
+  hideTranscript?: boolean
 }
 
-export function CallWindow({ onClose, customerName, customerPhone, onCallFinished }: CallWindowProps) {
+export function CallWindow({ onClose, customerName, customerPhone, onCallFinished, autoStart, hideTranscript }: CallWindowProps) {
   // Provider required by ElevenLabs React SDK; scope it to this window for state cleanup on close.
   return (
     <ConversationProvider>
@@ -232,6 +271,8 @@ export function CallWindow({ onClose, customerName, customerPhone, onCallFinishe
         customerName={customerName}
         customerPhone={customerPhone}
         onCallFinished={onCallFinished}
+        autoStart={autoStart}
+        hideTranscript={hideTranscript}
       />
     </ConversationProvider>
   )
