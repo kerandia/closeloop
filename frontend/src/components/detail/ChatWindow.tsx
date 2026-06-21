@@ -216,152 +216,164 @@ export function ChatWindow({
   const aiSent = live ? live.status === 'sent' : draftSent
 
   return (
-    <section className="chat-surface chat-surface--live" data-slot="chat-window" style={theme}>
-      {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <header className="chat-surface__header">
-        <span className="chat-surface__avatar">{initials}</span>
-        <span className="chat-surface__peer">
-          <span className="chat-surface__name">{peerName}</span>
-          <span className="chat-surface__brand">
-            <span className="chat-surface__live-dot" aria-hidden="true" />
-            {channelLabel} · live
-          </span>
-        </span>
-      </header>
-
-      {/* ── Messages ─────────────────────────────────────────────────────────── */}
-      <div className="chat-surface__messages">
-        {filteredInteractions.length === 0 && extra.length === 0 && (
-          <p className="chat-surface__empty">No messages on {channelLabel} yet.</p>
-        )}
-        {filteredInteractions.map((interaction) => {
-          const out = interaction.direction !== 'inbound'
-          return (
-            <div
-              key={interaction.id}
-              className={`chat-bubble chat-bubble--${out ? 'out' : 'in'} chat-bubble--${out ? 'outbound' : 'inbound'}`}
-              data-testid={`chat-bubble-${interaction.id}`}
-            >
-              <p className="chat-bubble__text">{interaction.content || interaction.transcript_md}</p>
-            </div>
-          )
-        })}
-        {extra.map((m) => {
-          const out = m.direction === 'outbound'
-          return (
-            <div
-              key={m.id}
-              className={`chat-bubble chat-bubble--${out ? 'out' : 'in'} chat-bubble--${out ? 'outbound' : 'inbound'}`}
-            >
-              <p className="chat-bubble__text">{m.content}</p>
-            </div>
-          )
-        })}
-        {simulating && (
-          <div className="chat-bubble chat-bubble--in chat-bubble--typing" aria-label="co-pilot thinking">
-            <span></span><span></span><span></span>
-          </div>
-        )}
-      </div>
-
-      {/* ── AI co-pilot suggestion / proactive opener ────────────────────────── */}
-      {aiKind && (
-        <div
-          className="chat-ai"
-          data-testid={aiKind === 'live' ? 'chat-window-live' : 'chat-window-draft'}
-        >
-          <div className="chat-ai__head">
-            <span className="chat-ai__label mono">
-              {aiKind === 'live' ? 'Co-pilot' : 'Recommended by AI'}
+    <div className="chat-live">
+      {/* ══ LEFT: the messenger surface ═══════════════════════════════════════ */}
+      <section className="chat-surface chat-surface--live" data-slot="chat-window" style={theme}>
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
+        <header className="chat-surface__header">
+          <span className="chat-surface__avatar">{initials}</span>
+          <span className="chat-surface__peer">
+            <span className="chat-surface__name">{peerName}</span>
+            <span className="chat-surface__brand">
+              <span className="chat-surface__live-dot" aria-hidden="true" />
+              {channelLabel} · live
             </span>
-            {live?.utterance && <span className="chat-ai__utterance">"{live.utterance}"</span>}
-          </div>
-          {aiRead && <p className="chat-ai__read">{aiRead}</p>}
-          <div className="chat-ai__lines">
-            {aiLines.map((line, i) => (
-              <div key={i} className="chat-ai__line">
-                <button
-                  type="button"
-                  className="chat-ai__use"
-                  onClick={() => setInput(line)}
-                  title="Load into composer to edit"
-                >
-                  {line}
-                </button>
-                <button
-                  type="button"
-                  className="chat-ai__send"
-                  disabled={aiSent || sendingLine !== null}
-                  onClick={() => handleSend(line, aiKind === 'live' ? live?.id : undefined)}
-                  data-testid={aiKind === 'live' ? `send-button-${i}` : `draft-send-button-${i}`}
-                >
-                  {sendingLine === line ? 'Sending…' : 'Send'}
-                </button>
-              </div>
-            ))}
-          </div>
-          {aiWhy && (
-            <p className="chat-ai__why">
-              <span className="chat-ai__why-label">Why — </span>{aiWhy}
-            </p>
+          </span>
+        </header>
+
+        {/* ── Messages ───────────────────────────────────────────────────────── */}
+        <div className="chat-surface__messages">
+          {filteredInteractions.length === 0 && extra.length === 0 && (
+            <p className="chat-surface__empty">No messages on {channelLabel} yet.</p>
           )}
-          {cardCfg && (
-            <div className="chat-ai__card">
-              <button
-                type="button"
-                className="chat-ai__cardbtn"
-                disabled={cardLoading}
-                onClick={() => makeCard(cardCfg.kind)}
-                data-testid="make-card"
+          {filteredInteractions.map((interaction) => {
+            const out = interaction.direction !== 'inbound'
+            return (
+              <div
+                key={interaction.id}
+                className={`chat-bubble chat-bubble--${out ? 'out' : 'in'} chat-bubble--${out ? 'outbound' : 'inbound'}`}
+                data-testid={`chat-bubble-${interaction.id}`}
               >
-                {cardLoading ? 'Generating…' : `✨ Make the ${cardCfg.label}`}
-              </button>
-              {card && <img className="chat-ai__cardimg" src={card.url} alt={card.title} />}
+                <p className="chat-bubble__text">{interaction.content || interaction.transcript_md}</p>
+              </div>
+            )
+          })}
+          {extra.map((m) => {
+            const out = m.direction === 'outbound'
+            return (
+              <div
+                key={m.id}
+                className={`chat-bubble chat-bubble--${out ? 'out' : 'in'} chat-bubble--${out ? 'outbound' : 'inbound'}`}
+              >
+                <p className="chat-bubble__text">{m.content}</p>
+              </div>
+            )
+          })}
+          {simulating && (
+            <div className="chat-bubble chat-bubble--in chat-bubble--typing" aria-label="co-pilot thinking">
+              <span></span><span></span><span></span>
             </div>
           )}
-          {sentNote && <p className="chat-ai__sent" role="status">{sentNote}</p>}
         </div>
-      )}
 
-      {/* ── Composer ─────────────────────────────────────────────────────────── */}
-      <form
-        className="chat-surface__input"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (asCustomer) handleSimulate(input)
-          else handleSend(input)
-        }}
-      >
-        <button
-          type="button"
-          className={`chat-as-toggle${asCustomer ? ' chat-as-toggle--customer' : ''}`}
-          onClick={() => setAsCustomer((v) => !v)}
-          title="Demo: switch between sending as the rep and playing the customer"
-          aria-pressed={asCustomer}
+        {/* ── Composer ───────────────────────────────────────────────────────── */}
+        <form
+          className="chat-surface__input"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (asCustomer) handleSimulate(input)
+            else handleSend(input)
+          }}
         >
-          {asCustomer ? '👤 Customer' : '🧑‍💼 Rep'}
-        </button>
-        <input
-          type="text"
-          className="chat-surface__field"
-          placeholder={
-            asCustomer ? `Play the customer on ${channelLabel}…` : `Message on ${channelLabel}…`
-          }
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          aria-label="Message"
-        />
-        <button
-          type="submit"
-          className="chat-surface__send"
-          aria-label={asCustomer ? 'Send as customer' : 'Send'}
-          disabled={!input.trim() || sendingLine !== null || simulating}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        </button>
-      </form>
-    </section>
+          <button
+            type="button"
+            className={`chat-as-toggle${asCustomer ? ' chat-as-toggle--customer' : ''}`}
+            onClick={() => setAsCustomer((v) => !v)}
+            title="Demo: switch between sending as the rep and playing the customer"
+            aria-pressed={asCustomer}
+          >
+            {asCustomer ? '👤 Customer' : '🧑‍💼 Rep'}
+          </button>
+          <input
+            type="text"
+            className="chat-surface__field"
+            placeholder={
+              asCustomer ? `Play the customer on ${channelLabel}…` : `Message on ${channelLabel}…`
+            }
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            aria-label="Message"
+          />
+          <button
+            type="submit"
+            className="chat-surface__send"
+            aria-label={asCustomer ? 'Send as customer' : 'Send'}
+            disabled={!input.trim() || sendingLine !== null || simulating}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </form>
+      </section>
+
+      {/* ══ RIGHT: the co-pilot recommendation (own column, never blocks chat) ══ */}
+      <aside className="chat-copilot">
+        <div className="chat-copilot__head">
+          <span className="chat-copilot__label mono">Co-pilot</span>
+          <span className="chat-surface__live-dot" aria-hidden="true" />
+        </div>
+
+        {aiKind ? (
+          <div
+            className="chat-ai"
+            data-testid={aiKind === 'live' ? 'chat-window-live' : 'chat-window-draft'}
+          >
+            {aiKind === 'draft' && (
+              <span className="chat-ai__kind">Proactive opener — no inbound yet</span>
+            )}
+            {live?.utterance && <p className="chat-ai__utterance">"{live.utterance}"</p>}
+            {aiRead && <p className="chat-ai__read">{aiRead}</p>}
+            <div className="chat-ai__lines">
+              {aiLines.map((line, i) => (
+                <div key={i} className="chat-ai__line">
+                  <button
+                    type="button"
+                    className="chat-ai__use"
+                    onClick={() => setInput(line)}
+                    title="Load into the composer to edit"
+                  >
+                    {line}
+                  </button>
+                  <button
+                    type="button"
+                    className="chat-ai__send"
+                    disabled={aiSent || sendingLine !== null}
+                    onClick={() => handleSend(line, aiKind === 'live' ? live?.id : undefined)}
+                    data-testid={aiKind === 'live' ? `send-button-${i}` : `draft-send-button-${i}`}
+                  >
+                    {sendingLine === line ? 'Sending…' : 'Send'}
+                  </button>
+                </div>
+              ))}
+            </div>
+            {aiWhy && (
+              <p className="chat-ai__why">
+                <span className="chat-ai__why-label">Why — </span>{aiWhy}
+              </p>
+            )}
+            {cardCfg && (
+              <div className="chat-ai__card">
+                <button
+                  type="button"
+                  className="chat-ai__cardbtn"
+                  disabled={cardLoading}
+                  onClick={() => makeCard(cardCfg.kind)}
+                  data-testid="make-card"
+                >
+                  {cardLoading ? 'Generating…' : `✨ Make the ${cardCfg.label}`}
+                </button>
+                {card && <img className="chat-ai__cardimg" src={card.url} alt={card.title} />}
+              </div>
+            )}
+            {sentNote && <p className="chat-ai__sent" role="status">{sentNote}</p>}
+          </div>
+        ) : (
+          <p className="chat-copilot__empty">
+            {simulating ? 'Reading the message…' : 'Waiting for the customer to reply…'}
+          </p>
+        )}
+      </aside>
+    </div>
   )
 }

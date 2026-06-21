@@ -93,13 +93,23 @@ async def run_respond(
     if DEMO_MODE:
         out = _demo_respond(matched, utterance, open_hook)
     else:
+        # Send the playbook PRINCIPLE for guidance, but withhold the KB's ready-made
+        # `exact_lines` — a small model just parrots them verbatim (wrong language,
+        # leaked {saving}/{payback} placeholders). Forcing generation makes it write
+        # fresh lines in the customer's actual language. (_demo_respond still gets the
+        # full rows below.)
+        matched_for_llm = [
+            {k: v for k, v in m.items() if k != "exact_lines"} for m in matched
+        ]
+        default_lang = "English" if (customer.language or "de") == "en" else "German"
+        reply_lang = loaders.detect_language(utterance) or default_lang
         payload = {
             "profile": loaders.profile_dict(profile),
             "utterance": utterance,
             "recent_context": recent_context,
-            "matched_objections": matched,
+            "matched_objections": matched_for_llm,
             "open_hook": _hook_brief(open_hook),
-            "language": customer.language,
+            "reply_in_language": reply_lang,
         }
         try:
             out = await structured(
@@ -281,7 +291,9 @@ def _demo_respond(
         loop_action = "handle_new_concern" if open_hook is not None else "advance"
         channel = _CATEGORY_HOOK_CHANNEL.get(m["key"], "whatsapp")
         hook_text = m.get("advance_hook") or "Let me line up a clear next step and follow up."
-        lines = (m.get("exact_lines") or [])[:2] or [
+        # Drop any KB lines still carrying unfilled template tokens ({saving}, …) —
+        # the offline fallback has no quote to fill them.
+        lines = [ln for ln in (m.get("exact_lines") or []) if "{" not in ln][:2] or [
             "I completely understand — let's look at what actually matters here.",
         ]
         return schemas.RespondOutput(

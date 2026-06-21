@@ -3,6 +3,7 @@ and shape them into the dicts the reasoning prompts expect."""
 
 from __future__ import annotations
 
+import re
 import uuid
 
 from sqlalchemy import select
@@ -13,6 +14,38 @@ from app import models
 
 def _row_to_dict(obj, fields: list[str]) -> dict:
     return {f: getattr(obj, f) for f in fields}
+
+
+# Reply language is decided deterministically from the customer's own words — a
+# small model otherwise anchors to the German profile/KB and answers in German
+# even when the customer writes English. None = can't tell (caller falls back).
+_DE_HINTS = {
+    "und", "ist", "das", "wir", "nicht", "ich", "sie", "der", "die", "den", "ein",
+    "eine", "auch", "im", "mit", "für", "aber", "ja", "wie", "was", "ihr", "euch",
+    "mein", "kein", "schon", "noch", "haben", "können", "teuer", "winter",
+}
+_EN_HINTS = {
+    "the", "is", "we", "you", "it", "want", "really", "quite", "just", "does",
+    "will", "other", "first", "and", "but", "how", "what", "your", "expensive",
+    "work", "dont", "don't", "understand", "english", "know", "thanks", "okay",
+}
+
+
+def detect_language(text: str | None) -> str | None:
+    """Return "English" / "German" from the text, or None if unclear."""
+    if not text:
+        return None
+    low = text.lower()
+    if any(ch in low for ch in "äöüß"):
+        return "German"
+    words = re.findall(r"[a-zäöüß']+", low)
+    de = sum(w in _DE_HINTS for w in words)
+    en = sum(w in _EN_HINTS for w in words)
+    if en > de:
+        return "English"
+    if de > en:
+        return "German"
+    return None
 
 
 async def load_knowledge_base(db: AsyncSession) -> dict:

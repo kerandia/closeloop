@@ -23,6 +23,7 @@ async def run_compose(
     profile = await loaders.current_profile(db, customer.id)
     quote = await loaders.latest_quote(db, customer.id)
     buyer_kb = await _buyer_type_kb(db, profile.buyer_type if profile else None)
+    recent_msgs = await _recent_customer_messages(db, customer.id)
 
     if DEMO_MODE:
         return _demo_compose(customer, profile, quote, recommendation, buyer_kb)
@@ -38,7 +39,14 @@ async def run_compose(
         "profile": loaders.profile_dict(profile),
         "quote": loaders.quote_dict(quote),
         "buyer_type_kb": buyer_kb,
-        "language": customer.language,
+        # The language the customer actually used most recently wins over the
+        # stored default — so a German-market lead who writes in English gets
+        # an English opener.
+        "recent_customer_messages": recent_msgs,
+        "reply_in_language": (
+            loaders.detect_language(recent_msgs[0] if recent_msgs else None)
+            or ("English" if (customer.language or "de") == "en" else "German")
+        ),
         "customer_name": customer.name,
     }
     try:
@@ -51,6 +59,24 @@ async def run_compose(
     except Exception as err:  # noqa: BLE001 — fall back to a clean templated draft
         logger.warning("COMPOSE LLM failed (%s); using DEMO fallback", err)
         return _demo_compose(customer, profile, quote, recommendation, buyer_kb)
+
+
+async def _recent_customer_messages(db: AsyncSession, customer_id, limit: int = 3) -> list[str]:
+    """The customer's most recent inbound messages (newest first) — used as the
+    language signal for the opener."""
+    rows = (
+        await db.execute(
+            select(models.Interaction.content)
+            .where(
+                models.Interaction.customer_id == customer_id,
+                models.Interaction.direction == "inbound",
+                models.Interaction.content.isnot(None),
+            )
+            .order_by(models.Interaction.occurred_at.desc())
+            .limit(limit)
+        )
+    ).scalars().all()
+    return [c for c in rows if c]
 
 
 async def _buyer_type_kb(db: AsyncSession, key: str | None) -> dict | None:
