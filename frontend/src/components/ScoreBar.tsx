@@ -8,10 +8,12 @@ interface Props {
   trend?: 'up' | 'down' | 'flat' | null
   /** compact = inline header/row variant */
   compact?: boolean
+  /** reason chip text (e.g. "+18 · agreed to a home visit") */
+  reason?: string | null
 }
 
 /** Score bar: band color + count-up + charge animation + trend arrow. */
-export function ScoreBar({ value, trend, compact }: Props) {
+export function ScoreBar({ value, trend, compact, reason }: Props) {
   const band = scoreBand(value)
   const target = value ?? 0
   const [display, setDisplay] = useState(target)
@@ -50,6 +52,7 @@ export function ScoreBar({ value, trend, compact }: Props) {
           {trend === 'up' ? '↑' : '↓'}
         </span>
       )}
+      {reason && <span className="scorebar__reason">{reason}</span>}
     </div>
   )
 }

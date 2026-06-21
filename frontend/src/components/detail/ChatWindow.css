@@ -1,0 +1,72 @@
+/* ChatWindow — chat interface with inbound/outbound bubbles + live suggestion. */
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  height: 100%;
+  min-height: 300px;
+}
+
+.chat-window__header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ink-700);
+}
+
+.chat-window__title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--flux);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.chat-window__bubbles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Chat bubbles — inbound left, outbound right */
+.chat-bubble {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chat-bubble--inbound {
+  align-self: flex-start;
+  background: var(--ink-800);
+  color: var(--paper-90);
+}
+
+.chat-bubble--outbound {
+  align-self: flex-end;
+  background: var(--flux);
+  color: var(--ink-900);
+}
+
+.chat-bubble__text {
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* Live suggestion block */
+.chat-window__live {
+  border-top: 1px solid var(--ink-700);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

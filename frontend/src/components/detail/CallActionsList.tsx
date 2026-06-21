@@ -46,10 +46,16 @@ export function CallActionsList({ actions }: CallActionsListProps) {
               <div className="call-action-row__content">
                 <p className="call-action-row__detail">{action.detail}</p>
                 <p className="call-action-row__meta">
+                  {action.channel && (
+                    <span className="call-action-row__channel">{action.channel}</span>
+                  )}
                   <span className="call-action-row__due">
                     Due: {relativeTime(action.due_at)}
                   </span>
                 </p>
+                {action.why && (
+                  <p className="call-action-row__why">{action.why}</p>
+                )}
               </div>
               <button
                 className={`call-action-row__toggle ${isOpen ? 'call-action-row__toggle--open' : 'call-action-row__toggle--done'}`}

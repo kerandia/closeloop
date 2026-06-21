@@ -18,7 +18,8 @@ export function Sandbox() {
       <h2>Primitive sandbox</h2>
 
       <section>
-        <p className="mono">ElevenLabs voice agent</p>
+        <p className="mono">Voice-Agent playground</p>
+        <p style={{ fontSize: 13, color: 'var(--paper-60)', marginBottom: 12 }}>Live ElevenLabs agent test with transcript capture.</p>
         <button onClick={() => setShowCall(true)}>Test voice call</button>
       </section>
       {showCall && <CallWindow onClose={() => setShowCall(false)} />}

@@ -4,6 +4,7 @@ const GLYPH: Record<Channel, string> = {
   email: '✉',
   sms: '💬',
   whatsapp: '🟢',
+  telegram: '📱',
   phone: '📞',
   visit: '🏠',
   voice_ai: '🎙',

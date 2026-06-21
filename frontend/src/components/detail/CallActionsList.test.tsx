@@ -117,4 +117,70 @@ describe('CallActionsList', () => {
     const rows = container.querySelectorAll('[data-testid="call-action-row"]')
     expect(rows.length).toBeGreaterThanOrEqual(2)
   })
+
+  test('renders channel label when present', () => {
+    const actionsWithChannel: ExtractedAction[] = [
+      {
+        id: 'a-5',
+        interaction_id: null,
+        type: 'callback',
+        detail: 'Call back next week',
+        due_at: null,
+        status: 'open',
+        channel: 'phone',
+      },
+    ]
+    render(<CallActionsList actions={actionsWithChannel} />)
+    expect(screen.getByText(/phone/i)).toBeInTheDocument()
+  })
+
+  test('renders why line when present', () => {
+    const actionsWithWhy: ExtractedAction[] = [
+      {
+        id: 'a-6',
+        interaction_id: null,
+        type: 'send_info',
+        detail: 'Send quote',
+        due_at: null,
+        status: 'open',
+        why: 'Customer asked for pricing breakdown',
+      },
+    ]
+    render(<CallActionsList actions={actionsWithWhy} />)
+    expect(screen.getByText(/Customer asked for pricing breakdown/)).toBeInTheDocument()
+  })
+
+  test('renders channel and why together', () => {
+    const actionsWithBoth: ExtractedAction[] = [
+      {
+        id: 'a-7',
+        interaction_id: null,
+        type: 'schedule_visit',
+        detail: 'Schedule home visit',
+        due_at: null,
+        status: 'open',
+        channel: 'phone',
+        why: 'Objection: needs to see system in person',
+      },
+    ]
+    render(<CallActionsList actions={actionsWithBoth} />)
+    expect(screen.getByText(/phone/i)).toBeInTheDocument()
+    expect(screen.getByText(/Objection: needs to see system in person/)).toBeInTheDocument()
+  })
+
+  test('does not render channel or why when absent', () => {
+    const basicAction: ExtractedAction[] = [
+      {
+        id: 'a-8',
+        interaction_id: null,
+        type: 'callback',
+        detail: 'Simple callback',
+        due_at: null,
+        status: 'open',
+      },
+    ]
+    const { container } = render(<CallActionsList actions={basicAction} />)
+    expect(container.querySelector('.call-action-row__channel')).toBeNull()
+    expect(container.querySelector('.call-action-row__why')).toBeNull()
+  })
 })

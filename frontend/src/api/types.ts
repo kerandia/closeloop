@@ -3,7 +3,7 @@
 
 export type BuyerType = 'family' | 'investor' | 'environmentalist' | 'skeptic'
 export type GhostRisk = 'low' | 'medium' | 'high'
-export type Channel = 'email' | 'sms' | 'whatsapp' | 'phone' | 'visit' | 'voice_ai' | 'system'
+export type Channel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'phone' | 'visit' | 'voice_ai' | 'system'
 export type RecStatus =
   | 'pending'
   | 'approved'

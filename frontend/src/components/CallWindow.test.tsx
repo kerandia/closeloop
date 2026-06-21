@@ -1,10 +1,13 @@
+import type { ReactNode } from 'react'
 import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { CallWindow } from './CallWindow'
 
 // Mock the ElevenLabs React SDK
 vi.mock('@elevenlabs/react', () => ({
-  ConversationProvider: ({ children }: any) => <div data-testid="mock-provider">{children}</div>,
+  ConversationProvider: ({ children }: { children: ReactNode }) => (
+    <div data-testid="mock-provider">{children}</div>
+  ),
   useConversation: () => ({
     status: 'disconnected',
     isMuted: false,

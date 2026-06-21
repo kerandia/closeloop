@@ -49,7 +49,7 @@ export interface RecommendationCardProps {
 type Executor = 'ai' | 'rep'
 
 // Channels where AI execution is feasible; visit always requires a rep
-const AI_CAPABLE: Channel[] = ['email', 'sms', 'whatsapp', 'phone', 'voice_ai']
+const AI_CAPABLE: Channel[] = ['email', 'sms', 'whatsapp', 'telegram', 'phone', 'voice_ai']
 
 function defaultExecutor(channel: Channel): Executor {
   return AI_CAPABLE.includes(channel) ? 'ai' : 'rep'
@@ -59,6 +59,7 @@ const CHANNEL_LABEL: Record<Channel, string> = {
   email: 'Email',
   sms: 'SMS',
   whatsapp: 'WhatsApp',
+  telegram: 'Telegram',
   phone: 'Phone call',
   visit: 'Home visit',
   voice_ai: 'Voice AI',
