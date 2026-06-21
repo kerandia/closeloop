@@ -1,0 +1,19 @@
+.mgmt {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mgmt__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mgmt__title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--paper-90);
+}
