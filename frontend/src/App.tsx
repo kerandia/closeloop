@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AppShell } from './components/AppShell'
 import { Dashboard } from './pages/Dashboard'
@@ -32,18 +32,21 @@ function AppLayout() {
   const location = useLocation()
   const goingQuiet = useGoingQuiet()
 
-  // Prevent full-page animation when transitioning between Dashboard and Customer Drawer
+  // Prevent full-page animation when transitioning between Dashboard/Management and Customer Drawer
   const isCustomerRoute = location.pathname.startsWith('/app/customers/')
-  const pageKey = isCustomerRoute ? '/app' : location.pathname
+  const isMgmtCustomerRoute = location.pathname.startsWith('/app/management/customers/')
+  let pageKey = location.pathname
+  if (isCustomerRoute) pageKey = '/app'
+  if (isMgmtCustomerRoute) pageKey = '/app/management'
 
   return (
     <AppShell goingQuiet={goingQuiet}>
       <AnimatePresence mode="wait">
         <motion.div key={pageKey} {...slide}>
           <Routes location={location}>
-            <Route path="/app" element={<Dashboard />} />
-            <Route path="/app/customers/:id" element={<Dashboard />} />
-            <Route path="/app/management" element={<ManagementPage />} />
+            <Route path="/app/management/*" element={<ManagementPage />} />
+            <Route path="/management/*" element={<Navigate to="/app/management" replace />} />
+            <Route path="/app/*" element={<Dashboard />} />
             <Route path="/sandbox" element={<Sandbox />} />
           </Routes>
         </motion.div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { listCustomers } from '../api/client'
 import type { CustomerListItem } from '../api/types'
@@ -68,7 +68,8 @@ function NoResultsState({ onClearFilters }: NoResultsProps) {
 // ── Dashboard page ────────────────────────────────────────────────────────────
 
 export function Dashboard() {
-  const { id: activeCustomerId } = useParams<{ id: string }>()
+  const match = useMatch('/app/customers/:id')
+  const activeCustomerId = match?.params.id
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -175,7 +176,7 @@ export function Dashboard() {
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
             >
-              <CustomerDetailPage />
+              <CustomerDetailPage id={activeCustomerId} />
             </motion.div>
           </>
         )}

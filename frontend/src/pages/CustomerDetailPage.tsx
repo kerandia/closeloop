@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+
 import type { CustomerDetail } from '../api/types'
 import { getCustomer } from '../api/client'
 import { DetailShell } from '../components/detail/DetailShell'
@@ -10,8 +10,11 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ok'; data: CustomerDetail }
 
-export function CustomerDetailPage() {
-  const { id } = useParams<{ id: string }>()
+interface Props {
+  id: string
+}
+
+export function CustomerDetailPage({ id }: Props) {
   const [state, setState] = useState<State>({ status: 'loading' })
 
   const fetch = useCallback(() => {

@@ -79,6 +79,7 @@
   min-height: calc(100vh - 56px); /* subtract header */
 }
 
+
 /* Left column — scrolls */
 .detail-left {
   padding: 24px;
@@ -127,6 +128,20 @@
   gap: 20px;
   display: flex;
   flex-direction: column;
+}
+
+.detail-columns--mgmt,
+.drawer-container .detail-columns--mgmt {
+  display: flex !important;
+  justify-content: center;
+  width: 100%;
+}
+
+.detail-columns--mgmt .detail-left {
+  width: 100%;
+  max-width: 800px;
+  /* Reset max-height so the whole center column can scroll normally if needed, or 
+     leave it up to detail-left to handle its own scrolling as it usually does. */
 }
 
 /* ── WhatsApp workspace — three equal columns ─────────────────────────────── */
