@@ -2,7 +2,7 @@
 
 ## Register
 
-product
+B2B SaaS — internal sales tooling. Tone is direct, precise, and confident. No marketing softness; this is infrastructure a rep depends on during a live call.
 
 ## Users
 

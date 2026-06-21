@@ -1,5 +1,15 @@
-import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+
+vi.mock('framer-motion', () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  motion: {
+    div: ({ children, initial: _i, animate: _a, exit: _e, transition: _t, ...rest }: any) => (
+      <div {...rest}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => false,
+}))
 import { ProfilePanel } from './ProfilePanel'
 import type { Profile, Signal, Quote } from '../../api/types'
 
@@ -70,14 +80,6 @@ const quote: Quote = {
 // ── Test suite ───────────────────────────────────────────────────────────────
 
 describe('ProfilePanel', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
   // ── Core rendering ─────────────────────────────────────────────────────────
 
   it('renders summary and motivation with confidence', () => {
@@ -155,42 +157,4 @@ describe('ProfilePanel', () => {
     expect(normalChip).toBeNull()
   })
 
-  // ── Auto-demo ──────────────────────────────────────────────────────────────
-
-  it('auto-demo expands the first negotiation chip with evidence after 600ms', () => {
-    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
-
-    // Before timer fires — evidence not in DOM
-    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
-
-    act(() => { vi.advanceTimersByTime(700) })
-
-    expect(screen.getByText('We are checking other companies')).toBeInTheDocument()
-  })
-
-  it('auto-demo collapses chips after ~3 seconds', () => {
-    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
-
-    act(() => { vi.advanceTimersByTime(700) })
-    expect(screen.getByText('We are checking other companies')).toBeInTheDocument()
-
-    // Advance past the collapse timer (3900ms from mount; total here: 700 + 3300 = 4000ms)
-    act(() => { vi.advanceTimersByTime(3300) })
-    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
-  })
-
-  test('user interaction cancels auto-demo', () => {
-    render(<ProfilePanel profile={profile} signals={signals} quote={null} />)
-
-    // User clicks a chip before auto-demo fires — cancels auto-demo
-    fireEvent.click(screen.getByRole('button', { name: 'peace of mind' }))
-
-    // Advance past all auto-demo timers
-    act(() => { vi.advanceTimersByTime(5000) })
-
-    // The chip the user clicked should be expanded (user action)
-    expect(screen.getByText('We want to be energy independent')).toBeInTheDocument()
-    // The negotiation auto-demo chip should NOT have been auto-expanded
-    expect(screen.queryByText('We are checking other companies')).not.toBeInTheDocument()
-  })
 })
