@@ -8,11 +8,13 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
 from app.db import get_db
+from app.routers.webhooks import process_inbound
 from app.services import realtime
 from app.services import respond as respond_svc
 
@@ -86,6 +88,26 @@ async def respond(
     return await respond_svc.run_respond(
         db, customer, body.utterance, body.recent_context, body.channel
     )
+
+
+class SimulateInboundRequest(BaseModel):
+    customer_id: uuid.UUID
+    body: str
+    channel: str = "whatsapp"
+
+
+@router.post("/simulate-inbound")
+async def simulate_inbound(
+    req: SimulateInboundRequest, db: AsyncSession = Depends(get_db)
+):
+    """Demo only: play the customer. Runs the exact same inbound pipeline as the
+    Twilio webhook (RESPOND → suggestion → Deal Score → ANALYZE → SSE push) by
+    customer_id, so the live AI answer streams to the rep's screen without a
+    phone. Returns the published suggestion + fresh score."""
+    customer = await db.get(models.Customer, req.customer_id)
+    if customer is None:
+        raise HTTPException(status_code=404, detail="customer not found")
+    return await process_inbound(db, customer, req.body, req.channel)
 
 
 # Gap-filling questions ordered by what ANALYZE most needs next.

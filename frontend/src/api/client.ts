@@ -181,6 +181,21 @@ export function composeDraft(customerId: string, channel: string): Promise<Messa
   return req('/api/messaging/draft', 'POST', { customer_id: customerId, channel })
 }
 
+/** Demo only: play the customer — runs the live inbound pipeline (RESPOND → SSE)
+ * so the AI answer streams back without a real phone. */
+export function simulateInbound(
+  customerId: string,
+  body: string,
+  channel: string,
+): Promise<unknown> {
+  if (isMockMode()) return Promise.resolve(null)
+  return req('/api/copilot/simulate-inbound', 'POST', {
+    customer_id: customerId,
+    body,
+    channel,
+  })
+}
+
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */
 export function subscribeCopilot(
   customerId: string,

@@ -9,13 +9,14 @@
  *   - A real input row: the rep can tap a suggested line to load it, edit, and Send
  *   - A one-tap "✨ Make the … card" when the objection maps to a visual asset
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   listCopilotSuggestions,
   subscribeCopilot,
   messagingSend,
   composeDraft,
   generateClosingKit,
+  simulateInbound,
 } from '../../api/client'
 import type {
   Interaction,
@@ -73,6 +74,15 @@ export function ChatWindow({
   const [draft, setDraft] = useState<MessagingDraft | null>(null) // proactive opener
   const [draftSent, setDraftSent] = useState(false)
   const [input, setInput] = useState('') // editable composer
+  // Optimistic bubbles for messages sent/simulated this session (the interactions
+  // prop is a snapshot from page load and won't include them).
+  const [extra, setExtra] = useState<{ id: string; direction: 'inbound' | 'outbound'; content: string }[]>([])
+  // Demo: when true the composer plays the CUSTOMER (inbound → live AI answer)
+  // instead of sending as the rep.
+  const [asCustomer, setAsCustomer] = useState(false)
+  const [simulating, setSimulating] = useState(false)
+  const seq = useRef(0)
+  const nextId = () => `local-${(seq.current += 1)}`
 
   // Load initial live suggestions and subscribe to updates
   useEffect(() => {
@@ -85,6 +95,8 @@ export function ChatWindow({
     setDraft(null)
     setDraftSent(false)
     setInput('')
+    setExtra([])
+    setAsCustomer(false)
     listCopilotSuggestions(customerId)
       .then((rows) => {
         // Only surface a suggestion for THIS channel.
@@ -144,6 +156,7 @@ export function ChatWindow({
         })
         if (live && suggestionId === live.id) setLive({ ...live, status: 'sent' })
         if (draft && !suggestionId) setDraftSent(true)
+        setExtra((prev) => [...prev, { id: nextId(), direction: 'outbound', content: body }])
         setInput('')
         setSentNote(res.within_window ? `Sent on ${channelLabel} ✓` : 'Sent (template) ✓')
       } catch (err) {
@@ -153,6 +166,27 @@ export function ChatWindow({
       }
     },
     [sendingLine, customerId, channel, channelLabel, live, draft],
+  )
+
+  // Demo: play the customer. Optimistically show the inbound bubble, then run the
+  // live pipeline — the AI answer streams back over SSE into the co-pilot panel.
+  const handleSimulate = useCallback(
+    async (text: string) => {
+      const body = text.trim()
+      if (!body || simulating) return
+      setSimulating(true)
+      setExtra((prev) => [...prev, { id: nextId(), direction: 'inbound', content: body }])
+      setInput('')
+      setSentNote(null)
+      try {
+        await simulateInbound(customerId, body, channel)
+      } catch {
+        setSentNote('Could not reach the co-pilot — is the backend running?')
+      } finally {
+        setSimulating(false)
+      }
+    },
+    [simulating, customerId, channel],
   )
 
   const makeCard = useCallback(
@@ -197,7 +231,7 @@ export function ChatWindow({
 
       {/* ── Messages ─────────────────────────────────────────────────────────── */}
       <div className="chat-surface__messages">
-        {filteredInteractions.length === 0 && (
+        {filteredInteractions.length === 0 && extra.length === 0 && (
           <p className="chat-surface__empty">No messages on {channelLabel} yet.</p>
         )}
         {filteredInteractions.map((interaction) => {
@@ -212,6 +246,22 @@ export function ChatWindow({
             </div>
           )
         })}
+        {extra.map((m) => {
+          const out = m.direction === 'outbound'
+          return (
+            <div
+              key={m.id}
+              className={`chat-bubble chat-bubble--${out ? 'out' : 'in'} chat-bubble--${out ? 'outbound' : 'inbound'}`}
+            >
+              <p className="chat-bubble__text">{m.content}</p>
+            </div>
+          )
+        })}
+        {simulating && (
+          <div className="chat-bubble chat-bubble--in chat-bubble--typing" aria-label="co-pilot thinking">
+            <span></span><span></span><span></span>
+          </div>
+        )}
       </div>
 
       {/* ── AI co-pilot suggestion / proactive opener ────────────────────────── */}
@@ -278,13 +328,25 @@ export function ChatWindow({
         className="chat-surface__input"
         onSubmit={(e) => {
           e.preventDefault()
-          handleSend(input)
+          if (asCustomer) handleSimulate(input)
+          else handleSend(input)
         }}
       >
+        <button
+          type="button"
+          className={`chat-as-toggle${asCustomer ? ' chat-as-toggle--customer' : ''}`}
+          onClick={() => setAsCustomer((v) => !v)}
+          title="Demo: switch between sending as the rep and playing the customer"
+          aria-pressed={asCustomer}
+        >
+          {asCustomer ? '👤 Customer' : '🧑‍💼 Rep'}
+        </button>
         <input
           type="text"
           className="chat-surface__field"
-          placeholder={`Message on ${channelLabel}…`}
+          placeholder={
+            asCustomer ? `Play the customer on ${channelLabel}…` : `Message on ${channelLabel}…`
+          }
           value={input}
           onChange={(e) => setInput(e.target.value)}
           aria-label="Message"
@@ -292,8 +354,8 @@ export function ChatWindow({
         <button
           type="submit"
           className="chat-surface__send"
-          aria-label="Send"
-          disabled={!input.trim() || sendingLine !== null}
+          aria-label={asCustomer ? 'Send as customer' : 'Send'}
+          disabled={!input.trim() || sendingLine !== null || simulating}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />

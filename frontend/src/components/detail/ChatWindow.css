@@ -32,6 +32,27 @@
   color: rgba(0, 0, 0, 0.4);
 }
 
+/* Demo toggle: send as rep vs. play the customer (sits inside the composer row) */
+.chat-as-toggle {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid var(--ink-700);
+  border-radius: 999px;
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-90);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 150ms, border-color 150ms, color 150ms;
+}
+
+.chat-as-toggle--customer {
+  background: #075e54;
+  border-color: #075e54;
+  color: #fff;
+}
+
 /* ── AI co-pilot panel (live suggestion or proactive opener) ───────────────── */
 .chat-ai {
   display: flex;

@@ -108,15 +108,28 @@ async def sms_inbound(
 
 
 async def _handle_inbound(db: AsyncSession, From: str, Body: str, channel: str):
-    """Match the sender to a customer, run the RESPOND co-pilot (which also logs the
-    inbound message + moves the Deal Score / Cadence), persist the suggestion, and
-    push it live to the rep's screen over SSE. Returns empty TwiML (no auto-reply).
-    """
+    """Match the sender to a customer, then run the shared inbound pipeline.
+    Returns empty TwiML (no auto-reply — the rep sends from the UI)."""
     customer = await _match_customer_by_phone(db, From)
     if customer is None:
         # unknown number — ack so Twilio doesn't retry; nothing to suggest
         return Response(content=_EMPTY_TWIML, media_type="application/xml")
+    await process_inbound(db, customer, Body, channel)
+    return Response(content=_EMPTY_TWIML, media_type="application/xml")
 
+
+async def process_inbound(
+    db: AsyncSession, customer: models.Customer, Body: str, channel: str
+) -> dict:
+    """The live co-pilot pipeline for one inbound message (shared by the Twilio
+    webhook and the demo simulate endpoint):
+
+    run RESPOND (logs the inbound + moves Cadence) → persist the suggestion →
+    move the Deal Score off the new engagement → refresh the profile via ANALYZE
+    → push the suggestion + fresh score to the rep's screen over SSE.
+
+    Returns the published payload (suggestion + score) so callers can return it.
+    """
     out = await respond_svc.run_respond(db, customer, Body, channel=channel)
 
     # the inbound message run_respond just logged
@@ -156,18 +169,16 @@ async def _handle_inbound(db: AsyncSession, From: str, Body: str, channel: str):
     await analyze_svc.run_analyze(db, customer)
     await db.refresh(customer)
 
-    await realtime.publish(
-        str(customer.id),
-        {
-            "type": "suggestion",
-            "suggestion": _suggestion_dict(suggestion),
-            "score": {
-                "sign_likelihood": customer.sign_likelihood,
-                "ghost_risk": customer.ghost_risk,
-            },
+    payload = {
+        "type": "suggestion",
+        "suggestion": _suggestion_dict(suggestion),
+        "score": {
+            "sign_likelihood": customer.sign_likelihood,
+            "ghost_risk": customer.ghost_risk,
         },
-    )
-    return Response(content=_EMPTY_TWIML, media_type="application/xml")
+    }
+    await realtime.publish(str(customer.id), payload)
+    return payload
 
 
 def _suggestion_dict(s: models.CopilotSuggestion) -> dict:
