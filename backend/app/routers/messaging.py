@@ -51,14 +51,31 @@ async def draft_message(body: schemas.MessagingDraftRequest, db: AsyncSession = 
         raise HTTPException(status_code=404, detail="customer not found")
 
     rec = await serializers.current_recommendation(db, customer.id)
+    if rec is not None:
+        goal, rationale, timing, play = rec.goal, rec.rationale, rec.timing_label, rec.play_key
+    else:
+        # No active recommendation → fall back to the customer's actual profile
+        # read (its summary), not a stock line, so the "why now" stays meaningful.
+        profile = (
+            await db.execute(
+                select(models.Profile).where(models.Profile.customer_id == customer.id)
+            )
+        ).scalar_one_or_none()
+        bt = profile.buyer_type if profile else None
+        rationale = (profile.summary if profile and profile.summary else None) or (
+            "Re-engage warmly and low-pressure — keep the deal moving."
+        )
+        goal = f"Re-open the conversation ({bt})" if bt else "Re-open the conversation"
+        timing, play = None, None
+
     # a transient recommendation for THIS channel (don't mutate/persist the real one)
     draft_rec = models.Recommendation(
         customer_id=customer.id,
         channel=body.channel,
-        timing_label=rec.timing_label if rec else None,
-        goal=rec.goal if rec else "Re-open the conversation",
-        rationale=rec.rationale if rec else "Re-engage warmly and low-pressure.",
-        play_key=rec.play_key if rec else None,
+        timing_label=timing,
+        goal=goal,
+        rationale=rationale,
+        play_key=play,
     )
     composed = await compose_svc.run_compose(db, customer, draft_rec)
     return {
