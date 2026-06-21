@@ -258,6 +258,53 @@ export interface MessagingSendResponse {
   provider: Record<string, unknown>
 }
 
+// ── Management dashboard (frontend-only re-aggregation of existing data) ──────
+// Not a backend contract — computed from CustomerListItem fixtures in mock/management.ts.
+
+export interface FunnelStage {
+  stage: string
+  label: string
+  count: number
+  value_eur: number
+  conversion_to_next_pct: number | null // null for last stage
+}
+
+export interface RepStat {
+  rep: RepBrief
+  customers_owned: number
+  contacted_this_period: number
+  deals_closed: number
+  conversion_rate_pct: number
+  revenue_eur: number
+  stage_breakdown: Record<string, number>
+}
+
+export interface TrendPoint {
+  month: string // e.g. "Jan", "Feb"
+  conversion_pct: number
+  revenue_eur: number
+  deals_closed: number
+}
+
+export interface MgmtStats {
+  period: 'week' | 'month'
+  new_leads: number
+  active_pipeline: number
+  deals_closed: number
+  revenue_eur: number
+  conversion_rate_pct: number
+  forecast_eur: number
+  // deltas vs prior period
+  delta_new_leads: number
+  delta_conversion_pct: number
+  delta_revenue_eur: number
+  funnel: FunnelStage[]
+  reps: RepStat[]
+  trends: TrendPoint[] // 6 months for AreaChart
+  customers: CustomerListItem[] // full pool for table
+  needs_attention: CustomerListItem[] // ghost_risk=high or stuck
+}
+
 // The AI's proactive recommended opener for a channel (no inbound message needed)
 export interface MessagingDraft {
   channel: string

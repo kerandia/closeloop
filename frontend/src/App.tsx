@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AppShell } from './components/AppShell'
 import { Dashboard } from './pages/Dashboard'
+import { ManagementPage } from './pages/ManagementPage'
 
 import { Sandbox } from './pages/Sandbox'
 import { listCustomers } from './api/client'
@@ -40,6 +41,7 @@ export default function App() {
           <Routes location={location}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/customers/:id" element={<Dashboard />} />
+            <Route path="/management" element={<ManagementPage />} />
             <Route path="/sandbox" element={<Sandbox />} />
           </Routes>
         </motion.div>
