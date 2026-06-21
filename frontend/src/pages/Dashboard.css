@@ -14,6 +14,10 @@
 
 .dashboard__header {
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .dashboard__title {
@@ -21,6 +25,39 @@
   font-size: 24px;
   font-weight: 600;
   color: var(--paper-90);
+}
+
+/* Primary action — pinned top-right of the panel. */
+.dashboard__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--solar);
+  color: var(--white);
+  border: 1px solid var(--solar);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.dashboard__add:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.dashboard__add:active { transform: translateY(0); }
+
+.dashboard__add:focus-visible {
+  outline: 2px solid var(--solar);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard__add { transition: none; }
+  .dashboard__add:hover { transform: none; }
 }
 
 /* ── Skeleton ──────────────────────────────────────────────────────────────── */
