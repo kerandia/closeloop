@@ -18,6 +18,7 @@ interface ScriptLine {
 }
 
 // The Müller demo script — copy kept verbatim.
+// eslint-disable-next-line react-refresh/only-export-components -- demo data, shared with tests
 export const MULLER_SCRIPT: ScriptLine[] = [
   { from: 'them', text: "Hi Lena — thanks for the quote. Honestly though, it's higher than we expected, and we still want to check a couple of other companies before we decide.", delay: 700 },
   { from: 'me', text: "Totally understand — a decision this big, you should compare a few. One thing worth flagging though: the number to watch isn't really the sticker price, it's how much it takes off that electricity bill every month, for years.", delay: 1900 },
@@ -101,7 +102,6 @@ export function ScriptedChat({ customerName, playSignal = 0 }: Props) {
   // External trigger from the right column.
   useEffect(() => {
     if (playSignal > 0) play()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playSignal])
 
   function handleSubmit(e: React.FormEvent) {

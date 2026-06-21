@@ -14,6 +14,15 @@ const CHANNEL_LABELS: Record<Channel, string> = {
   system: 'System',
 }
 
+/** "Lena Brandt" → "LB" */
+export function repInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(w => w[0] ?? '')
+    .join('')
+    .toUpperCase()
+}
+
 export function channelLabel(channel: Channel): string {
   return CHANNEL_LABELS[channel] ?? channel
 }

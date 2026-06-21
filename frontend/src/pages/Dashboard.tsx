@@ -6,6 +6,7 @@ import type { CustomerListItem } from '../api/types'
 import { CustomerTable } from '../components/CustomerTable'
 import { DashboardControls } from '../components/DashboardControls'
 import { CustomerDetailPage } from './CustomerDetailPage'
+import { AddCustomerForm } from '../components/AddCustomerForm'
 import { withMock } from '../lib/nav'
 import './Dashboard.css'
 
@@ -36,10 +37,13 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 
 // ── Empty state ───────────────────────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="dash-empty">
       <p className="dash-empty__msg">No customers yet — import a list</p>
+      <button className="dash-empty__button" onClick={onAdd}>
+        + Add customer
+      </button>
     </div>
   )
 }
@@ -75,6 +79,7 @@ export function Dashboard() {
   const [stage, setStage] = useState('')
   const [ghostRisk, setGhostRisk] = useState('')
   const [buyerType, setBuyerType] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -113,7 +118,20 @@ export function Dashboard() {
     <div className="dashboard">
       <header className="dashboard__header">
         <h1 className="dashboard__title">Pipeline</h1>
+        <button className="dashboard__add" onClick={() => setShowAdd(true)}>
+          + Add customer
+        </button>
       </header>
+
+      {showAdd && (
+        <AddCustomerForm
+          onClose={() => setShowAdd(false)}
+          onCreated={() => {
+            setShowAdd(false)
+            fetchData()
+          }}
+        />
+      )}
 
       <DashboardControls
         customers={customers}
@@ -130,7 +148,7 @@ export function Dashboard() {
       {loading ? (
         <SkeletonRows />
       ) : customers.length === 0 ? (
-        <EmptyState />
+        <EmptyState onAdd={() => setShowAdd(true)} />
       ) : filtered.length === 0 ? (
         <NoResultsState onClearFilters={handleClearFilters} />
       ) : (

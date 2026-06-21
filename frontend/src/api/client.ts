@@ -9,6 +9,10 @@ import type {
   RespondOutput,
   SendResponse,
   MessagingSendResponse,
+  ImportCustomerInput,
+  ImportQuoteInput,
+  ImportResponse,
+  MgmtStats,
 } from './types'
 import {
   mockListCustomers,
@@ -20,6 +24,7 @@ import {
   mockSend,
   mockCollect,
 } from '../mock/muller'
+import { mockMgmtStats } from '../mock/management'
 import { applyDemoList, applyDemoDetail } from '../lib/demoPipeline'
 
 export function isMockMode(): boolean {
@@ -57,6 +62,20 @@ export function getCustomer(id: string): Promise<CustomerDetail> {
   if (isMockMode()) return Promise.resolve(mockGetCustomer())
   // DEMO: keep the detail's stage consistent with the funnel shown in the list.
   return req<CustomerDetail>(`/api/customers/${id}`, 'GET').then(applyDemoDetail)
+}
+
+export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats> {
+  if (isMockMode()) return Promise.resolve(mockMgmtStats(period))
+  return req(`/api/management/stats?period=${period}`, 'GET')
+}
+
+export function importCustomers(payload: {
+  customers: ImportCustomerInput[]
+  quotes: ImportQuoteInput[]
+}): Promise<ImportResponse> {
+  if (isMockMode())
+    return Promise.reject(new Error('Add customer needs the live backend (remove ?mock=1).'))
+  return req('/api/customers/import', 'POST', payload)
 }
 
 export function logInteraction(

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { AppShell } from './components/AppShell'
 import { Dashboard } from './pages/Dashboard'
 import { Landing } from './pages/Landing'
+import { ManagementPage } from './pages/ManagementPage'
 
 import { Sandbox } from './pages/Sandbox'
 import { listCustomers } from './api/client'
@@ -42,6 +43,7 @@ function AppLayout() {
           <Routes location={location}>
             <Route path="/app" element={<Dashboard />} />
             <Route path="/app/customers/:id" element={<Dashboard />} />
+            <Route path="/app/management" element={<ManagementPage />} />
             <Route path="/sandbox" element={<Sandbox />} />
           </Routes>
         </motion.div>

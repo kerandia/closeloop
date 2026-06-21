@@ -102,7 +102,7 @@ export function ChannelWorkspace({ channel, customer }: Props) {
   }
 
   // ── Right column (AI recommendation) ────────────────────────────────────────
-  let rec: React.ReactNode = null
+  let rec: React.ReactNode
   if (content.kind === 'chat') {
     rec = (
       <ConversationRecommendation
