@@ -94,8 +94,6 @@ export function DetailShell({ data, customerId }: Props) {
       // Set unconditionally so a cleared (null) value doesn't leave a stale overlay.
       setLiveScore(response.score)
       setLiveRec(response.recommendation)
-      // Reset local status so card re-shows its buttons for the new recommendation
-      setLocalStatus(null)
       setPhase('revealed')
     } catch (err) {
       // Revert to idle so the UI isn't stuck on "Analyzing", and re-throw so the
