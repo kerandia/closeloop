@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     live_voice: bool = False
     real_send: bool = False
     ghost_radar: bool = False
+    closing_kit_enabled: bool = True  # the visual-generator agent (Code Interpreter)
 
     @property
     def _twilio_auth(self) -> bool:

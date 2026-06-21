@@ -40,6 +40,7 @@ import { StageBadge } from '../StageBadge'
 import { RecommendationCard } from './RecommendationCard'
 import { ComposeDrawer } from './ComposeDrawer'
 import { ProfilePanel } from './ProfilePanel'
+import { ClosingKitButton } from './ClosingKitButton'
 import { CallActionsList } from './CallActionsList'
 import { InteractionTimeline } from './InteractionTimeline'
 import { ConversationPanel } from './ConversationPanel'
@@ -203,6 +204,7 @@ export function DetailShell({ data, customerId }: Props) {
         {/* Left column (44%) — scrolls */}
         <div className="detail-left">
           <ProfilePanel profile={profile} signals={signals} quote={quote} />
+          <ClosingKitButton customerId={customerId} />
           <CallActionsList actions={extracted_actions} />
           <InteractionTimeline
             interactions={allInteractions}

@@ -375,3 +375,22 @@ class CopilotSuggestion(Base):
     channel: Mapped[str] = mapped_column(Text, server_default="whatsapp")
     status: Mapped[str] = mapped_column(Text, server_default="new")  # new|sent|dismissed
     created_at: Mapped[dt.datetime] = _now()
+
+
+class Artifact(Base):
+    """A generated visual (chart/infographic) for a customer — produced by the
+    Closing Kit agent (Code Interpreter) or its deterministic SVG fallback."""
+
+    __tablename__ = "artifacts"
+
+    id: Mapped[uuid.UUID] = PK()
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(Text, server_default="chart")
+    buyer_type: Mapped[str | None] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(Text)
+    mime: Mapped[str] = mapped_column(Text, server_default="image/png")
+    content_b64: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(Text, server_default="agent")  # agent|fallback
+    created_at: Mapped[dt.datetime] = _now()

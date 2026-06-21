@@ -14,6 +14,7 @@ import type {
   ImportQuoteInput,
   ImportResponse,
   MgmtStats,
+  ClosingKitResult,
 } from './types'
 import {
   mockListCustomers,
@@ -63,6 +64,12 @@ export function getCustomer(id: string): Promise<CustomerDetail> {
 export function getManagementStats(period: 'week' | 'month'): Promise<MgmtStats> {
   if (isMockMode()) return Promise.resolve(mockMgmtStats(period))
   return req(`/api/management/stats?period=${period}`, 'GET')
+}
+
+export function generateClosingKit(customerId: string): Promise<ClosingKitResult> {
+  if (isMockMode())
+    return Promise.reject(new Error('The visual agent needs the live backend (remove ?mock=1).'))
+  return req(`/api/customers/${customerId}/closing-kit`, 'POST')
 }
 
 export function importCustomers(payload: {
