@@ -8,8 +8,8 @@ import { MgmtNeedsAttention } from '../components/mgmt/MgmtNeedsAttention'
 import { CustomerTable } from '../components/CustomerTable'
 import './ManagementPage.css'
 
-// ponytail: frontend-only manager lens — always reads seed data (no backend
-// aggregation endpoint). Period toggle swaps the precomputed snapshot.
+// Frontend-only manager lens: always reads the seed fixture (there is no backend
+// aggregation endpoint yet). The period toggle swaps the precomputed snapshot.
 type Period = 'week' | 'month'
 
 export function ManagementPage() {

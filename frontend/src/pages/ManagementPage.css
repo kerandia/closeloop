@@ -68,3 +68,21 @@
 .mgmt-needs__heading {
   margin-bottom: 12px;
 }
+
+.mgmt-needs__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mgmt-needs__count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--paper-40);
+}
+
+.mgmt-needs__empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--paper-40);
+}

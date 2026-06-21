@@ -50,13 +50,11 @@
   transition: background-color 0.1s ease;
 }
 
-.mrt__row:hover td,
-.mrt__row:focus-visible td {
+.mrt__row:hover td {
   background: var(--ink-800);
 }
 
-.mrt__row:hover td:first-child,
-.mrt__row:focus-visible td:first-child {
+.mrt__row:hover td:first-child {
   box-shadow: inset 2px 0 0 0 var(--solar);
 }
 

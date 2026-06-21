@@ -28,7 +28,7 @@ function DeltaChip({ delta, type }: { delta: number; type: DeltaType }) {
       ? `${sign}${delta.toFixed(1)}%`
       : type === 'count'
         ? `${sign}${delta}`
-        : `${sign}${formatEur(Math.abs(delta))}`
+        : `${isPositive ? '+' : '-'}${formatEur(Math.abs(delta))}`
   return (
     <div className={`mkr-delta ${isPositive ? 'mkr-delta--up' : 'mkr-delta--down'}`}>
       <span className="mkr-delta__arrow">{isPositive ? '↑' : '↓'}</span>

@@ -1,14 +1,6 @@
 import type { RepStat } from '../../api/types'
+import { repInitials } from '../../lib/format'
 import './MgmtRepTable.css'
-
-/** "Lena Brandt" → "LB" */
-function repInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(w => w[0] ?? '')
-    .join('')
-    .toUpperCase()
-}
 
 interface Props {
   reps: RepStat[]

@@ -22,14 +22,14 @@
   margin-bottom: 24px;
 }
 
-/* Recharts override: axis & label styling */
-.recharts-text {
+/* Recharts override: axis & label styling — scoped to this card only */
+.funnel-card .recharts-text {
   font-family: var(--font-mono);
   font-size: 11px;
   fill: #6b7280;
 }
 
-.recharts-tooltip-wrapper {
+.funnel-card .recharts-tooltip-wrapper {
   outline: none;
 }
 
