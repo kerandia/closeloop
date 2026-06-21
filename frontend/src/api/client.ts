@@ -15,6 +15,7 @@ import type {
   MgmtStats,
   ClosingKitResult,
   CallNotes,
+  MessagingDraft,
 } from './types'
 import {
   mockListCustomers,
@@ -164,6 +165,20 @@ export function messagingSend(payload: {
   if (isMockMode())
     return Promise.resolve({ ok: true, within_window: true, provider: { provider_id: 'mock' } })
   return req('/api/messaging/send', 'POST', payload)
+}
+
+/** The AI's proactive opening message for a channel (no inbound needed). */
+export function composeDraft(customerId: string, channel: string): Promise<MessagingDraft> {
+  if (isMockMode())
+    return Promise.resolve({
+      channel,
+      read: 'Re-open the conversation',
+      why: 'Re-engage warmly and low-pressure.',
+      subject: null,
+      exact_lines: ['Hallo! Ich wollte mich kurz zu Ihrem Solar-Angebot melden — kein Druck.'],
+      proactive: true,
+    })
+  return req('/api/messaging/draft', 'POST', { customer_id: customerId, channel })
 }
 
 /** Subscribe to live co-pilot suggestions over SSE. Returns an unsubscribe fn. */

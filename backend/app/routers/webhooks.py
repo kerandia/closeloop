@@ -18,6 +18,7 @@ from app.db import get_db
 from app.services import analyze as analyze_svc
 from app.services import realtime
 from app.services import respond as respond_svc
+from app.services import scoring as scoring_svc
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
 
@@ -147,12 +148,24 @@ async def _handle_inbound(db: AsyncSession, From: str, Body: str, channel: str):
     await db.commit()
     await db.refresh(suggestion)
 
-    # refresh profile/recommendation (and score, on the analyze path)
+    # the inbound message is a real engagement event → move the Deal Score
+    # (ANALYZE owns profile/recommendation; scoring owns the number).
+    if last_itx is not None:
+        await scoring_svc.apply_interaction(db, customer, last_itx)
+    # refresh profile + next-best-action off the new message
     await analyze_svc.run_analyze(db, customer)
+    await db.refresh(customer)
 
     await realtime.publish(
         str(customer.id),
-        {"type": "suggestion", "suggestion": _suggestion_dict(suggestion)},
+        {
+            "type": "suggestion",
+            "suggestion": _suggestion_dict(suggestion),
+            "score": {
+                "sign_likelihood": customer.sign_likelihood,
+                "ghost_risk": customer.ghost_risk,
+            },
+        },
     )
     return Response(content=_EMPTY_TWIML, media_type="application/xml")
 
