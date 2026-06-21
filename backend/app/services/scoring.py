@@ -338,10 +338,41 @@ async def _commit_initial(db, customer, events) -> None:
     await db.commit()
 
 
+async def _previous_interaction(
+    db: AsyncSession, customer_id, interaction: models.Interaction
+) -> models.Interaction | None:
+    return (
+        await db.execute(
+            select(models.Interaction)
+            .where(
+                models.Interaction.customer_id == customer_id,
+                models.Interaction.id != interaction.id,
+                models.Interaction.occurred_at <= interaction.occurred_at,
+            )
+            .order_by(models.Interaction.occurred_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+
+
 async def apply_interaction(db: AsyncSession, customer: models.Customer,
                             interaction: models.Interaction) -> None:
     """Move the score for one new interaction (the live, incremental path)."""
-    events = _cap_events(detect_events(interaction))
+    raw = detect_events(interaction)
+    # In an ongoing back-and-forth, an inbound is a REPLY, not a fresh initiation —
+    # otherwise every message hands out the +10 initiation bonus and the score only
+    # ever climbs (even on skepticism). Demote it to a small 'replies' nudge when the
+    # customer is answering a message we just sent; keep +10 only for a true cold/
+    # first inbound.
+    if interaction.direction == "inbound":
+        prev = await _previous_interaction(db, customer.id, interaction)
+        if prev is not None and prev.direction == "outbound":
+            raw = [
+                ("replies", "replied in the conversation", DELTAS["replies"])
+                if key == "initiates_contact" else (key, why, delta)
+                for (key, why, delta) in raw
+            ]
+    events = _cap_events(raw)
     if not events:
         # still log a tiny 'replies' nudge so engagement registers
         events = [("replies", "replied / made contact", DELTAS["replies"])]

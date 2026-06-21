@@ -23,6 +23,7 @@ import type {
   CopilotSuggestion,
   ClosingKitResult,
   MessagingDraft,
+  GhostRisk,
 } from '../../api/types'
 import './ChatSurface.css'
 import './ChatWindow.css'
@@ -58,6 +59,8 @@ export interface ChatWindowProps {
   channel: 'whatsapp' | 'sms' | 'telegram'
   customerName?: string
   interactions?: Interaction[]
+  /** Called when a live event carries a fresh Deal Score, so the header can move. */
+  onLiveScore?: (score: { sign_likelihood: number | null; ghost_risk: GhostRisk | null }) => void
 }
 
 export function ChatWindow({
@@ -65,6 +68,7 @@ export function ChatWindow({
   channel,
   customerName,
   interactions = [],
+  onLiveScore,
 }: ChatWindowProps) {
   const [live, setLive] = useState<CopilotSuggestion | null>(null)
   const [sendingLine, setSendingLine] = useState<string | null>(null)
@@ -83,6 +87,9 @@ export function ChatWindow({
   const [simulating, setSimulating] = useState(false)
   const seq = useRef(0)
   const nextId = () => `local-${(seq.current += 1)}`
+  // Keep the latest onLiveScore without re-subscribing the SSE stream on each render.
+  const onScoreRef = useRef(onLiveScore)
+  onScoreRef.current = onLiveScore
 
   // Load initial live suggestions and subscribe to updates
   useEffect(() => {
@@ -120,6 +127,8 @@ export function ChatWindow({
         setLive(sug)
         setDraft(null)
         setSentNote(null)
+        // Move the Deal Score in the header as the conversation progresses.
+        if (e.score) onScoreRef.current?.(e.score)
         // Show the customer's incoming message as an inbound bubble. This is the
         // ONLY place a real (Twilio) inbound shows — it isn't in the page-load
         // snapshot. Dedupe against the last inbound so the simulate path (which

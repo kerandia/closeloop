@@ -262,6 +262,10 @@ export interface CopilotSuggestion {
 export interface CopilotStreamEvent {
   type: string // 'suggestion'
   suggestion?: CopilotSuggestion
+  score?: {
+    sign_likelihood: number | null
+    ghost_risk: GhostRisk | null
+  }
 }
 
 export interface MessagingSendResponse {

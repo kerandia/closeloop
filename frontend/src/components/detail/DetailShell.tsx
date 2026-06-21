@@ -17,7 +17,7 @@
  *
  * Step 3 agents implement the panel bodies without touching this file or props.
  */
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import type {
   CustomerDetail,
@@ -115,6 +115,21 @@ export function DetailShell({ data, customerId }: Props) {
       throw err
     }
   }
+
+  /** Live Deal Score push from the WhatsApp/SMS co-pilot (SSE) → move the header. */
+  const handleLiveScore = useCallback(
+    (s: { sign_likelihood: number | null; ghost_risk: Score['ghost_risk'] }) => {
+      setLiveScore((prev) => ({
+        sign_likelihood: s.sign_likelihood,
+        ghost_risk: s.ghost_risk,
+        band: prev?.band ?? null,
+        trend: prev?.trend ?? null,
+        components: prev?.components ?? null,
+        reason: 'Updated live from the conversation',
+      }))
+    },
+    [],
+  )
 
   // ── Channel selection / compose ───────────────────────────────────────────
   /**
@@ -251,6 +266,7 @@ export function DetailShell({ data, customerId }: Props) {
               channel={activeChannel}
               customer={customer}
               interactions={allInteractions}
+              onLiveScore={handleLiveScore}
             />
           </div>
         </div>
