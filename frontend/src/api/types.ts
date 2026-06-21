@@ -257,3 +257,13 @@ export interface MessagingSendResponse {
   within_window: boolean
   provider: Record<string, unknown>
 }
+
+// The AI's proactive recommended opener for a channel (no inbound message needed)
+export interface MessagingDraft {
+  channel: string
+  read: string | null
+  why: string | null
+  subject: string | null
+  exact_lines: string[]
+  proactive: true
+}
