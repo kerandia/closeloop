@@ -12,9 +12,15 @@ import {
   listCopilotSuggestions,
   subscribeCopilot,
   messagingSend,
+  composeDraft,
   generateClosingKit,
 } from '../../api/client'
-import type { Interaction, CopilotSuggestion, ClosingKitResult } from '../../api/types'
+import type {
+  Interaction,
+  CopilotSuggestion,
+  ClosingKitResult,
+  MessagingDraft,
+} from '../../api/types'
 import './ChatWindow.css'
 import './CopilotPanel.css'
 
@@ -39,6 +45,8 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
   const [sentNote, setSentNote] = useState<string | null>(null)
   const [card, setCard] = useState<ClosingKitResult | null>(null) // generated visual asset
   const [cardLoading, setCardLoading] = useState(false)
+  const [draft, setDraft] = useState<MessagingDraft | null>(null) // proactive opener
+  const [draftSent, setDraftSent] = useState(false)
 
   // Load initial live suggestions and subscribe to updates
   useEffect(() => {
@@ -48,17 +56,29 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
     setSentNote(null)
     setSendingLine(null)
     setCard(null)
+    setDraft(null)
+    setDraftSent(false)
     listCopilotSuggestions(customerId)
       .then((rows) => {
         // Only surface a suggestion for THIS channel.
         const matching = rows.find((r) => r.channel === channel)
-        if (active && matching) setLive(matching)
+        if (!active) return
+        if (matching) {
+          setLive(matching)
+        } else {
+          // No inbound suggestion yet → show the AI's proactive opener so the
+          // surface is never empty.
+          composeDraft(customerId, channel)
+            .then((d) => { if (active) setDraft(d) })
+            .catch(() => {})
+        }
       })
       .catch(() => {})
 
     const unsub = subscribeCopilot(customerId, (e) => {
       if (e.type === 'suggestion' && e.suggestion && e.suggestion.channel === channel) {
         setLive(e.suggestion)
+        setDraft(null)
         setSentNote(null)
       }
     })
@@ -91,6 +111,23 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
       }
     },
     [live, sendingLine, customerId, channel, channelLabel],
+  )
+
+  const handleSendDraft = useCallback(
+    async (line: string) => {
+      if (sendingLine) return
+      setSendingLine(line)
+      try {
+        const res = await messagingSend({ customer_id: customerId, body: line, channel })
+        setDraftSent(true)
+        setSentNote(res.within_window ? `Sent on ${channelLabel} ✓` : 'Sent (template) ✓')
+      } catch (err) {
+        setSentNote(err instanceof Error ? err.message : 'Send failed')
+      } finally {
+        setSendingLine(null)
+      }
+    },
+    [sendingLine, customerId, channel, channelLabel],
   )
 
   const makeCard = useCallback(
@@ -168,6 +205,39 @@ export function ChatWindow({ customerId, channel, interactions = [] }: ChatWindo
               {card && <img className="chat-window__cardimg" src={card.url} alt={card.title} />}
             </div>
           )}
+          {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
+        </div>
+      )}
+
+      {/* ── Proactive opener (AI recommendation) when there's no inbound yet ─── */}
+      {!live && draft && (
+        <div className="chat-window__live" data-testid="chat-window-draft">
+          <div className="copilot-live__bar">
+            <span className="copilot-live__label mono">Recommended by AI</span>
+          </div>
+          {draft.why && (
+            <div className="copilot-read">
+              <span className="copilot-read__label mono">Why now</span>
+              <p className="copilot-read__text">{draft.why}</p>
+            </div>
+          )}
+          <div className="copilot-lines">
+            <span className="copilot-lines__label mono">Suggested first message</span>
+            {draft.exact_lines.map((line, i) => (
+              <div key={i} className="copilot-line">
+                <span className="copilot-line__text">{line}</span>
+                <button
+                  type="button"
+                  className="copilot-line__send"
+                  disabled={draftSent || sendingLine !== null}
+                  onClick={() => handleSendDraft(line)}
+                  data-testid={`draft-send-button-${i}`}
+                >
+                  {sendingLine === line ? 'Sending…' : 'Send'}
+                </button>
+              </div>
+            ))}
+          </div>
           {sentNote && <p className="copilot-live__sent" role="status">{sentNote}</p>}
         </div>
       )}
