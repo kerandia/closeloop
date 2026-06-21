@@ -76,7 +76,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   border: 1px solid;
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   background: transparent;
   cursor: pointer;
   transition: all 150ms ease-out;

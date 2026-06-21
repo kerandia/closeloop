@@ -32,7 +32,7 @@
   flex: 1;
   background: var(--ink-800);
   border: 1px solid var(--ink-700);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   color: var(--paper-90);
   font-family: var(--font-body);
   font-size: 14px;
@@ -47,7 +47,7 @@
 .copilot-respond__submit {
   padding: 8px 20px;
   border: 1px solid var(--flux);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--flux);
   font-family: var(--font-mono);
@@ -202,7 +202,7 @@
   align-self: flex-start;
   padding: 6px 16px;
   border: 1px solid var(--ink-700);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   background: var(--white);
   color: var(--paper-60);
   font-family: var(--font-mono);

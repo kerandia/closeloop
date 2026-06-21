@@ -3,7 +3,7 @@
   align-items: center;
   height: 18px;
   padding: 0 7px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
