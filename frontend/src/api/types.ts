@@ -231,6 +231,18 @@ export interface SendResponse {
   interaction: Interaction
 }
 
+// Auto call notes (Phase 3) — structured notes from a call/visit transcript
+export interface CallNotes {
+  summary: string
+  key_points: string[]
+  objections: string[]
+  buying_signals: string[]
+  next_steps: string[]
+  source_interaction_id: string | null
+  channel?: string
+  occurred_at?: string | null
+}
+
 // Live co-pilot suggestion for an inbound WhatsApp message (real-time)
 export interface CopilotSuggestion {
   id: string

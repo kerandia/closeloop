@@ -16,6 +16,7 @@ from app.routers import (
     management,
     messaging,
     messages,
+    notes,
     recommendations,
     webhooks,
 )
@@ -53,6 +54,7 @@ app.include_router(copilot.router)
 app.include_router(webhooks.router)
 app.include_router(messaging.router)
 app.include_router(management.router)
+app.include_router(notes.router)
 
 
 @app.get("/health", tags=["meta"])
