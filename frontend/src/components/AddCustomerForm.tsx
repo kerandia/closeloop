@@ -5,7 +5,7 @@
  */
 import { useState } from 'react'
 import { importCustomers } from '../api/client'
-import { parseImportFile } from '../lib/importParse'
+import { buildImportPayload } from '../lib/importParse'
 import './AddCustomerForm.css'
 
 interface Props {
@@ -31,23 +31,32 @@ export function AddCustomerForm({ onClose, onCreated }: Props) {
   const [annualReturn, setAnnualReturn] = useState('')
   const [co2, setCo2] = useState('')
 
+  // bulk import: a customers file (required) + an optional quotes file
+  const [custFile, setCustFile] = useState<File | null>(null)
+  const [quoteFile, setQuoteFile] = useState<File | null>(null)
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const num = (s: string) => (s.trim() === '' ? null : Number(s))
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = '' // allow re-selecting the same file
-    if (!file) return
+  async function handleImportFiles() {
+    if (!custFile) {
+      setError('Choose a customers file (JSON or CSV). A quotes file is optional.')
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
-      const payload = parseImportFile(await file.text(), file.name)
+      const payload = buildImportPayload(
+        await custFile.text(), custFile.name,
+        quoteFile ? await quoteFile.text() : undefined,
+        quoteFile?.name,
+      )
       const res = await importCustomers(payload)
       onCreated(res.customer_ids[0] ?? '')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not parse / import that file')
+      setError(err instanceof Error ? err.message : 'Could not parse / import those files')
       setSubmitting(false)
     }
   }
@@ -106,16 +115,34 @@ export function AddCustomerForm({ onClose, onCreated }: Props) {
         </header>
 
         <form className="addc-form" onSubmit={handleSubmit}>
-          {/* Bulk import (Reonic input format: JSON profile+quote, or CSV) */}
-          <label className="addc-upload">
-            <span>📄 Import JSON / CSV (bulk)</span>
-            <input type="file" accept=".json,.csv,text/csv,application/json" onChange={handleFile} disabled={submitting} />
-          </label>
+          {/* Bulk import (Reonic input formats: JSON / CSV). Two files match by
+              a shared key (ref/id/email/phone); a single combined file works too. */}
+          <div className="addc-upload">
+            <span className="addc-upload__title">📄 Import JSON / CSV (bulk)</span>
+            <div className="addc-upload__files">
+              <label className="addc-upload__file">
+                <span>Customers <em>*</em></span>
+                <input type="file" accept=".json,.csv,text/csv,application/json"
+                  onChange={(e) => setCustFile(e.target.files?.[0] ?? null)} disabled={submitting} />
+              </label>
+              <label className="addc-upload__file">
+                <span>Quotes <em>(optional)</em></span>
+                <input type="file" accept=".json,.csv,text/csv,application/json"
+                  onChange={(e) => setQuoteFile(e.target.files?.[0] ?? null)} disabled={submitting} />
+              </label>
+            </div>
+            <button type="button" className="addc-btn addc-btn--primary addc-upload__go"
+              onClick={handleImportFiles} disabled={submitting || !custFile}>
+              {submitting ? 'Importing…' : 'Import file(s)'}
+            </button>
+          </div>
           <p className="addc-upload__hint">
-            CSV header or JSON keys: <code>name, phone, email, language, price_eur,
-            monthly_saving_eur, payback_years, annual_return_pct, co2_tons_25y,
-            system_size_kwp, battery_kwh, product_summary</code>. Or paste a
-            customer below.
+            Two files (a customers export + a quotes export) are matched by a shared
+            key — <code>ref</code>, <code>id</code>, <code>email</code>, or <code>phone</code>.
+            A single combined file (customer + quote columns per row) also works.
+            Quote columns: <code>price_eur, monthly_saving_eur, payback_years,
+            annual_return_pct, co2_tons_25y, system_size_kwp, battery_kwh, product_summary</code>.
+            Or add one customer manually below.
           </p>
 
           <p className="addc-section mono">Customer</p>
