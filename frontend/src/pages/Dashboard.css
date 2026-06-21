@@ -131,8 +131,8 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 70vw;
-  min-width: min(900px, 95vw);
+  width: 80vw;
+  min-width: min(960px, 95vw);
   max-width: 95vw;
   background: var(--paper);
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.12);

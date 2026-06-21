@@ -2,6 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import './CallWindow.css'
 
+interface TranscriptTurn {
+  role: string
+  text: string
+}
+
 interface CallInnerProps {
   onClose: () => void
   customerName?: string
@@ -13,9 +18,15 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
   const [agentId, setAgentId] = useState('agent_0701kvjz79zae3wr46301bxvd7vd') // default voice agent ID
   const [err, setErr] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
+  const [transcript, setTranscript] = useState<TranscriptTurn[]>([])
+  const transcriptEndRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const conv = useConversation({ onError: (e) => setErr(String(e)) })
+  const handleMessage = (msg: { role: string; message: string }) => {
+    setTranscript((prev) => [...prev, { role: msg.role, text: msg.message }])
+  }
+
+  const conv = useConversation({ onError: (e) => setErr(String(e)), onMessage: handleMessage })
 
   const idle = conv.status === 'disconnected' || conv.status === 'error'
   const isConnected = conv.status === 'connected'
@@ -41,26 +52,40 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
     }
   }, [isConnected])
 
+  // Auto-scroll transcript to bottom
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [transcript])
+
   // Call end feedback loop
   const prevStatusRef = useRef(conv.status)
   useEffect(() => {
-    if (prevStatusRef.current === 'connected' && conv.status === 'disconnected') {
+    // Fire on either a clean disconnect or an error ending the session.
+    if (
+      prevStatusRef.current === 'connected' &&
+      (conv.status === 'disconnected' || conv.status === 'error')
+    ) {
       // Trigger callback if provided
       const isMock = new URLSearchParams(window.location.search).get('mock') === '1'
       let finalDuration = duration
-      let transcript = ''
+      let finalTranscript = ''
 
       if (isMock) {
         if (finalDuration === 0) finalDuration = Math.floor(Math.random() * 25) + 15
-        transcript = `**Agent (Voice AI):** Hello, this is the CloseLoop assistant calling on behalf of our team. We've compiled your customized winter solar yield report.\n\n**${customerName}:** Ah, excellent. Does the system really produce enough in December?\n\n**Agent (Voice AI):** Yes, with the 12 kWp Freiburg system configuration, you'll still offset 30% of baseline consumption even in peak winter. Would you like a home visit confirmation to walk through the numbers?\n\n**${customerName}:** Yes, that sounds good. Let's schedule that.`
+        finalTranscript = `**Agent (Voice AI):** Hello, this is the CloseLoop assistant calling on behalf of our team. We've compiled your customized winter solar yield report.\n\n**${customerName}:** Ah, excellent. Does the system really produce enough in December?\n\n**Agent (Voice AI):** Yes, with the 12 kWp Freiburg system configuration, you'll still offset 30% of baseline consumption even in peak winter. Would you like a home visit confirmation to walk through the numbers?\n\n**${customerName}:** Yes, that sounds good. Let's schedule that.`
+      } else if (transcript.length > 0) {
+        // Convert captured live transcript to markdown format
+        finalTranscript = transcript
+          .map((turn) => `**${turn.role}:** ${turn.text}`)
+          .join('\n\n')
       }
-      
+
       if (onCallFinished) {
-        onCallFinished(finalDuration, transcript)
+        onCallFinished(finalDuration, finalTranscript)
       }
     }
     prevStatusRef.current = conv.status
-  }, [conv.status, duration, customerName, onCallFinished])
+  }, [conv.status, duration, customerName, onCallFinished, transcript])
 
   async function start() {
     setErr(null)
@@ -123,6 +148,27 @@ function CallInner({ onClose, customerName = 'Customer', customerPhone = 'Unknow
         <span className="call-wave__bar" style={{ height: isConnected ? undefined : '2px' }} />
         <span className="call-wave__bar" style={{ height: isConnected ? undefined : '2px' }} />
       </div>
+
+      {/* Live Transcript Display */}
+      {isConnected && transcript.length > 0 && (
+        <div className="call-transcript">
+          <div className="call-transcript__list">
+            {transcript.map((turn, idx) => (
+              <div
+                key={idx}
+                className={`call-transcript__turn call-transcript__turn--${turn.role
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-+|-+$/g, '')}`}
+              >
+                <div className="call-transcript__role">{turn.role}</div>
+                <div className="call-transcript__text">{turn.text}</div>
+              </div>
+            ))}
+            <div ref={transcriptEndRef} />
+          </div>
+        </div>
+      )}
 
       {idle && (
         <div className="call-config">

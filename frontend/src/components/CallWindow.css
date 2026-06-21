@@ -289,3 +289,47 @@
   font-size: 13px;
   word-break: break-word;
 }
+
+/* ── Live Transcript View ───────────────────────────────────────────────────── */
+.call-transcript {
+  background: var(--ink-800);
+  border-radius: var(--radius);
+  border: 1px solid var(--ink-700);
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.call-transcript__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.call-transcript__turn {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-700);
+  border-left: 3px solid var(--paper-40);
+}
+
+.call-transcript__turn--agent {
+  background: rgba(58, 177, 121, 0.08);
+  border-left-color: var(--flux);
+}
+
+.call-transcript__role {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--paper-40);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.call-transcript__text {
+  font-size: 12px;
+  color: var(--paper-90);
+  line-height: 1.4;
+  word-break: break-word;
+}

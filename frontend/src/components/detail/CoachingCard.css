@@ -1,0 +1,22 @@
+/* CoachingCard — reuses copilot-* styles from CopilotPanel for consistency. */
+
+.coaching-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.coaching-card__heading {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--flux);
+  text-transform: uppercase;
+  margin: 0;
+}

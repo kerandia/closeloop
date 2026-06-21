@@ -35,6 +35,17 @@ describe('BuyerTypeChip', () => {
   })
 })
 
+describe('ScoreBar reason chip', () => {
+  test('renders reason text when provided', () => {
+    render(<ScoreBar value={74} reason="+18 · agreed to a home visit" />)
+    expect(screen.getByText('+18 · agreed to a home visit')).toBeInTheDocument()
+  })
+  test('renders nothing when reason is absent', () => {
+    const { container } = render(<ScoreBar value={74} />)
+    expect(container.querySelector('.scorebar__reason')).toBeNull()
+  })
+})
+
 describe('GhostRiskPill', () => {
   test('renders the risk level', () => {
     render(<GhostRiskPill risk="high" />)

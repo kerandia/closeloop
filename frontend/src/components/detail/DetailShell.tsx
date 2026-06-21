@@ -17,21 +17,20 @@
  *
  * Step 3 agents implement the panel bodies without touching this file or props.
  */
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type {
   CustomerDetail,
   Recommendation,
   Interaction,
   InteractionCreate,
-  RecStatus,
   Message,
   Score,
+  Channel,
 } from '../../api/types'
 import {
   logInteraction as apiLogInteraction,
   approveRecommendation,
-  dismissRecommendation,
 } from '../../api/client'
 import { withMock } from '../../lib/nav'
 import { BuyerTypeChip } from '../BuyerTypeChip'
@@ -42,9 +41,8 @@ import { RecommendationCard } from './RecommendationCard'
 import { ComposeDrawer } from './ComposeDrawer'
 import { ProfilePanel } from './ProfilePanel'
 import { CallActionsList } from './CallActionsList'
-import { CopilotPanel } from './CopilotPanel'
 import { InteractionTimeline } from './InteractionTimeline'
-import { CallWindow } from '../CallWindow'
+import { ConversationPanel } from './ConversationPanel'
 import './DetailShell.css'
 
 // ── Reveal lifecycle ──────────────────────────────────────────────────────────
@@ -64,11 +62,25 @@ export function DetailShell({ data, customerId }: Props) {
   const [liveScore, setLiveScore] = useState<Score | null>(null)
   const [extraInteractions, setExtraInteractions] = useState<Interaction[]>([])
 
-  // ── Compose drawer state ──────────────────────────────────────────────────
-  const [composeOpen, setComposeOpen] = useState(false)
+  // ── Conversation window state ─────────────────────────────────────────────
+  // activeChannel drives the right-column ConversationPanel mode; email also
+  // opens the ComposeDrawer overlay. null = no channel selected yet.
   const [draftMessage, setDraftMessage] = useState<Message | null>(null)
-  const [localStatus, setLocalStatus] = useState<RecStatus | null>(null)
-  const [callOpen, setCallOpen] = useState(false)
+  // null = show the info card (recommendation + picker); a value swaps in that
+  // channel's call/chat surface. Back returns to null.
+  const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
+  // Compose drawer is gated on this explicit flag, never on activeChannel alone,
+  // so browsing to the email channel doesn't open the drawer or approve the rec.
+  const [emailComposing, setEmailComposing] = useState(false)
+  // Invalidates an in-flight compose request so a late resolve can't repopulate
+  // a draft after the rep already closed the drawer.
+  const composeToken = useRef(0)
+
+  function cancelCompose(): void {
+    composeToken.current++
+    setEmailComposing(false)
+    setDraftMessage(null)
+  }
 
   // ── Derived values ────────────────────────────────────────────────────────
   const effectiveRec = liveRec ?? data.recommendation
@@ -91,8 +103,6 @@ export function DetailShell({ data, customerId }: Props) {
       // Set unconditionally so a cleared (null) value doesn't leave a stale overlay.
       setLiveScore(response.score)
       setLiveRec(response.recommendation)
-      // Reset local status so card re-shows its buttons for the new recommendation
-      setLocalStatus(null)
       setPhase('revealed')
     } catch (err) {
       // Revert to idle so the UI isn't stuck on "Analyzing", and re-throw so the
@@ -102,71 +112,58 @@ export function DetailShell({ data, customerId }: Props) {
     }
   }
 
-  // ── Approve handler ───────────────────────────────────────────────────────
-  function handleApprove(recId: string): void {
-    const isPhoneCall = effectiveRec?.channel === 'phone' || effectiveRec?.channel === 'voice_ai'
-    setLocalStatus('approved')
-    if (isPhoneCall) {
-      setCallOpen(true)
-      approveRecommendation(recId)
-        .then(() => setLocalStatus('ready'))
-        .catch(() => {
-          setLocalStatus(null)
-          setCallOpen(false)
-        })
-    } else {
-      setComposeOpen(true)
-      approveRecommendation(recId)
-        .then((msg) => {
-          setDraftMessage(msg)
-          setLocalStatus('ready')
-        })
-        .catch(() => {
-          // Rollback so rep can retry
-          setLocalStatus(null)
-          setComposeOpen(false)
-        })
+  // ── Channel selection / compose ───────────────────────────────────────────
+  /**
+   * Rep selects a channel via the picker.
+   * Selection alone NEVER mutates server state — email compose is an explicit
+   * action (handleComposeEmail) triggered from the email surface button.
+   */
+  function handleSelectChannel(ch: Channel): void {
+    setActiveChannel(ch)
+  }
+
+  /** Explicit "Compose email": approve the rec to generate a draft, open drawer. */
+  function handleComposeEmail(): void {
+    if (!effectiveRec || emailComposing) return
+    setEmailComposing(true)
+    setDraftMessage(null) // clear any prior draft so the drawer shows "Composing…"
+    const token = ++composeToken.current
+    approveRecommendation(effectiveRec.id)
+      .then((msg) => {
+        // Ignore a late resolve if the rep closed/restarted compose meanwhile.
+        if (composeToken.current === token) setDraftMessage(msg)
+      })
+      .catch(() => {
+        if (composeToken.current === token) setEmailComposing(false)
+      })
+  }
+
+  /** Log the shown call transcript → runs ANALYZE so the score moves. */
+  async function handleLogCall(
+    channel: 'voice_ai' | 'phone',
+    transcriptMd: string,
+  ): Promise<void> {
+    try {
+      await handleLogInteraction({
+        channel,
+        direction: 'outbound',
+        outcome: 'call completed',
+        transcript_md: transcriptMd,
+      })
+    } catch {
+      // handleLogInteraction already reverts the analyzing overlay on failure.
     }
-  }
-
-  function handleCallClose(): void {
-    setCallOpen(false)
-    setLocalStatus(null)
-  }
-
-  async function handleCallFinished(durationSeconds: number, transcript: string): Promise<void> {
-    setCallOpen(false)
-    setLocalStatus(null)
-    const isVoiceAI = effectiveRec?.channel === 'voice_ai'
-    await handleLogInteraction({
-      channel: isVoiceAI ? 'voice_ai' : 'phone',
-      direction: 'outbound',
-      outcome: `call completed (${durationSeconds}s)`,
-      transcript_md: transcript,
-    })
-  }
-
-  // ── Dismiss handler ───────────────────────────────────────────────────────
-  function handleDismiss(recId: string): void {
-    setLocalStatus('dismissed')
-    dismissRecommendation(recId).catch(() => {
-      setLocalStatus(null)
-    })
   }
 
   // ── Compose close / sent ──────────────────────────────────────────────────
   function handleComposeClose(): void {
-    setComposeOpen(false)
-    setDraftMessage(null)
-    // Revert card so rep can still dismiss or re-approve
-    setLocalStatus(null)
+    cancelCompose()
   }
 
   function handleSent(interaction: Interaction): void {
-    setComposeOpen(false)
-    setDraftMessage(null)
-    setLocalStatus('sent')
+    cancelCompose()
     setExtraInteractions((prev) => [interaction, ...prev])
+    setActiveChannel(null)
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -179,7 +176,12 @@ export function DetailShell({ data, customerId }: Props) {
         </Link>
         <h1 className="detail-header__name">{customer.name}</h1>
         <BuyerTypeChip type={data.profile?.buyer_type ?? null} />
-        <ScoreBar value={effectiveScore} trend={customer.score_trend} compact />
+        <ScoreBar
+          value={effectiveScore}
+          trend={liveScore?.trend ?? customer.score_trend}
+          reason={liveScore?.reason}
+          compact
+        />
         <StageBadge stage={customer.stage} />
         <GhostRiskPill risk={effectiveRisk} />
         <span className="detail-header__spacer" />
@@ -202,7 +204,6 @@ export function DetailShell({ data, customerId }: Props) {
         <div className="detail-left">
           <ProfilePanel profile={profile} signals={signals} quote={quote} />
           <CallActionsList actions={extracted_actions} />
-          <CopilotPanel customerId={customerId} />
           <InteractionTimeline
             interactions={allInteractions}
             onLogInteraction={handleLogInteraction}
@@ -221,24 +222,29 @@ export function DetailShell({ data, customerId }: Props) {
               </div>
               Analyzing…
             </div>
-          ) : callOpen ? (
-            <CallWindow
-              onClose={handleCallClose}
-              customerName={customer.name}
-              customerPhone={customer.phone ?? undefined}
-              onCallFinished={handleCallFinished}
-            />
           ) : (
             <>
-              <RecommendationCard
+              <ConversationPanel
+                activeChannel={activeChannel}
+                recommendedChannel={effectiveRec?.channel ?? null}
                 recommendation={effectiveRec}
+                onSelectChannel={handleSelectChannel}
+                customerId={customerId}
                 customer={customer}
-                onApprove={handleApprove}
-                onDismiss={handleDismiss}
-                status={localStatus}
+                interactions={allInteractions}
+                onLogCall={handleLogCall}
+                emailComposing={emailComposing}
+                onComposeEmail={handleComposeEmail}
+                onClose={() => {
+                  setActiveChannel(null)
+                  cancelCompose()
+                }}
+                header={
+                  <RecommendationCard recommendation={effectiveRec} embedded />
+                }
               />
               <ComposeDrawer
-                open={composeOpen}
+                open={emailComposing}
                 message={draftMessage}
                 onClose={handleComposeClose}
                 onSent={handleSent}

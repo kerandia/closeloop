@@ -1,0 +1,126 @@
+/* CallTranscriptView.css — SDK-free transcript display for voice calls. */
+
+.transcript-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--paper-90);
+}
+
+.transcript-view--empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--paper-40);
+  font-size: 13px;
+  background: var(--ink-800);
+  border-radius: var(--radius);
+  border: 1px solid var(--ink-700);
+}
+
+.transcript-view__turns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--ink-800);
+  border-radius: var(--radius);
+  border: 1px solid var(--ink-700);
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.transcript-turn {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-700);
+  border-left: 3px solid var(--paper-40);
+}
+
+.transcript-turn--agent {
+  background: rgba(58, 177, 121, 0.08);
+  border-left-color: var(--flux);
+}
+
+.transcript-turn__role {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--paper-40);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.transcript-turn__text {
+  font-size: 13px;
+  color: var(--paper-90);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.transcript-view__collected {
+  margin-top: 8px;
+}
+
+.collected-summary {
+  background: rgba(58, 177, 121, 0.08);
+  border: 1px solid var(--flux);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.collected-summary__title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--flux);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.collected-summary__field {
+  margin-bottom: 12px;
+}
+
+.collected-summary__field:last-child {
+  margin-bottom: 0;
+}
+
+.collected-summary__label {
+  display: block;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--paper-40);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.collected-summary__value {
+  font-size: 12px;
+  color: var(--paper-90);
+  line-height: 1.5;
+}
+
+.collected-summary__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.collected-summary__item {
+  font-size: 12px;
+  color: var(--paper-90);
+  padding-left: 16px;
+  position: relative;
+}
+
+.collected-summary__item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--flux);
+}

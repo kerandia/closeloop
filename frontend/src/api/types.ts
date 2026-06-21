@@ -3,7 +3,10 @@
 
 export type BuyerType = 'family' | 'investor' | 'environmentalist' | 'skeptic'
 export type GhostRisk = 'low' | 'medium' | 'high'
-export type Channel = 'email' | 'sms' | 'whatsapp' | 'phone' | 'visit' | 'voice_ai' | 'system'
+// NOTE: `telegram` is a frontend-anticipated chat channel — the UI supports it as
+// a WhatsApp/SMS-style surface, but the backend contract does not emit it yet.
+// Remove this note once the backend adds telegram to its channel enum.
+export type Channel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'phone' | 'visit' | 'voice_ai' | 'system'
 export type RecStatus =
   | 'pending'
   | 'approved'
