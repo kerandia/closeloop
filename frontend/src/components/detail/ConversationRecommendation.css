@@ -127,22 +127,3 @@
 .conv-rec__use:active {
   transform: scale(0.97);
 }
-
-/* ── Live co-pilot variant (whatsapp/sms run on the real backend loop) ──────── */
-.conv-rec--live {
-  gap: 12px;
-}
-
-.conv-rec__live-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: #16a34a; /* live green */
-  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
-  animation: conv-rec-pulse 1.8s ease-in-out infinite;
-}
-
-@keyframes conv-rec-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18); }
-  50% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.06); }
-}

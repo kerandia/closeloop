@@ -1,81 +1,150 @@
-/* ChatWindow — chat interface with inbound/outbound bubbles + live suggestion. */
+/* ChatWindow — LIVE co-pilot, worn over the WhatsApp/SMS skin (ChatSurface.css).
+   Only the extras live here: the live dot, empty state, and the AI panel that
+   sits between the messages and the composer. Bubble + surface styling comes
+   from ChatSurface.css (--in/--out). The --inbound/--outbound classes are kept
+   as test/markup hooks and intentionally carry no colour of their own. */
 
-.chat-window {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--white);
-  border: 1px solid var(--ink-700);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow-soft);
-  height: 100%;
-  min-height: 300px;
+.chat-surface--live {
+  min-height: 460px;
 }
 
-.chat-window__header {
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--ink-700);
+/* live pulse next to "WhatsApp · live" */
+.chat-surface__live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: #25d366;
+  box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
+  animation: chat-live-pulse 1.8s ease-in-out infinite;
+  vertical-align: middle;
 }
 
-.chat-window__title {
-  font-family: var(--font-head);
+@keyframes chat-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(37, 211, 102, 0); }
+}
+
+.chat-surface__empty {
+  margin: auto;
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--flux);
-  text-transform: uppercase;
-  margin: 0;
+  color: rgba(0, 0, 0, 0.4);
 }
 
-.chat-window__bubbles {
+/* ── AI co-pilot panel (live suggestion or proactive opener) ───────────────── */
+.chat-ai {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  overflow-y: auto;
+  gap: 9px;
+  padding: 12px 14px;
+  background: var(--white);
+  border-top: 1px solid var(--ink-700);
 }
 
-/* Chat bubbles — inbound left, outbound right */
-.chat-bubble {
-  max-width: 70%;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  line-height: 1.5;
+.chat-ai__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.chat-bubble--inbound {
-  align-self: flex-start;
-  background: var(--ink-800);
+.chat-ai__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--solar);
+}
+
+.chat-ai__utterance {
+  font-size: 12.5px;
+  color: var(--paper-40);
+  font-style: italic;
+}
+
+.chat-ai__read {
+  margin: 0;
+  font-size: 13px;
   color: var(--paper-90);
 }
 
-.chat-bubble--outbound {
-  align-self: flex-end;
-  background: var(--flux);
-  color: var(--ink-900);
-}
-
-.chat-bubble__text {
-  margin: 0;
-  word-wrap: break-word;
-}
-
-/* Live suggestion block */
-.chat-window__live {
-  border-top: 1px solid var(--ink-700);
-  padding-top: 12px;
+.chat-ai__lines {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
+}
+
+.chat-ai__line {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* tap a line to load it into the composer for editing */
+.chat-ai__use {
+  flex: 1;
+  text-align: left;
+  padding: 8px 11px;
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--paper-90);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+
+.chat-ai__use:hover {
+  border-color: var(--solar);
+  background: var(--white);
+}
+
+.chat-ai__send {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--solar);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-ai__send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.chat-ai__why {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--paper-40);
+  line-height: 1.5;
+}
+
+.chat-ai__why-label {
+  font-weight: 600;
+  color: var(--paper-90);
+}
+
+.chat-ai__sent {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #16a34a;
 }
 
 /* ── Generated visual asset (objection → card) ──────────────────────────── */
-.chat-window__card { margin-top: 10px; }
-.chat-window__cardbtn {
+.chat-ai__card { margin-top: 2px; }
+
+.chat-ai__cardbtn {
   background: var(--solar);
-  color: var(--ink-900, #0d1b27);
+  color: var(--white);
   border: none;
   border-radius: var(--radius-sm);
   padding: 7px 14px;
@@ -83,8 +152,10 @@
   font-weight: 600;
   cursor: pointer;
 }
-.chat-window__cardbtn:disabled { opacity: 0.55; cursor: default; }
-.chat-window__cardimg {
+
+.chat-ai__cardbtn:disabled { opacity: 0.55; cursor: default; }
+
+.chat-ai__cardimg {
   display: block;
   width: 100%;
   margin-top: 10px;

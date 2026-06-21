@@ -175,6 +175,12 @@
   padding: 16px;
 }
 
+/* Live WhatsApp/SMS surface spans the middle + right tracks (it carries its own
+   AI co-pilot panel, so the separate recommendation column is folded in). */
+.detail-workspace__col--live {
+  grid-column: span 2;
+}
+
 /* Call surface — a card wrapper around the recorded transcript. */
 .call-surface {
   display: flex;
