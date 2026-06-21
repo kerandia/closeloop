@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import './CallTranscriptView.css'
 
 // SDK-free types for voice agent call transcripts
@@ -18,6 +19,7 @@ interface CallTranscriptViewProps {
   mode: 'voice_ai' | 'phone'
   collected?: CollectedSummary | null
   liveTurns?: TranscriptTurn[] | null
+  isCallActive?: boolean
 }
 
 // Role → safe CSS class slug (alphanumeric + single hyphens), e.g.
@@ -43,15 +45,22 @@ function parseTranscriptMd(transcriptMd: string | null | undefined): TranscriptT
   return turns
 }
 
-export function CallTranscriptView({ transcriptMd, mode, collected, liveTurns }: CallTranscriptViewProps) {
+export function CallTranscriptView({ transcriptMd, mode, collected, liveTurns, isCallActive }: CallTranscriptViewProps) {
   const turns = liveTurns || parseTranscriptMd(transcriptMd)
+  const transcriptEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isCallActive || liveTurns) {
+      transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [turns.length, isCallActive, liveTurns])
 
   if (!turns.length && !collected && !liveTurns) {
     return <div className="transcript-view transcript-view--empty">No transcript or summary available.</div>
   }
 
   return (
-    <div className="transcript-view">
+    <div className={`transcript-view ${isCallActive ? 'transcript-view--active' : ''}`}>
       {turns.length > 0 && (
         <div className="transcript-view__turns">
           {turns.map((turn, idx) => (
@@ -63,6 +72,7 @@ export function CallTranscriptView({ transcriptMd, mode, collected, liveTurns }:
               <div className="transcript-turn__text">{turn.text}</div>
             </div>
           ))}
+          <div ref={transcriptEndRef} />
         </div>
       )}
 

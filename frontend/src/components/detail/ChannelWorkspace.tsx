@@ -114,6 +114,7 @@ export function ChannelWorkspace({ channel, customer }: Props) {
             mode={content.mode}
             collected={(liveTurns && !callFinished) ? null : (content.collected ?? null)}
             liveTurns={liveTurns}
+            isCallActive={liveTurns !== null && !callFinished}
           />
         </div>
       </section>
